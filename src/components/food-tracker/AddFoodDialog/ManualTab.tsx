@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Plus } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useFoodTracking } from "@/hooks/useFoodTracking";
+import { useFoodTracking } from "@/features/food-tracker/hooks"; // Updated import
 import { toast } from "sonner";
 
 interface ManualTabProps {
@@ -58,8 +58,8 @@ const ManualTab = ({ onFoodAdded, onClose, preSelectedFood }: ManualTabProps) =>
     // Calculate nutrition per actual quantity
     const multiplier = quantityNum / 100;
 
-    const foodConsumption = {
-      food_item_id: crypto.randomUUID(),
+    const foodConsumptionData = { // Renamed to avoid conflict with hook return
+      food_item_id: crypto.randomUUID(), // This should ideally be a real ID or handled server-side
       quantity_g: quantityNum,
       calories_consumed: caloriesNum * multiplier,
       protein_consumed: proteinNum * multiplier,
@@ -69,8 +69,11 @@ const ManualTab = ({ onFoodAdded, onClose, preSelectedFood }: ManualTabProps) =>
       consumed_at: new Date().toISOString(),
       notes: notes || undefined,
       source: (preSelectedFood ? 'ai_analysis' : 'manual') as 'manual' | 'ai_analysis' | 'barcode',
-      food_item: {
+      // The food_item structure below is for client-side representation if not linking to a DB food_item
+      // If you have a food_items table, you'd typically log an ID and fetch details
+      food_item: { 
         name: foodName,
+        // brand: "User Entered", // Optional: Add brand if you collect it
         calories_per_100g: caloriesNum,
         protein_per_100g: proteinNum,
         carbs_per_100g: carbsNum,
@@ -78,7 +81,7 @@ const ManualTab = ({ onFoodAdded, onClose, preSelectedFood }: ManualTabProps) =>
       }
     };
 
-    addFoodConsumption(foodConsumption);
+    addFoodConsumption(foodConsumptionData);
     onFoodAdded();
     onClose();
   };

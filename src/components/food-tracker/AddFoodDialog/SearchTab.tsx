@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Search, Plus, Clock, Utensils, RefreshCw } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useFoodDatabase } from "@/hooks/useFoodDatabase";
-import { useFoodConsumption } from "@/hooks/useFoodConsumption";
+import { useFoodConsumption } from "@/features/food-tracker/hooks";
 import QuantitySelector from "./components/QuantitySelector";
 import QuickAddSection from "./components/QuickAddSection";
 import { toast } from "sonner";

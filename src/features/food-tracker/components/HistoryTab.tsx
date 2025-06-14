@@ -1,11 +1,10 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, History, TrendingUp, ChevronLeft, ChevronRight } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useFoodConsumption } from "@/hooks/useFoodConsumption";
+import { useFoodConsumption, FoodConsumptionLog } from "@/features/food-tracker/hooks";
 import VirtualizedMealHistory from "@/components/food-tracker/components/VirtualizedMealHistory";
 import NutritionHeatMap from "@/components/food-tracker/components/NutritionHeatMap";
 import { format, startOfMonth, endOfMonth, addMonths, subMonths } from "date-fns";
@@ -18,24 +17,25 @@ const HistoryTab = () => {
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
   
+  // Ensure useHistoryData is correctly destructured if it's a hook itself, or used as a method
   const { data: historyData, isLoading } = useFoodConsumption().useHistoryData(monthStart, monthEnd);
 
   // Group data by date for timeline view
-  const groupedHistory = historyData?.reduce((acc, entry) => {
+  const groupedHistory = (historyData || []).reduce((acc, entry) => {
     const date = format(new Date(entry.consumed_at), 'yyyy-MM-dd');
     if (!acc[date]) {
       acc[date] = [];
     }
     acc[date].push(entry);
     return acc;
-  }, {} as Record<string, typeof historyData>) || {};
+  }, {} as Record<string, FoodConsumptionLog[]>); // Corrected accumulator type
 
-  const groupedArray = Object.entries(groupedHistory)
+  const groupedArray: { date: string; entries: FoodConsumptionLog[] }[] = Object.entries(groupedHistory)
     .map(([date, entries]) => ({ date, entries }))
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   // Calculate monthly stats
-  const monthlyStats = historyData?.reduce(
+  const monthlyStats = (historyData || []).reduce(
     (acc, entry) => ({
       totalCalories: acc.totalCalories + (entry.calories_consumed || 0),
       totalProtein: acc.totalProtein + (entry.protein_consumed || 0),

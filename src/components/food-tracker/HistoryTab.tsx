@@ -1,11 +1,10 @@
-
 import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Calendar, ChevronLeft, ChevronRight, AlertCircle, Search, Filter, Download } from "lucide-react";
-import { useFoodConsumption } from "@/hooks/useFoodConsumption";
+import { useFoodConsumption, FoodConsumptionLog } from "@/features/food-tracker/hooks";
 import { format, startOfMonth, endOfMonth, addMonths, subMonths, parseISO, isSameDay } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";

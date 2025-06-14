@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,7 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Target, TrendingUp, Award, Clock } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useFoodConsumption } from "@/hooks/useFoodConsumption";
+import { useFoodConsumption, FoodConsumptionLog } from "@/features/food-tracker/hooks";
 import EnhancedMacroWheel from "./components/EnhancedMacroWheel";
 import EnhancedFoodTimeline from "./components/EnhancedFoodTimeline";
 import MobileOptimizedHeader from "./components/MobileOptimizedHeader";
@@ -23,15 +22,12 @@ const TodayTab = ({ key: forceRefreshKey, onAddFood }: TodayTabProps) => {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const { todayConsumption, todayMealPlan, isLoading, forceRefresh } = useFoodConsumption();
 
-  // Force a refresh when component mounts or key changes
   useEffect(() => {
     console.log('🔄 TodayTab mounted/refreshed, fetching data...');
     forceRefresh();
   }, [forceRefresh, forceRefreshKey]);
 
-  // Calculate daily totals from both consumption and meal plan
   const dailyTotals = {
-    // Totals from logged consumption
     consumption: todayConsumption?.reduce(
       (acc, item) => ({
         calories: acc.calories + (item.calories_consumed || 0),
@@ -42,7 +38,6 @@ const TodayTab = ({ key: forceRefreshKey, onAddFood }: TodayTabProps) => {
       { calories: 0, protein: 0, carbs: 0, fat: 0 }
     ) || { calories: 0, protein: 0, carbs: 0, fat: 0 },
 
-    // Totals from meal plan (planned but not necessarily consumed)
     mealPlan: todayMealPlan?.reduce(
       (acc, item) => ({
         calories: acc.calories + (item.calories || 0),
@@ -54,7 +49,6 @@ const TodayTab = ({ key: forceRefreshKey, onAddFood }: TodayTabProps) => {
     ) || { calories: 0, protein: 0, carbs: 0, fat: 0 }
   };
 
-  // Combined totals (consumption takes priority)
   const combinedTotals = {
     calories: dailyTotals.consumption.calories,
     protein: dailyTotals.consumption.protein,
@@ -62,7 +56,6 @@ const TodayTab = ({ key: forceRefreshKey, onAddFood }: TodayTabProps) => {
     fat: dailyTotals.consumption.fat,
   };
 
-  // Calculate daily goals and progress
   const dailyGoals = {
     calories: 2000,
     protein: 150,
@@ -71,19 +64,19 @@ const TodayTab = ({ key: forceRefreshKey, onAddFood }: TodayTabProps) => {
   };
 
   const progress = {
-    calories: Math.min((combinedTotals.calories / dailyGoals.calories) * 100, 100),
-    protein: Math.min((combinedTotals.protein / dailyGoals.protein) * 100, 100),
-    carbs: Math.min((combinedTotals.carbs / dailyGoals.carbs) * 100, 100),
-    fat: Math.min((combinedTotals.fat / dailyGoals.fat) * 100, 100)
+    calories: dailyGoals.calories > 0 ? Math.min((combinedTotals.calories / dailyGoals.calories) * 100, 100) : 0,
+    protein: dailyGoals.protein > 0 ? Math.min((combinedTotals.protein / dailyGoals.protein) * 100, 100) : 0,
+    carbs: dailyGoals.carbs > 0 ? Math.min((combinedTotals.carbs / dailyGoals.carbs) * 100, 100) : 0,
+    fat: dailyGoals.fat > 0 ? Math.min((combinedTotals.fat / dailyGoals.fat) * 100, 100) : 0
   };
 
-  // Calculate meal distribution
   const mealDistribution = todayConsumption?.reduce((acc, item) => {
-    acc[item.meal_type] = (acc[item.meal_type] || 0) + 1;
+    const mealTypeKey = item.meal_type || 'snack'; // Ensure meal_type is a string key
+    acc[mealTypeKey] = (acc[mealTypeKey] || 0) + 1;
     return acc;
   }, {} as Record<string, number>) || {};
 
-  const totalMeals = Object.values(mealDistribution).reduce((sum, count) => sum + count, 0);
+  const totalMeals: number = Object.values(mealDistribution).reduce((sum: number, count: number) => sum + count, 0);
 
   const handleFoodAdded = async () => {
     console.log('🍎 Food added, closing dialog and refreshing data...');
@@ -96,12 +89,11 @@ const TodayTab = ({ key: forceRefreshKey, onAddFood }: TodayTabProps) => {
     }, 1000);
   };
 
-  // Today's stats for mobile header
   const todayStats = {
     calories: combinedTotals.calories,
     protein: combinedTotals.protein,
     remainingCalories: Math.max(0, dailyGoals.calories - combinedTotals.calories),
-    mealsLogged: totalMeals
+    mealsLogged: totalMeals // Now a number
   };
 
   if (isLoading) {
@@ -117,7 +109,7 @@ const TodayTab = ({ key: forceRefreshKey, onAddFood }: TodayTabProps) => {
       {/* Mobile optimized header - only show on mobile */}
       <div className="lg:hidden">
         <MobileOptimizedHeader 
-          todayStats={todayStats}
+          todayStats={todayStats} // todayStats.mealsLogged is now number
           onAddFood={onAddFood}
         />
       </div>
@@ -187,10 +179,10 @@ const TodayTab = ({ key: forceRefreshKey, onAddFood }: TodayTabProps) => {
                     <div className="text-gray-600">Remaining</div>
                   </div>
                 </div>
-                {combinedTotals.calories > 0 && totalMeals > 0 && (
+                {combinedTotals.calories > 0 && totalMeals > 0 && ( // totalMeals is number
                   <div className="text-center p-2 bg-green-50 rounded">
                     <div className="font-semibold text-green-900">
-                      {Math.round(combinedTotals.calories / totalMeals)}
+                      {Math.round(combinedTotals.calories / totalMeals)} {/* totalMeals is number */}
                     </div>
                     <div className="text-green-600 text-xs">Avg Cal/Meal</div>
                   </div>
@@ -198,7 +190,7 @@ const TodayTab = ({ key: forceRefreshKey, onAddFood }: TodayTabProps) => {
               </div>
 
               {/* Achievement Badges - Compact */}
-              {(progress.calories >= 80 || progress.protein >= 100 || totalMeals >= 3) && (
+              {(progress.calories >= 80 || progress.protein >= 100 || totalMeals >= 3) && ( // totalMeals is number
                 <div className="space-y-2">
                   <h4 className="font-medium text-gray-700 flex items-center gap-2">
                     <Award className="w-4 h-4" />
@@ -251,7 +243,7 @@ const TodayTab = ({ key: forceRefreshKey, onAddFood }: TodayTabProps) => {
             </CardHeader>
             <CardContent>
               <EnhancedFoodTimeline 
-                foodLogs={todayConsumption || []}
+                foodLogs={(todayConsumption || []) as FoodConsumptionLog[]} // Ensure type for foodLogs
                 onRefetch={forceRefresh}
               />
               

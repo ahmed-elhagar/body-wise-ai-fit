@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,8 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Trash2, Clock, Camera, MessageCircle } from "lucide-react";
 import { format } from "date-fns";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { FoodConsumptionLog } from "@/hooks/useFoodConsumption";
-import { useFoodConsumption } from "@/hooks/useFoodConsumption";
+import { FoodConsumptionLog, useFoodConsumption } from "@/features/food-tracker/hooks";
 import { useMealComments } from "@/hooks/useMealComments";
 import MealCommentsDrawer from "../MealCommentsDrawer";
 
