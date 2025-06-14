@@ -19,7 +19,6 @@ const DashboardContent = () => {
 
   return (
     <div className="space-y-6">
-      {/* Profile completion banner for existing users */}
       <ProfileCompletionBanner />
       
       <DashboardWelcomeHeader 
