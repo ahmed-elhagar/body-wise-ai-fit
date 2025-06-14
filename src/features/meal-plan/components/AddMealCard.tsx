@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,10 +7,10 @@ import { useMealPlanTranslations } from '../utils/mealPlanTranslations';
 
 interface AddMealCardProps {
   mealType?: string;
-  onAddMeal: () => void;
+  onAddSnack: () => void;
 }
 
-export const AddMealCard = ({ mealType, onAddMeal }: AddMealCardProps) => {
+export const AddMealCard = ({ mealType, onAddSnack }: AddMealCardProps) => {
   const { addSnack } = useMealPlanTranslations();
 
   return (
@@ -18,7 +19,7 @@ export const AddMealCard = ({ mealType, onAddMeal }: AddMealCardProps) => {
         <Button
           variant="ghost"
           className="w-full h-full min-h-[200px] flex flex-col items-center justify-center space-y-2 text-gray-500 hover:text-teal-600"
-          onClick={onAddMeal}
+          onClick={onAddSnack}
         >
           <div className="w-12 h-12 rounded-full border-2 border-dashed border-current flex items-center justify-center">
             <Plus className="w-6 h-6" />

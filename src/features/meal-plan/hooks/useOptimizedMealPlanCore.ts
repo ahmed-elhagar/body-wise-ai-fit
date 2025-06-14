@@ -1,7 +1,7 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
-import { getWeekStartDate } from '@/utils/mealPlanUtils';
-import { format } from 'date-fns';
+import { format, startOfWeek, addWeeks } from 'date-fns';
 import { OptimizedMealPlanService } from '../services/optimizedMealPlanService';
 import { useMemo } from 'react';
 import { useMealPlanData } from './useMealPlanData';
@@ -13,6 +13,12 @@ interface OptimizedQueryOptions {
   includeInstructions?: boolean;
   mealTypes?: ReadonlyArray<string>;
 }
+
+const getWeekStartDate = (weekOffset: number = 0): Date => {
+  const today = new Date();
+  const currentWeekStart = startOfWeek(today, { weekStartsOn: 0 });
+  return addWeeks(currentWeekStart, weekOffset);
+};
 
 export const useOptimizedMealPlanCore = (
   weekOffset: number = 0,

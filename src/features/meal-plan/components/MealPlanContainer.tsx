@@ -10,13 +10,14 @@ import { Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { MealPlanViewToggle } from './MealPlanViewToggle';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { formatWeekRange, getDayName } from '../utils/mealPlanUtils';
+import { formatWeekRange, getDayName, convertDatabaseMeal } from '../utils/mealPlanUtils';
 import { MealExchangeDialog } from './dialogs/MealExchangeDialog';
 import { AIGenerationDialog } from './dialogs/AIGenerationDialog';
 import { RecipeDialog } from './RecipeDialog';
 import EnhancedAddSnackDialog from './dialogs/EnhancedAddSnackDialog';
 import ModernShoppingListDrawer from '@/components/shopping-list/ModernShoppingListDrawer';
 import { MealPlanAILoadingDialog } from './dialogs/MealPlanAILoadingDialog';
+import type { MealPlanFetchResult } from '../types';
 
 const MealPlanContainer = () => {
   const mealPlanState = useMealPlanPage();
@@ -55,8 +56,11 @@ const MealPlanContainer = () => {
     mealPlanState.setCurrentWeekOffset(offset);
   };
 
-  // Determine what data to display
-  const displayData = mealPlanState.currentWeekPlan || lastLoadedDataRef.current;
+  // Determine what data to display - convert database format to proper types
+  const displayData: MealPlanFetchResult | null = mealPlanState.currentWeekPlan || lastLoadedDataRef.current ? {
+    weeklyPlan: (mealPlanState.currentWeekPlan || lastLoadedDataRef.current)!.weeklyPlan,
+    dailyMeals: ((mealPlanState.currentWeekPlan || lastLoadedDataRef.current)!.dailyMeals || []).map(convertDatabaseMeal)
+  } : null;
 
   // Only show full error state if there's an error and no existing data
   if (mealPlanState.error && !displayData) {
@@ -67,6 +71,9 @@ const MealPlanContainer = () => {
   if (mealPlanState.isLoading && !displayData) {
     return <LoadingState />;
   }
+
+  // Calculate daily meals for selected day from converted data
+  const selectedDayMeals = displayData?.dailyMeals?.filter(meal => meal.day_number === mealPlanState.selectedDayNumber) || [];
 
   return (
     <>
@@ -157,7 +164,7 @@ const MealPlanContainer = () => {
             viewMode={viewMode}
             currentWeekPlan={displayData}
             selectedDayNumber={mealPlanState.selectedDayNumber}
-            dailyMeals={mealPlanState.dailyMeals}
+            dailyMeals={selectedDayMeals}
             totalCalories={mealPlanState.totalCalories}
             totalProtein={mealPlanState.totalProtein}
             targetDayCalories={mealPlanState.targetDayCalories}

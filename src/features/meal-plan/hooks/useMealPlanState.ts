@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { addDays, format, startOfWeek } from 'date-fns';
 import { getCurrentWeekDates, formatDateForMealPlan, convertDatabaseMeal } from '../utils/mealPlanUtils';
-import type { WeeklyMealPlan, DailyMeal } from '../types';
+import type { WeeklyMealPlan, DailyMeal, MealPlanFetchResult } from '../types';
 
 interface UseMealPlanStateProps {
   initialDate?: Date;
@@ -39,7 +39,7 @@ export const useMealPlanState = ({ initialDate }: UseMealPlanStateProps = {}) =>
     refetch
   } = useQuery({
     queryKey: ['weeklyMealPlan', user?.id, weekStartDateFormatted],
-    queryFn: async () => {
+    queryFn: async (): Promise<MealPlanFetchResult | null> => {
       if (!user?.id) {
         console.warn('No user ID - skipping meal plan fetch');
         return null;
@@ -81,11 +81,38 @@ export const useMealPlanState = ({ initialDate }: UseMealPlanStateProps = {}) =>
 
       console.log(`Successfully fetched meal plan with ${convertedMeals.length} daily meals`);
 
-      return { weeklyPlan, dailyMeals: convertedMeals };
+      return { 
+        weeklyPlan: weeklyPlan as WeeklyMealPlan, 
+        dailyMeals: convertedMeals 
+      };
     },
     enabled: !!user?.id,
     retry: false,
   });
+
+  // Calculate derived properties
+  const currentWeekPlan = weeklyPlanData;
+  const dailyMeals = useMemo(() => {
+    if (!weeklyPlanData?.dailyMeals) return [];
+    const today = new Date();
+    const todayDayNumber = today.getDay() === 0 ? 7 : today.getDay(); // Sunday = 7, Monday = 1
+    return weeklyPlanData.dailyMeals.filter(meal => meal.day_number === todayDayNumber);
+  }, [weeklyPlanData?.dailyMeals]);
+
+  const totalCalories = useMemo(() => {
+    return dailyMeals.reduce((total, meal) => total + (meal.calories || 0), 0);
+  }, [dailyMeals]);
+
+  const totalProtein = useMemo(() => {
+    return dailyMeals.reduce((total, meal) => total + (meal.protein || 0), 0);
+  }, [dailyMeals]);
+
+  const targetDayCalories = useMemo(() => {
+    if (weeklyPlanData?.weeklyPlan?.total_calories) {
+      return Math.round(weeklyPlanData.weeklyPlan.total_calories / 7);
+    }
+    return 2000; // Default fallback
+  }, [weeklyPlanData?.weeklyPlan?.total_calories]);
 
   const handleDateSelect = (date: Date) => {
     console.log('📅 Selected date:', date);
@@ -119,6 +146,12 @@ export const useMealPlanState = ({ initialDate }: UseMealPlanStateProps = {}) =>
     showShoppingList,
     handleShowShoppingList,
     handleCloseShoppingList,
-    refetch
+    refetch,
+    // Additional properties for compatibility
+    currentWeekPlan,
+    dailyMeals,
+    totalCalories,
+    totalProtein,
+    targetDayCalories
   };
 };

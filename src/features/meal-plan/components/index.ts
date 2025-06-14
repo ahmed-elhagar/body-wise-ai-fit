@@ -9,6 +9,7 @@ export { RecipeDialog } from './RecipeDialog';
 
 // Day view components
 export { DayView } from './DayView';
+export { default as DayOverview } from './DayOverview';
 export { DayViewHeader } from './DayViewHeader';
 export { DailySummaryCard } from './DailySummaryCard';
 export { AddMealCard } from './AddMealCard';
