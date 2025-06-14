@@ -3,9 +3,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
 import { PageHeader } from "@/components/ui/page-header";
 import { Scale } from "lucide-react";
-import WeightEntryForm from "@/components/weight/WeightEntryForm";
-import WeightProgressChart from "@/components/weight/WeightProgressChart";
-import WeightStatsCards from "@/components/weight/WeightStatsCards";
+import { WeightEntryForm, WeightProgressChart, WeightStatsCards } from "@/features/weight-tracking";
 import { useState } from "react";
 
 interface WeightEntry {

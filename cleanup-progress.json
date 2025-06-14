@@ -1,0 +1,153 @@
+
+{
+  "cleanup_phase": "folder_removal_and_reorganization",
+  "target_folders": [
+    "/__tests__",
+    "/contexts", 
+    "/components",
+    "/hooks",
+    "/i18n",
+    "/services", 
+    "/types",
+    "/utils"
+  ],
+  "scan_results": {
+    "/__tests__": {
+      "status": "not_found",
+      "files": [],
+      "action": "skip_removal"
+    },
+    "/contexts": {
+      "status": "found",
+      "files": [
+        "src/contexts/AuthContext.tsx",
+        "src/contexts/LanguageContext.tsx"
+      ],
+      "usages": {
+        "AuthContext.tsx": [
+          "src/features/exercise/hooks/useExerciseActions.ts",
+          "src/App.tsx"
+        ],
+        "LanguageContext.tsx": [
+          "src/components/exercise/WorkoutContentLayout.tsx",
+          "src/components/exercise/ExerciseVideoDialog.tsx",
+          "src/components/exercise/WorkoutTypeSelector.tsx",
+          "src/components/food-photo-analysis/FoodAnalysisResults.tsx",
+          "src/components/exercise/WeekContentLoader.tsx",
+          "src/components/exercise/ModernExerciseHeader.tsx",
+          "src/components/exercise/ExerciseProgressTracker.tsx",
+          "src/features/exercise/hooks/useExerciseAISteps.ts",
+          "src/features/exercise/components/ExercisePageContainer.tsx",
+          "src/features/exercise/hooks/useExerciseProgramQuery.ts",
+          "src/App.tsx"
+        ]
+      },
+      "action": "keep_as_global_contexts"
+    },
+    "/components": {
+      "status": "found", 
+      "active_files": [
+        "src/components/ProtectedRoute.tsx",
+        "src/components/Layout.tsx",
+        "src/components/notifications/NotificationCenter.tsx",
+        "src/components/settings/EnhancedSettingsPage.tsx",
+        "src/components/food-tracker/components/",
+        "src/components/exercise/",
+        "src/components/weight/",
+        "src/components/goals/GoalProgressRing.tsx",
+        "src/components/shopping-list/ModernShoppingListDrawer.tsx",
+        "src/components/profile/LifePhaseForm.tsx",
+        "src/components/onboarding/HealthConditionsAutocompleteEnhanced.tsx",
+        "src/components/food-photo-analysis/FoodAnalysisResults.tsx",
+        "src/components/signup/NewSignupForm.tsx",
+        "src/components/food-tracker/AddFoodDialog/AddFoodDialog.tsx"
+      ],
+      "reorganization_plan": {
+        "shared_components": [
+          "src/components/ProtectedRoute.tsx",
+          "src/components/Layout.tsx"
+        ],
+        "move_to_features": {
+          "food-tracker": [
+            "src/components/food-tracker/",
+            "src/components/food-photo-analysis/FoodAnalysisResults.tsx",
+            "src/components/food-tracker/AddFoodDialog/"
+          ],
+          "exercise": [
+            "src/components/exercise/"
+          ],
+          "weight-tracking": [
+            "src/components/weight/"
+          ],
+          "profile": [
+            "src/components/profile/LifePhaseForm.tsx",
+            "src/components/onboarding/HealthConditionsAutocompleteEnhanced.tsx"
+          ],
+          "auth": [
+            "src/components/signup/NewSignupForm.tsx"
+          ],
+          "goals": [
+            "src/components/goals/GoalProgressRing.tsx"
+          ],
+          "shopping": [
+            "src/components/shopping-list/ModernShoppingListDrawer.tsx"
+          ],
+          "settings": [
+            "src/components/settings/EnhancedSettingsPage.tsx"
+          ],
+          "notifications": [
+            "src/components/notifications/NotificationCenter.tsx"
+          ]
+        }
+      },
+      "action": "reorganize_to_features"
+    },
+    "/hooks": {
+      "status": "found",
+      "global_hooks": [
+        "src/hooks/useAuth.tsx",
+        "src/hooks/useI18n.tsx"
+      ],
+      "action": "keep_global_hooks_only"
+    },
+    "/i18n": {
+      "status": "not_found",
+      "action": "skip_removal"
+    },
+    "/services": {
+      "status": "not_found", 
+      "action": "skip_removal"
+    },
+    "/types": {
+      "status": "not_found",
+      "action": "skip_removal"
+    },
+    "/utils": {
+      "status": "found",
+      "files": [
+        "src/utils/exerciseDataUtils.ts"
+      ],
+      "action": "move_to_feature"
+    }
+  },
+  "execution_plan": {
+    "step_1": "Create feature directories if not exist",
+    "step_2": "Move exercise components to src/features/exercise/components/",
+    "step_3": "Move food-tracker components to src/features/food-tracker/components/", 
+    "step_4": "Create weight-tracking feature and move components",
+    "step_5": "Move profile components to src/features/profile/components/",
+    "step_6": "Create auth feature and move signup components",
+    "step_7": "Create other feature directories as needed",
+    "step_8": "Move utils to appropriate features",
+    "step_9": "Update all import paths",
+    "step_10": "Remove empty folders",
+    "step_11": "Test and verify no broken imports"
+  },
+  "priority": "high",
+  "estimated_time": "30_minutes",
+  "risks": [
+    "Breaking imports during reorganization",
+    "Missing barrel exports in new feature locations",
+    "Need to update multiple import statements"
+  ]
+}
