@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import type { WeeklyMealPlan, DailyMeal } from '../types';
+import type { WeeklyMealPlan, DailyMeal, MealIngredient } from '../types';
 
 interface FetchParams {
   userId: string;
@@ -17,13 +17,13 @@ interface ServiceResult<T> {
   queryTime?: number;
 }
 
-interface OptimizedMealPlanData {
+interface MealPlanData {
   weeklyPlan: WeeklyMealPlan;
   dailyMeals: DailyMeal[];
 }
 
-class OptimizedMealPlanServiceClass {
-  private cache = new Map<string, { data: OptimizedMealPlanData; timestamp: number }>();
+class MealPlanDataServiceClass {
+  private cache = new Map<string, { data: MealPlanData; timestamp: number }>();
   private readonly CACHE_DURATION = 2 * 60 * 1000; // 2 minutes
 
   private getCacheKey(params: FetchParams): string {
@@ -34,7 +34,32 @@ class OptimizedMealPlanServiceClass {
     return Date.now() - timestamp < this.CACHE_DURATION;
   }
 
-  async fetchMealPlanData(params: FetchParams): Promise<ServiceResult<OptimizedMealPlanData>> {
+  private convertIngredients(ingredients: any): MealIngredient[] {
+    if (!ingredients) return [];
+    if (Array.isArray(ingredients)) {
+      return ingredients.map(ing => {
+        if (typeof ing === 'string') {
+          return { name: ing, amount: '', unit: '' };
+        }
+        return {
+          name: ing.name || '',
+          amount: ing.amount || '',
+          unit: ing.unit || ''
+        };
+      });
+    }
+    return [];
+  }
+
+  private convertInstructions(instructions: any): string[] {
+    if (!instructions) return [];
+    if (Array.isArray(instructions)) {
+      return instructions.map(inst => String(inst));
+    }
+    return [];
+  }
+
+  async fetchMealPlanData(params: FetchParams): Promise<ServiceResult<MealPlanData>> {
     const startTime = Date.now();
     const cacheKey = this.getCacheKey(params);
     
@@ -103,12 +128,12 @@ class OptimizedMealPlanServiceClass {
       const convertedDailyMeals: DailyMeal[] = (dailyMeals || []).map(meal => ({
         ...meal,
         meal_type: meal.meal_type as DailyMeal['meal_type'],
-        ingredients: meal.ingredients || [],
-        instructions: meal.instructions || [],
+        ingredients: this.convertIngredients(meal.ingredients),
+        instructions: this.convertInstructions(meal.instructions),
         alternatives: meal.alternatives || []
       }));
 
-      const result: OptimizedMealPlanData = {
+      const result: MealPlanData = {
         weeklyPlan: convertedWeeklyPlan,
         dailyMeals: convertedDailyMeals
       };
@@ -133,7 +158,7 @@ class OptimizedMealPlanServiceClass {
       };
 
     } catch (error) {
-      console.error('❌ OptimizedMealPlanService error:', error);
+      console.error('❌ MealPlanDataService error:', error);
       return {
         data: null,
         error: error instanceof Error ? error : new Error('Unknown error occurred'),
@@ -168,4 +193,4 @@ class OptimizedMealPlanServiceClass {
   }
 }
 
-export const OptimizedMealPlanService = new OptimizedMealPlanServiceClass();
+export const MealPlanDataService = new MealPlanDataServiceClass();
