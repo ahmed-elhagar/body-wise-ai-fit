@@ -1,9 +1,8 @@
-
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, Dumbbell } from "lucide-react";
-import { ProgramTypeIndicator } from "./ProgramTypeIndicator";
+import { ProgramTypeIndicator } from "@/components/exercise/ProgramTypeIndicator";
 
 interface WeeklyProgramOverviewProps {
   currentProgram: any;

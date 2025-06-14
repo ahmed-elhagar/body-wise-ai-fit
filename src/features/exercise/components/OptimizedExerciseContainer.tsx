@@ -2,9 +2,9 @@
 import React from "react";
 import { Card } from "@/components/ui/card";
 import { useOptimizedExercise } from "../hooks/useOptimizedExercise";
-import OptimizedExerciseHeader from "@/components/exercise/OptimizedExerciseHeader";
-import OptimizedExerciseWeekView from "@/components/exercise/OptimizedExerciseWeekView";
-import OptimizedExerciseDayView from "@/components/exercise/OptimizedExerciseDayView";
+import OptimizedExerciseHeader from "./OptimizedExerciseHeader";
+import OptimizedExerciseWeekView from "./OptimizedExerciseWeekView";
+import OptimizedExerciseDayView from "./OptimizedExerciseDayView";
 import OptimizedExerciseProgress from "@/components/exercise/OptimizedExerciseProgress";
 import SimpleLoadingIndicator from "@/components/ui/simple-loading-indicator";
 
