@@ -2,16 +2,17 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useWeightTracking } from "@/hooks/useWeightTracking";
-import { useMealPlans } from "@/features/meal-plan/hooks";
-import { useExercisePrograms } from "@/hooks/useExercisePrograms";
 import { useI18n } from "@/hooks/useI18n";
 import { formatDistanceToNow } from "date-fns";
 import { Activity, Scale, Utensils, Dumbbell, Clock, TrendingUp } from "lucide-react";
 
-const ActivityFeed = () => {
+interface ActivityFeedProps {
+  mealPlans: any[] | null;
+  programs: any[] | null;
+}
+
+const ActivityFeed = ({ mealPlans, programs }: ActivityFeedProps) => {
   const { weightEntries } = useWeightTracking();
-  const { mealPlans } = useMealPlans();
-  const { programs } = useExercisePrograms();
   const { tFrom, isRTL } = useI18n();
   const tDashboard = tFrom('dashboard');
 

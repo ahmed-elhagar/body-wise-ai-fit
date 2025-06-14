@@ -17,7 +17,7 @@ import { useI18n } from "@/hooks/useI18n";
 import { formatDistanceToNow } from "date-fns";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { AuthUser } from "@supabase/supabase-js";
+import type { AuthUser } from "@/hooks/useAuth";
 
 interface DashboardHeaderProps {
   user: AuthUser | null;

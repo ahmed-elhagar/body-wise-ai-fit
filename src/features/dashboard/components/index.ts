@@ -6,8 +6,6 @@ export { default as QuickActionsGrid } from './QuickActionsGrid';
 // Newly moved components
 export { default as ActivityFeed } from './ActivityFeed';
 export { DashboardAchievements } from './DashboardAchievements';
-export { DashboardQuickStatsGrid } from './DashboardQuickStatsGrid';
-export { default as EnhancedAnalyticsCard } from './EnhancedAnalyticsCard';
 export { default as EnhancedStatsGrid } from './EnhancedStatsGrid';
 export { default as GoalProgressWidget } from './GoalProgressWidget';
 export { default as NotificationWidget } from './NotificationWidget';

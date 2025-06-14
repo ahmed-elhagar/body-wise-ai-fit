@@ -15,17 +15,17 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useI18n } from "@/hooks/useI18n";
-import { useProfile } from "@/hooks/useProfile";
-import { useMealPlans } from "@/features/meal-plan/hooks";
-import { useExercisePrograms } from "@/hooks/useExercisePrograms";
 
-const QuickActionsGrid = () => {
+interface QuickActionsGridProps {
+  profile: any;
+  mealPlans: any[] | null;
+  programs: any[] | null;
+}
+
+const QuickActionsGrid = ({ profile, mealPlans, programs }: QuickActionsGridProps) => {
   const navigate = useNavigate();
   const { tFrom, isRTL } = useI18n();
   const tDashboard = tFrom('dashboard');
-  const { profile } = useProfile();
-  const { mealPlans } = useMealPlans();
-  const { programs } = useExercisePrograms();
 
   const quickActions = [
     {
