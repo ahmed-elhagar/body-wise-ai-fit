@@ -62,12 +62,12 @@
       }
     ],
     "cleanup_ready": [
-      "src/components/SubscriptionDebugPanel.tsx",
       "src/utils/seedBasicFoods.ts"
     ],
     "cleaned_files": [
       "src/components/DebugPanel.tsx",
-      "src/features/auth/components/AuthDebugPanel.tsx"
+      "src/features/auth/components/AuthDebugPanel.tsx",
+      "src/components/SubscriptionDebugPanel.tsx"
     ],
     "next_phase": {
       "number": 2,
