@@ -11,3 +11,4 @@ export { CoachAnalyticsTab } from './CoachAnalyticsTab';
 export { AssignTraineeDialog } from './AssignTraineeDialog';
 export { CoachTraineeChat } from './CoachTraineeChat';
 export { CoachMessagesTab } from './CoachMessagesTab';
+export { MultipleCoachesChat } from './MultipleCoachesChat';

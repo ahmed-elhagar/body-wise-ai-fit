@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,8 +6,7 @@ import { MessageCircle, Users, Plus, ArrowLeft } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
 import { PageHeader } from "@/components/ui/page-header";
-import { CoachTraineeChat } from "@/features/coach/components";
-import { MultipleCoachesChat } from "@/components/coach/MultipleCoachesChat";
+import { CoachTraineeChat, MultipleCoachesChat } from "@/features/coach/components";
 import { useCoachSystem } from "@/hooks/useCoachSystem";
 import { useRole } from "@/hooks/useRole";
 import { useLanguage } from "@/contexts/LanguageContext";
