@@ -5,7 +5,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Users, Star } from "lucide-react";
 import { useRole } from "@/hooks/useRole";
 import { Navigate } from "react-router-dom";
-import { EnhancedCoachDashboard } from "@/features/coach/components/EnhancedCoachDashboard";
+import { CoachDashboard } from "@/features/coach/components";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const Coach = () => {
@@ -46,7 +46,7 @@ const Coach = () => {
           />
 
           <div className="max-w-7xl mx-auto p-4 md:p-6">
-            <EnhancedCoachDashboard />
+            <CoachDashboard />
           </div>
         </div>
       </Layout>
