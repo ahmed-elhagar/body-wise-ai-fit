@@ -78,7 +78,7 @@ const MealPlanContainer = () => {
       <div className="space-y-6">
         {/* Header - Always visible */}
         <MealPlanHeader 
-          onGenerateAI={mealPlanState.handleGenerateAIPlan}
+          onGenerateAI={mealPlanState.openAIDialog}
           onShuffle={handleShuffle}
           onShowShoppingList={() => mealPlanState.openShoppingListDialog()}
           onRegeneratePlan={handleRegeneratePlan}
