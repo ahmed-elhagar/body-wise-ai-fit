@@ -6,6 +6,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { getWeekStartDate, getCurrentSaturdayDay } from '@/utils/mealPlanUtils';
 import { useMealPlanDialogs } from './useMealPlanDialogs';
+import { useMealPlanCalculations } from './useMealPlanCalculations';
 import type { DailyMeal, MealPlanFetchResult } from '@/features/meal-plan/types';
 
 export const useMealPlanState = () => {
@@ -62,39 +63,9 @@ export const useMealPlanState = () => {
     return result;
   }, [queryClient, currentWeekOffset, originalRefetch]);
 
-  // Enhanced calculations - inline to avoid external dependencies
-  const { dailyMeals, todaysMeals, totalCalories, totalProtein, targetDayCalories } = useMemo(() => {
-    // Calculate daily meals for selected day
-    const dailyMeals = currentWeekPlan?.dailyMeals?.filter(
-      meal => meal.day_number === selectedDayNumber
-    ) || null;
-
-    // Calculate today's meals
-    const today = new Date();
-    const todayDayNumber = today.getDay() === 6 ? 1 : today.getDay() + 2;
-    const todaysMeals = currentWeekPlan?.dailyMeals?.filter(
-      meal => meal.day_number === todayDayNumber
-    ) || null;
-
-    // Calculate total calories for selected day
-    const totalCalories = dailyMeals ? 
-      dailyMeals.reduce((total, meal) => total + (meal.calories || 0), 0) : null;
-
-    // Calculate total protein for selected day
-    const totalProtein = dailyMeals ? 
-      dailyMeals.reduce((total, meal) => total + (meal.protein || 0), 0) : null;
-
-    // Target calories
-    const targetDayCalories = 2000;
-
-    return {
-      dailyMeals,
-      todaysMeals,
-      totalCalories,
-      totalProtein,
-      targetDayCalories
-    };
-  }, [currentWeekPlan?.dailyMeals, selectedDayNumber]);
+  // Use the new hook for all nutritional calculations
+  const { dailyMeals, todaysMeals, totalCalories, totalProtein, targetDayCalories } =
+    useMealPlanCalculations(currentWeekPlan, selectedDayNumber);
 
   // Use the dedicated hook for all dialog-related state and handlers
   const dialogs = useMealPlanDialogs();
