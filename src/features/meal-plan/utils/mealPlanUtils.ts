@@ -58,3 +58,31 @@ export const getCurrentWeekDates = (): Date[] => {
     return date;
   });
 };
+
+export const formatWeekRange = (weekStartDate: Date): string => {
+  const endDate = new Date(weekStartDate);
+  endDate.setDate(weekStartDate.getDate() + 6);
+  
+  const options: Intl.DateTimeFormatOptions = { 
+    month: 'short', 
+    day: 'numeric' 
+  };
+  
+  const start = weekStartDate.toLocaleDateString('en-US', options);
+  const end = endDate.toLocaleDateString('en-US', options);
+  
+  return `${start} - ${end}`;
+};
+
+export const getDayName = (dayNumber: number): string => {
+  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  return days[dayNumber - 1] || days[0];
+};
+
+export const getWeekStartDate = (weekOffset: number = 0): Date => {
+  const today = new Date();
+  const currentWeekStart = new Date(today.setDate(today.getDate() - today.getDay()));
+  const targetWeek = new Date(currentWeekStart);
+  targetWeek.setDate(currentWeekStart.getDate() + (weekOffset * 7));
+  return targetWeek;
+};
