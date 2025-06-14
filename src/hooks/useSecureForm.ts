@@ -1,117 +1,87 @@
 
 import { useState, useCallback } from 'react';
 import { z } from 'zod';
+import { sanitizeInput, rateLimiter } from '@/components/security/InputValidator';
 import { toast } from 'sonner';
-import { SecuritySchemas, sanitizeInput, rateLimiter } from '@/components/security/InputValidator';
 
 interface UseSecureFormOptions<T> {
   schema: z.ZodSchema<T>;
-  onSubmit: (data: T) => Promise<void> | void;
+  onSubmit: (data: T) => Promise<void>;
   rateLimitKey?: string;
   maxAttempts?: number;
-  sanitizeFields?: (keyof T)[];
+  sanitizeFields?: string[];
 }
 
-export function useSecureForm<T extends Record<string, any>>({
+export const useSecureForm = <T extends Record<string, any>>({
   schema,
   onSubmit,
   rateLimitKey,
   maxAttempts = 5,
   sanitizeFields = []
-}: UseSecureFormOptions<T>) {
+}: UseSecureFormOptions<T>) => {
   const [data, setData] = useState<Partial<T>>({});
-  const [errors, setErrors] = useState<Partial<Record<keyof T, string>>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const validateField = useCallback((field: keyof T, value: any) => {
-    try {
-      // Handle validation for individual fields when schema has shape property
-      if ('shape' in schema && schema.shape) {
-        const fieldSchema = (schema.shape as any)[field as string];
-        if (fieldSchema) {
-          fieldSchema.parse(value);
-        }
-      } else {
-        // For schemas without shape, validate the entire object
-        const testData = { ...data, [field]: value };
-        schema.parse(testData);
-      }
-      setErrors(prev => ({ ...prev, [field]: undefined }));
-      return true;
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        setErrors(prev => ({ 
-          ...prev, 
-          [field]: error.errors[0]?.message || 'Invalid input'
-        }));
-      }
-      return false;
-    }
-  }, [schema, data]);
-
-  const updateField = useCallback((field: keyof T, value: any) => {
-    // Sanitize input if field is in sanitizeFields array
-    const processedValue = sanitizeFields.includes(field) && typeof value === 'string'
+  const updateField = useCallback((field: string, value: any) => {
+    // Sanitize if field is in sanitize list
+    const sanitizedValue = sanitizeFields.includes(field) && typeof value === 'string'
       ? sanitizeInput(value)
       : value;
 
-    setData(prev => ({ ...prev, [field]: processedValue }));
-    validateField(field, processedValue);
-  }, [validateField, sanitizeFields]);
+    setData(prev => ({ ...prev, [field]: sanitizedValue }));
+    
+    // Clear error for this field
+    setErrors(prev => {
+      const newErrors = { ...prev };
+      delete newErrors[field];
+      return newErrors;
+    });
+  }, [sanitizeFields]);
 
-  const validateAll = useCallback(() => {
+  const validateForm = useCallback((): boolean => {
     try {
       schema.parse(data);
       setErrors({});
       return true;
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const newErrors: Partial<Record<keyof T, string>> = {};
+        const fieldErrors: Record<string, string> = {};
         error.errors.forEach(err => {
-          if (err.path[0]) {
-            newErrors[err.path[0] as keyof T] = err.message;
+          if (err.path.length > 0) {
+            fieldErrors[err.path[0] as string] = err.message;
           }
         });
-        setErrors(newErrors);
+        setErrors(fieldErrors);
       }
       return false;
     }
   }, [data, schema]);
 
-  const handleSubmit = useCallback(async (e?: React.FormEvent) => {
-    e?.preventDefault();
-
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
+    e.preventDefault();
+    
     // Rate limiting check
     if (rateLimitKey && !rateLimiter.isAllowed(rateLimitKey, maxAttempts)) {
       toast.error('Too many attempts. Please wait before trying again.');
       return;
     }
 
-    if (!validateAll()) {
-      toast.error('Please fix the errors before submitting.');
+    if (!validateForm()) {
+      toast.error('Please fix the form errors before submitting.');
       return;
     }
 
     setIsSubmitting(true);
     try {
       await onSubmit(data as T);
-      // Reset rate limiter on successful submission
-      if (rateLimitKey) {
-        rateLimiter.reset(rateLimitKey);
-      }
     } catch (error) {
       console.error('Form submission error:', error);
       toast.error('An error occurred. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
-  }, [data, validateAll, onSubmit, rateLimitKey, maxAttempts]);
-
-  const reset = useCallback(() => {
-    setData({});
-    setErrors({});
-    setIsSubmitting(false);
-  }, []);
+  }, [data, validateForm, onSubmit, rateLimitKey, maxAttempts]);
 
   return {
     data,
@@ -119,9 +89,6 @@ export function useSecureForm<T extends Record<string, any>>({
     isSubmitting,
     updateField,
     handleSubmit,
-    validateField,
-    validateAll,
-    reset,
-    hasErrors: Object.keys(errors).length > 0
+    validateForm
   };
-}
+};
