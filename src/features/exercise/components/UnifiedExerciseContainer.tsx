@@ -1,27 +1,16 @@
-
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  Play, 
-  Pause, 
-  Square, 
-  RotateCcw, 
-  Timer, 
-  Target, 
-  Trophy, 
   Dumbbell,
   Calendar,
   TrendingUp,
-  Flame,
-  Share2
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { InteractiveExerciseCard, RestDayCard, AnimatedProgressRing } from "./index";
+import { InteractiveExerciseCard, RestDayCard } from "./index";
 import { useWorkoutSession } from "@/features/exercise/hooks";
+import { WorkoutHeader } from "./WorkoutHeader";
 
 interface UnifiedExerciseContainerProps {
   exercises: any[];
@@ -54,7 +43,6 @@ export const UnifiedExerciseContainer = ({
   const [activeTab, setActiveTab] = useState("workout");
   
   const {
-    sessionStarted,
     isActive,
     isPaused,
     totalTime,
@@ -109,122 +97,23 @@ export const UnifiedExerciseContainer = ({
 
   return (
     <div className="space-y-3">
-      {/* Compact Header with Progress and Controls */}
-      <Card className="p-3 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border-blue-200 shadow-lg">
-        <div className="flex flex-col lg:flex-row gap-3">
-          <div className="flex-shrink-0 flex justify-center lg:justify-start">
-            <div className="scale-50 -m-6">
-              <AnimatedProgressRing
-                completedExercises={completedExercises}
-                totalExercises={totalExercises}
-                progressPercentage={progressPercentage}
-                isToday={isToday}
-                isRestDay={isRestDay}
-              />
-            </div>
-          </div>
-
-          <div className="flex-1 space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
-                  <Timer className="w-4 h-4 text-white" />
-                </div>
-                <div>
-                  <div className="text-lg font-bold text-gray-900 font-mono">{totalTime}</div>
-                  <div className="text-xs text-gray-500">{isActive ? (isPaused ? 'Paused' : 'Active') : 'Ready'}</div>
-                </div>
-              </div>
-
-              <div className="flex gap-2 text-xs">
-                <div className="text-center">
-                  <div className="text-sm font-bold text-green-600">{completedExercises}</div>
-                  <div className="text-xs text-gray-600">Done</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-sm font-bold text-orange-600">{estimatedCalories}</div>
-                  <div className="text-xs text-gray-600">Cal</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-sm font-bold text-purple-600">{workoutIntensity}</div>
-                  <div className="text-xs text-gray-600">Level</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <div className="flex justify-between text-xs text-gray-600">
-                <span>Progress</span>
-                <span>{Math.round(progressPercentage)}%</span>
-              </div>
-              <Progress value={progressPercentage} className="h-1.5 bg-gray-200" />
-            </div>
-
-            <div className="flex gap-1">
-              {!isActive ? (
-                <Button
-                  onClick={startSession}
-                  size="sm"
-                  className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white flex-1 h-8 text-xs"
-                >
-                  <Play className="w-3 h-3 mr-1" />
-                  Start
-                </Button>
-              ) : (
-                <>
-                  {!isPaused ? (
-                    <Button
-                      onClick={pauseSession}
-                      variant="outline"
-                      size="sm"
-                      className="border-orange-300 text-orange-700 hover:bg-orange-50 flex-1 h-8 text-xs"
-                    >
-                      <Pause className="w-3 h-3 mr-1" />
-                      Pause
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={resumeSession}
-                      size="sm"
-                      className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white flex-1 h-8 text-xs"
-                    >
-                      <Play className="w-3 h-3 mr-1" />
-                      Resume
-                    </Button>
-                  )}
-                  <Button
-                    onClick={resetSession}
-                    variant="outline"
-                    size="sm"
-                    className="border-red-300 text-red-700 hover:bg-red-50 h-8 px-2"
-                  >
-                    <Square className="w-3 h-3" />
-                  </Button>
-                </>
-              )}
-              
-              <Button
-                onClick={resetSession}
-                variant="outline"
-                size="sm"
-                className="border-gray-300 text-gray-700 hover:bg-gray-50 h-8 px-2"
-              >
-                <RotateCcw className="w-3 h-3" />
-              </Button>
-
-              {progressPercentage === 100 && (
-                <Button
-                  onClick={shareProgress}
-                  size="sm"
-                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white h-8 px-2"
-                >
-                  <Share2 className="w-3 h-3" />
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
-      </Card>
+      <WorkoutHeader
+        completedExercises={completedExercises}
+        totalExercises={totalExercises}
+        progressPercentage={progressPercentage}
+        isToday={isToday}
+        isRestDay={isRestDay}
+        totalTime={totalTime}
+        isActive={isActive}
+        isPaused={isPaused}
+        estimatedCalories={estimatedCalories}
+        workoutIntensity={workoutIntensity}
+        startSession={startSession}
+        pauseSession={pauseSession}
+        resumeSession={resumeSession}
+        resetSession={resetSession}
+        shareProgress={shareProgress}
+      />
 
       {/* Tabbed Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

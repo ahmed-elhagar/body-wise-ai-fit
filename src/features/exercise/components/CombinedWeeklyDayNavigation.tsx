@@ -1,10 +1,11 @@
-
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ChevronLeft, ChevronRight, Calendar, RotateCcw, Target, Coffee } from "lucide-react";
 import { format, addDays } from "date-fns";
 import { ExerciseProgram } from "@/features/exercise";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 interface CombinedWeeklyDayNavigationProps {
   currentWeekOffset: number;
@@ -23,6 +24,7 @@ export const CombinedWeeklyDayNavigation = ({
   setSelectedDayNumber,
   currentProgram,
 }: CombinedWeeklyDayNavigationProps) => {
+  const isMobile = useIsMobile();
 
   const formatWeekRange = (startDate: Date) => {
     const endDate = addDays(startDate, 6);
@@ -51,6 +53,37 @@ export const CombinedWeeklyDayNavigation = ({
     const workout = getDayWorkout(dayNumber);
     return workout?.is_rest_day || false;
   };
+
+  const dayButton = (dayNumber: number, dayName: string) => {
+    const isSelected = selectedDayNumber === dayNumber;
+    const restDay = isRestDay(dayNumber);
+
+    return (
+      <Button
+        key={dayName}
+        variant={isSelected ? "default" : "ghost"}
+        className={`h-16 flex-shrink-0 flex flex-col items-center justify-center space-y-1.5 rounded-xl transition-all duration-200 ${
+          isMobile ? 'w-16' : ''
+        } ${
+          isSelected 
+            ? restDay ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-md' : 'bg-blue-600 hover:bg-blue-700 text-white shadow-md' 
+            : restDay ? 'text-orange-600 hover:bg-orange-100' : 'text-gray-600 hover:bg-white'
+        }`}
+        onClick={() => setSelectedDayNumber(dayNumber)}
+      >
+        <span className="text-sm font-medium">{dayName}</span>
+        <div className="h-4 w-4 flex items-center justify-center">
+          {restDay ? (
+            <Coffee className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-orange-500'}`} />
+          ) : (
+            isSelected 
+              ? <div className="w-1.5 h-1.5 bg-white rounded-full" />
+              : <Target className="w-4 h-4 text-blue-500" />
+          )}
+        </div>
+      </Button>
+    );
+  }
 
   return (
     <Card className="p-4 sm:p-6 bg-white/95 backdrop-blur-sm border-0 shadow-lg rounded-3xl">
@@ -114,38 +147,21 @@ export const CombinedWeeklyDayNavigation = ({
       </div>
 
       {/* Day Selector */}
-      <div className="mt-4 p-2 bg-gray-50/70 rounded-2xl">
-        <div className="grid grid-cols-7 gap-1">
-          {dayNames.map((day, index) => {
-            const dayNumber = index + 1;
-            const isSelected = selectedDayNumber === dayNumber;
-            const restDay = isRestDay(dayNumber);
-
-            return (
-              <Button
-                key={day}
-                variant={isSelected ? "default" : "ghost"}
-                className={`h-16 flex flex-col items-center justify-center space-y-1.5 rounded-xl transition-all duration-200 ${
-                  isSelected 
-                    ? restDay ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-md' : 'bg-blue-600 hover:bg-blue-700 text-white shadow-md' 
-                    : restDay ? 'text-orange-600 hover:bg-orange-100' : 'text-gray-600 hover:bg-white'
-                }`}
-                onClick={() => setSelectedDayNumber(dayNumber)}
-              >
-                <span className="text-sm font-medium">{day}</span>
-                <div className="h-4 w-4 flex items-center justify-center">
-                  {restDay ? (
-                    <Coffee className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-orange-500'}`} />
-                  ) : (
-                    isSelected 
-                      ? <div className="w-1.5 h-1.5 bg-white rounded-full" />
-                      : <Target className="w-4 h-4 text-blue-500" />
-                  )}
-                </div>
-              </Button>
-            );
-          })}
-        </div>
+      <div className="mt-4">
+        {isMobile ? (
+          <ScrollArea className="w-full whitespace-nowrap">
+            <div className="flex w-max space-x-2 p-2 bg-gray-50/70 rounded-2xl">
+              {dayNames.map((day, index) => dayButton(index + 1, day))}
+            </div>
+            <ScrollBar orientation="horizontal" className="h-2 mt-2" />
+          </ScrollArea>
+        ) : (
+          <div className="p-2 bg-gray-50/70 rounded-2xl">
+            <div className="grid grid-cols-7 gap-1">
+              {dayNames.map((day, index) => dayButton(index + 1, day))}
+            </div>
+          </div>
+        )}
       </div>
 
     </Card>
