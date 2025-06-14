@@ -9,7 +9,6 @@ import Layout from "@/components/Layout";
 import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import { SubscriptionDebugPanel } from "@/components/SubscriptionDebugPanel";
 
 const Pro = () => {
   const { isPro, role, refetch: refetchRole } = useRole();
@@ -123,9 +122,6 @@ const Pro = () => {
                 </div>
               </div>
 
-              {/* Debug Panel */}
-              <SubscriptionDebugPanel />
-
               {subscription && (
                 <Card className="mb-8">
                   <CardHeader>
@@ -223,9 +219,6 @@ const Pro = () => {
                 </div>
               </div>
             </div>
-
-            {/* Debug Panel for Non-Pro Users */}
-            <SubscriptionDebugPanel />
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
               {/* Monthly Plan */}
