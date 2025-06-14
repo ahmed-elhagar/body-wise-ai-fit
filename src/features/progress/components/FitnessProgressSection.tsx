@@ -14,12 +14,12 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useExercisePrograms } from "@/features/exercise";
-import { useOptimizedExerciseProgramPage } from "@/features/exercise/hooks/useOptimizedExerciseProgramPage";
+import { useCurrentWorkoutSummary } from "@/features/exercise/hooks/useCurrentWorkoutSummary";
 
 export const FitnessProgressSection = () => {
   const navigate = useNavigate();
   const { programs } = useExercisePrograms();
-  const { currentProgram, completedExercises, totalExercises, progressPercentage } = useOptimizedExerciseProgramPage();
+  const { currentProgram, completedExercises, totalExercises, progressPercentage } = useCurrentWorkoutSummary();
 
   const activePrograms = programs?.filter(p => p.status === 'active') || [];
   const totalWorkouts = currentProgram?.daily_workouts?.length || 0;
