@@ -2,13 +2,19 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Activity, TrendingUp, Calendar, Target } from "lucide-react";
+import { Activity, TrendingUp, Calendar, Target, Zap, Timer } from "lucide-react";
 import { useOptimizedExercise } from "@/features/exercise/hooks/useOptimizedExercise";
 
 export const FitnessProgressSection = () => {
-  const { currentProgram, weeklyWorkouts, isLoading, error } = useOptimizedExercise();
+  const { 
+    currentProgram, 
+    progressMetrics, 
+    loadingStates, 
+    programError, 
+    weekStructure 
+  } = useOptimizedExercise();
 
-  if (isLoading) {
+  if (loadingStates.isProgramLoading) {
     return (
       <Card className="animate-pulse">
         <CardHeader>
@@ -21,7 +27,7 @@ export const FitnessProgressSection = () => {
     );
   }
 
-  if (error) {
+  if (programError) {
     return (
       <Card>
         <CardHeader>
@@ -32,91 +38,115 @@ export const FitnessProgressSection = () => {
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
-            <p className="text-red-600">Error loading fitness data: {error}</p>
+            <p className="text-red-600">Error loading fitness data: {programError}</p>
           </div>
         </CardContent>
       </Card>
     );
   }
 
-  const completedWorkouts = weeklyWorkouts?.filter(workout => workout.completed)?.length || 0;
-  const totalWorkouts = weeklyWorkouts?.length || 0;
-  const completionRate = totalWorkouts > 0 ? (completedWorkouts / totalWorkouts) * 100 : 0;
+  const completedWorkouts = progressMetrics?.completedWorkouts || 0;
+  const totalWorkouts = progressMetrics?.totalWorkouts || 0;
+  const weeklyProgress = progressMetrics?.weeklyProgress || 0;
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+      {/* Enhanced Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 hover:shadow-lg transition-all duration-300">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-blue-600 text-sm font-medium">Current Program</p>
-                <p className="text-xl font-bold text-blue-900">
+                <p className="text-blue-600 text-sm font-medium">Active Program</p>
+                <p className="text-xl font-bold text-blue-900 truncate">
                   {currentProgram?.program_name || 'No Active Program'}
                 </p>
                 <p className="text-xs text-blue-600 mt-1">
                   {currentProgram?.difficulty_level || 'N/A'} • {currentProgram?.workout_type || 'N/A'}
                 </p>
               </div>
-              <Activity className="w-8 h-8 text-blue-600" />
+              <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center">
+                <Activity className="w-6 h-6 text-white" />
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+        <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200 hover:shadow-lg transition-all duration-300">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-green-600 text-sm font-medium">Workouts Completed</p>
+                <p className="text-green-600 text-sm font-medium">Workouts Complete</p>
                 <p className="text-xl font-bold text-green-900">
                   {completedWorkouts}/{totalWorkouts}
                 </p>
                 <p className="text-xs text-green-600 mt-1">
-                  {Math.round(completionRate)}% completion rate
+                  {Math.round(weeklyProgress)}% completion rate
                 </p>
               </div>
-              <Target className="w-8 h-8 text-green-600" />
+              <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center">
+                <Target className="w-6 h-6 text-white" />
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 hover:shadow-lg transition-all duration-300">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-purple-600 text-sm font-medium">Current Week</p>
+                <p className="text-purple-600 text-sm font-medium">Current Streak</p>
                 <p className="text-xl font-bold text-purple-900">
-                  Week {currentProgram?.current_week || 0}
+                  {progressMetrics?.currentStreak || 0} days
                 </p>
                 <p className="text-xs text-purple-600 mt-1">
-                  {currentProgram?.week_start_date ? 
-                    new Date(currentProgram.week_start_date).toLocaleDateString() : 
-                    'No program active'
-                  }
+                  Keep it up!
                 </p>
               </div>
-              <Calendar className="w-8 h-8 text-purple-600" />
+              <div className="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center">
+                <Zap className="w-6 h-6 text-white" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200 hover:shadow-lg transition-all duration-300">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-orange-600 text-sm font-medium">Calories Burned</p>
+                <p className="text-xl font-bold text-orange-900">
+                  {progressMetrics?.totalCaloriesBurned || 0}
+                </p>
+                <p className="text-xs text-orange-600 mt-1">
+                  This week
+                </p>
+              </div>
+              <div className="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center">
+                <Timer className="w-6 h-6 text-white" />
+              </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
+      {/* Weekly Progress Overview */}
       <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-blue-600" />
-            Weekly Progress
+            Weekly Progress Overview
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">Overall Completion</span>
               <span className="text-sm text-gray-500">{completedWorkouts} / {totalWorkouts}</span>
             </div>
-            <Progress value={completionRate} className="h-3" />
+            <Progress value={weeklyProgress} className="h-3" />
             <div className="flex items-center justify-between text-xs text-gray-500">
-              <span>Started Program</span>
+              <span>Program Started</span>
               <span>
                 <Calendar className="w-3 h-3 inline-block mr-1 align-text-bottom" />
                 {currentProgram?.created_at ? 
@@ -129,38 +159,63 @@ export const FitnessProgressSection = () => {
         </CardContent>
       </Card>
 
-      {weeklyWorkouts && weeklyWorkouts.length > 0 && (
+      {/* Weekly Schedule */}
+      {weekStructure && weekStructure.length > 0 && (
         <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
           <CardHeader>
-            <CardTitle>This Week's Workouts</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-purple-600" />
+              This Week's Schedule
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {weeklyWorkouts.map((workout, index) => (
-                <div key={workout.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                      workout.completed ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-600'
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {weekStructure.slice(0, 7).map((day) => (
+                <div 
+                  key={day.dayNumber} 
+                  className={`p-4 rounded-lg border-2 transition-all duration-200 ${
+                    day.isCompleted 
+                      ? 'bg-green-50 border-green-200 shadow-sm' 
+                      : day.isToday 
+                        ? 'bg-blue-50 border-blue-200 shadow-md' 
+                        : 'bg-gray-50 border-gray-200'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-medium text-sm text-gray-800">{day.dayName}</h4>
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                      day.isCompleted 
+                        ? 'bg-green-500 text-white' 
+                        : day.isToday 
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-gray-300 text-gray-600'
                     }`}>
-                      {index + 1}
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-gray-800">{workout.workout_name}</h4>
-                      <p className="text-sm text-gray-600">
-                        {workout.estimated_duration ? `${workout.estimated_duration} min` : 'Duration not set'}
-                      </p>
+                      {day.isCompleted ? '✓' : day.dayNumber}
                     </div>
                   </div>
-                  <div className="text-right">
-                    {workout.completed ? (
-                      <span className="text-green-600 text-sm font-medium">Completed</span>
-                    ) : (
-                      <span className="text-gray-500 text-sm">Pending</span>
-                    )}
-                  </div>
+                  {day.isRestDay ? (
+                    <p className="text-xs text-gray-600">Rest Day</p>
+                  ) : (
+                    <p className="text-xs text-gray-600">
+                      {day.workout?.workout_name || 'Workout scheduled'}
+                    </p>
+                  )}
                 </div>
               ))}
             </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Empty State */}
+      {!currentProgram && (
+        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+          <CardContent className="text-center py-12">
+            <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Activity className="w-8 h-8 text-gray-400" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">No Exercise Program</h3>
+            <p className="text-gray-600 mb-4">Create your first exercise program to start tracking your fitness progress.</p>
           </CardContent>
         </Card>
       )}

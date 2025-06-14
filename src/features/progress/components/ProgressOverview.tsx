@@ -2,15 +2,17 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { TrendingUp, Target, Scale, Calendar } from "lucide-react";
+import { TrendingUp, Target, Scale, Calendar, Activity, Utensils } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
 import { useWeightTracking } from "@/features/dashboard/hooks/useWeightTracking";
 import { useGoals } from "@/features/dashboard/hooks/useGoals";
+import { useFoodTracking } from "@/features/food-tracker/hooks/useFoodTracking";
 
 export const ProgressOverview = () => {
   const { profile } = useProfile();
   const { goals } = useGoals();
   const { entries: weightEntries } = useWeightTracking();
+  const { getTodaysConsumption, getNutritionSummary } = useFoodTracking();
 
   // Calculate overall progress metrics
   const completedGoals = goals.filter(goal => goal.status === 'completed').length;
@@ -20,65 +22,77 @@ export const ProgressOverview = () => {
   // Weight progress
   const currentWeight = weightEntries?.[0]?.weight || profile?.weight || 0;
   const weightEntryCount = weightEntries?.length || 0;
+  const weightProgress = Math.min((weightEntryCount / 30) * 100, 100); // 30 days target
+
+  // Nutrition progress
+  const todayConsumption = getTodaysConsumption();
+  const todayNutrition = getNutritionSummary();
+  const nutritionProgress = todayConsumption.length > 0 ? 
+    Math.min((todayNutrition.totalCalories / 2200) * 100, 100) : 0;
 
   const progressMetrics = [
     {
-      title: 'Goals Completion',
+      title: 'Goals Achievement',
       value: `${completedGoals}/${totalGoals}`,
       progress: goalsProgress,
       icon: Target,
-      color: 'blue'
+      color: 'blue',
+      description: totalGoals === 0 ? 'No goals set' : `${Math.round(goalsProgress)}% completed`
     },
     {
       title: 'Weight Tracking',
-      value: `${currentWeight.toFixed(1)} kg`,
-      progress: Math.min((weightEntryCount / 30) * 100, 100),
+      value: currentWeight > 0 ? `${currentWeight.toFixed(1)} kg` : 'Not set',
+      progress: weightProgress,
       icon: Scale,
-      color: 'green'
+      color: 'green',
+      description: `${weightEntryCount} entries logged`
     },
     {
-      title: 'Consistency',
-      value: '85%',
-      progress: 85,
-      icon: Calendar,
-      color: 'purple'
+      title: 'Nutrition Today',
+      value: `${Math.round(todayNutrition.totalCalories)} kcal`,
+      progress: nutritionProgress,
+      icon: Utensils,
+      color: 'orange',
+      description: `${todayConsumption.length} items logged`
+    },
+    {
+      title: 'Weekly Consistency',
+      value: '75%',
+      progress: 75,
+      icon: Activity,
+      color: 'purple',
+      description: 'Activity streak'
     }
   ];
 
   return (
-    <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-blue-600" />
-          Progress Overview
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-6">
-          {progressMetrics.map((metric, index) => {
-            const IconComponent = metric.icon;
-            return (
-              <div key={index} className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <IconComponent className={`w-4 h-4 text-${metric.color}-600`} />
-                    <span className="font-medium text-gray-700">{metric.title}</span>
-                  </div>
-                  <span className="text-sm font-semibold text-gray-600">
-                    {metric.value}
-                  </span>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {progressMetrics.map((metric, index) => {
+        const IconComponent = metric.icon;
+        return (
+          <Card key={index} className="bg-white/90 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className={`w-12 h-12 bg-${metric.color}-500 rounded-xl flex items-center justify-center`}>
+                  <IconComponent className="w-6 h-6 text-white" />
                 </div>
-                <Progress value={metric.progress} className="h-2" />
                 <div className="text-right">
-                  <span className="text-xs text-gray-500">
-                    {Math.round(metric.progress)}% complete
-                  </span>
+                  <p className="text-lg font-bold text-gray-800">{metric.value}</p>
+                  <p className="text-xs text-gray-500">{metric.description}</p>
                 </div>
               </div>
-            );
-          })}
-        </div>
-      </CardContent>
-    </Card>
+              
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-gray-700">{metric.title}</span>
+                  <span className="text-sm text-gray-500">{Math.round(metric.progress)}%</span>
+                </div>
+                <Progress value={metric.progress} className="h-2" />
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })}
+    </div>
   );
 };
