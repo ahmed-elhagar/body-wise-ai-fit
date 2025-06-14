@@ -24,3 +24,6 @@ export const AuthToggle = ({ isSignUp, onToggle, loading }: AuthToggleProps) => 
     </div>
   );
 };
+
+// Default export for compatibility
+export default AuthToggle;

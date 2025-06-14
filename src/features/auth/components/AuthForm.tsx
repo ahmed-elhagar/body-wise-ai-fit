@@ -132,3 +132,6 @@ export const AuthForm = ({ isSignUp, onSubmit, loading }: AuthFormProps) => {
     </form>
   );
 };
+
+// Default export for compatibility
+export default AuthForm;

@@ -20,3 +20,6 @@ export const AuthHeader = ({ isSignUp }: AuthHeaderProps) => {
     </div>
   );
 };
+
+// Default export for compatibility
+export default AuthHeader;
