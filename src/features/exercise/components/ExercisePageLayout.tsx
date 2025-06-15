@@ -1,8 +1,9 @@
 
 import { Card } from "@/components/ui/card";
 import { ExerciseErrorState } from "./ExerciseErrorState";
-import { ExerciseHeader } from "./ExerciseHeader";
-import { DaySelector } from "./DaySelector";
+import { EnhancedExerciseHeaderWithAnalytics } from "./EnhancedExerciseHeaderWithAnalytics";
+import { WeeklyExerciseNavigation } from "./WeeklyExerciseNavigation";
+import { EnhancedDayNavigation } from "./EnhancedDayNavigation";
 import { ExercisePageContent } from "./ExercisePageContent";
 import { AIExerciseDialog } from "./AIExerciseDialog";
 import { UnifiedAILoadingDialog } from "@/components/ai/UnifiedAILoadingDialog";
@@ -91,28 +92,36 @@ export const ExercisePageLayout = ({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto p-4 space-y-4">
-        {/* Header */}
-        <ExerciseHeader
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
+      <div className="max-w-7xl mx-auto">
+        {/* Header Section */}
+        <EnhancedExerciseHeaderWithAnalytics
           currentProgram={currentProgram}
-          weekStartDate={weekStartDate}
-          currentWeekOffset={currentWeekOffset}
           workoutType={workoutType}
-          onWeekChange={setCurrentWeekOffset}
+          onWorkoutTypeChange={setWorkoutType}
           onShowAIDialog={() => setShowAIDialog(true)}
           onRegenerateProgram={onRegenerateProgram}
-          onWorkoutTypeChange={setWorkoutType}
+          onShowAnalytics={onShowAnalytics}
           isGenerating={isGenerating}
         />
 
-        {/* Day Selector */}
-        <DaySelector
-          selectedDayNumber={selectedDayNumber}
-          setSelectedDayNumber={setSelectedDayNumber}
-          weekStartDate={weekStartDate}
-          currentProgram={currentProgram}
-        />
+        {/* Navigation Section */}
+        <div className="px-6 pb-6 space-y-6">
+          <WeeklyExerciseNavigation
+            currentWeekOffset={currentWeekOffset}
+            setCurrentWeekOffset={setCurrentWeekOffset}
+            weekStartDate={weekStartDate}
+          />
+          
+          <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-3xl">
+            <EnhancedDayNavigation
+              selectedDayNumber={selectedDayNumber}
+              setSelectedDayNumber={setSelectedDayNumber}
+              weekStartDate={weekStartDate}
+              currentProgram={currentProgram}
+            />
+          </Card>
+        </div>
 
         {/* Main Content */}
         <ExercisePageContent

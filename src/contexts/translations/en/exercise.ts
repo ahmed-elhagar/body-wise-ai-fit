@@ -1,3 +1,4 @@
+
 export const exercise = {
   sets: "Sets",
   reps: "Reps",
@@ -10,7 +11,7 @@ export const exercise = {
   exerciseList: "Exercise List",
   completeWorkoutStepByStep: "Complete your workout step by step",
   exercises: "exercises",
-  loadingExercises: "Loading Exercises",
+  loadingExercises: "Loading exercises...",
   noExercises: "No Exercises for Today",
   noExercisesMessage: "This might be a rest day or select another day to see exercises",
   general_fitness: "General Fitness",
@@ -91,23 +92,5 @@ export const exercise = {
   hamstrings: "Hamstrings",
   calves: "Calves",
   forearms: "Forearms",
-  abs: "Abs",
-
-  // Additional translations
-  exerciseProgram: "Exercise Program",
-  week: "Week",
-  day: "Day",
-  of: "of",
-  restDay: "Rest Day",
-  recoveryTime: "Recovery & Rejuvenation",
-  loadingExercises: "Loading Exercises",
-  fetchingWorkout: "Fetching your workout plan...",
-  generateAI: "Generate AI",
-  mon: "Mon",
-  tue: "Tue", 
-  wed: "Wed",
-  thu: "Thu",
-  fri: "Fri",
-  sat: "Sat",
-  sun: "Sun"
+  abs: "Abs"
 };

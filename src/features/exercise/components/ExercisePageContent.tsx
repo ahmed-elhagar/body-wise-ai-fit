@@ -2,7 +2,7 @@
 import { ExerciseListEnhanced } from "./ExerciseListEnhanced";
 import { RestDayCard } from "./RestDayCard";
 import { ExerciseEmptyState } from "./ExerciseEmptyState";
-import { ExerciseProgressSection } from "./ExerciseProgressSection";
+import { CompactProgressSection } from "./CompactProgressSection";
 import { useLanguage } from "@/contexts/LanguageContext";
 import SimpleLoadingIndicator from "@/components/ui/simple-loading-indicator";
 
@@ -38,17 +38,14 @@ export const ExercisePageContent = ({
   isRestDay,
   selectedDayNumber,
   onExerciseComplete,
-  onExerciseProgressUpdate,
-  onGenerateAIProgram
+  onExerciseProgressUpdate
 }: ExercisePageContentProps) => {
-  const { t } = useLanguage();
-
   if (isLoading) {
     return (
       <div className="p-6">
         <SimpleLoadingIndicator
-          message={t('exercise.loadingExercises')}
-          description={t('exercise.fetchingWorkout')}
+          message="Loading Workout Data"
+          description="Fetching your exercise plan..."
         />
       </div>
     );
@@ -60,16 +57,24 @@ export const ExercisePageContent = ({
   
   const isActualRestDay = selectedDayWorkout?.is_rest_day || false;
 
+  console.log('🎯 ExercisePageContent Debug:', {
+    currentProgram: !!currentProgram,
+    selectedDayNumber,
+    selectedDayWorkout,
+    isActualRestDay,
+    todaysExercisesLength: todaysExercises.length,
+    isRestDay
+  });
+
   return (
-    <div className="space-y-4">
-      {/* Progress Section */}
-      <ExerciseProgressSection
+    <div className="p-6 space-y-6">
+      {/* Compact Progress Section */}
+      <CompactProgressSection
         completedExercises={completedExercises}
         totalExercises={totalExercises}
         progressPercentage={progressPercentage}
         isRestDay={isActualRestDay}
         selectedDayNumber={selectedDayNumber}
-        currentProgram={currentProgram}
       />
 
       {/* Main Content */}
@@ -77,7 +82,7 @@ export const ExercisePageContent = ({
         <RestDayCard />
       ) : todaysExercises.length === 0 ? (
         <ExerciseEmptyState
-          onGenerateProgram={onGenerateAIProgram}
+          onGenerateProgram={() => console.log('Generate program')}
           workoutType="home"
           dailyWorkoutId=""
         />
