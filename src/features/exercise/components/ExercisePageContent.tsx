@@ -57,17 +57,8 @@ export const ExercisePageContent = ({
   
   const isActualRestDay = selectedDayWorkout?.is_rest_day || false;
 
-  console.log('🎯 ExercisePageContent Debug:', {
-    currentProgram: !!currentProgram,
-    selectedDayNumber,
-    selectedDayWorkout,
-    isActualRestDay,
-    todaysExercisesLength: todaysExercises.length,
-    isRestDay
-  });
-
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-4">
       {/* Compact Progress Section */}
       <CompactProgressSection
         completedExercises={completedExercises}

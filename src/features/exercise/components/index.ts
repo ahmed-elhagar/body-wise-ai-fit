@@ -13,3 +13,6 @@ export { EnhancedDayNavigation } from './EnhancedDayNavigation';
 export { AIExerciseDialog } from './AIExerciseDialog';
 export { ExerciseErrorState } from './ExerciseErrorState';
 export { ExerciseEmptyState } from './ExerciseEmptyState';
+export { SimpleExerciseHeader } from './SimpleExerciseHeader';
+export { SimpleDaySelector } from './SimpleDaySelector';
+export { UnifiedExerciseContainer } from './UnifiedExerciseContainer';
