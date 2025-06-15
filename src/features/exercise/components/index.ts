@@ -12,4 +12,4 @@ export { EnhancedExerciseHeaderWithAnalytics } from './EnhancedExerciseHeaderWit
 export { EnhancedDayNavigation } from './EnhancedDayNavigation';
 export { AIExerciseDialog } from './AIExerciseDialog';
 export { ExerciseErrorState } from './ExerciseErrorState';
-export { ExerciseEmptyState } from '../../../components/exercise/ExerciseEmptyState';
+export { ExerciseEmptyState } from './ExerciseEmptyState';
