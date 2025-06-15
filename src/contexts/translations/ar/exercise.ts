@@ -1,4 +1,3 @@
-
 export const exercise = {
   sets: "مجموعات",
   reps: "تكرارات",
@@ -92,5 +91,23 @@ export const exercise = {
   hamstrings: "أوتار الركبة",
   calves: "سمانة",
   forearms: "ساعد",
-  abs: "بطن"
+  abs: "بطن",
+
+  // Additional translations
+  exerciseProgram: "برنامج التمارين",
+  week: "أسبوع",
+  day: "يوم",
+  of: "من",
+  restDay: "يوم راحة",
+  recoveryTime: "الاستشفاء والتجديد",
+  loadingExercises: "جاري تحميل التمارين",
+  fetchingWorkout: "جاري جلب خطة التمرين...",
+  generateAI: "توليد بالذكاء الاصطناعي",
+  mon: "الإثنين",
+  tue: "الثلاثاء",
+  wed: "الأربعاء", 
+  thu: "الخميس",
+  fri: "الجمعة",
+  sat: "السبت",
+  sun: "الأحد"
 } as const;

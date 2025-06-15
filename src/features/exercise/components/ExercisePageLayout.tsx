@@ -1,8 +1,8 @@
 
 import { Card } from "@/components/ui/card";
 import { ExerciseErrorState } from "./ExerciseErrorState";
-import { SimpleExerciseHeader } from "./SimpleExerciseHeader";
-import { SimpleDaySelector } from "./SimpleDaySelector";
+import { ExerciseHeader } from "./ExerciseHeader";
+import { DaySelector } from "./DaySelector";
 import { ExercisePageContent } from "./ExercisePageContent";
 import { AIExerciseDialog } from "./AIExerciseDialog";
 import { UnifiedAILoadingDialog } from "@/components/ai/UnifiedAILoadingDialog";
@@ -92,19 +92,22 @@ export const ExercisePageLayout = ({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto p-4 space-y-4">
-        {/* Simple Header */}
-        <SimpleExerciseHeader
-          currentWeekOffset={currentWeekOffset}
-          setCurrentWeekOffset={setCurrentWeekOffset}
-          weekStartDate={weekStartDate}
-          workoutType={workoutType}
-          setWorkoutType={setWorkoutType}
+      <div className="max-w-6xl mx-auto p-4 space-y-4">
+        {/* Header */}
+        <ExerciseHeader
           currentProgram={currentProgram}
+          weekStartDate={weekStartDate}
+          currentWeekOffset={currentWeekOffset}
+          workoutType={workoutType}
+          onWeekChange={setCurrentWeekOffset}
+          onShowAIDialog={() => setShowAIDialog(true)}
+          onRegenerateProgram={onRegenerateProgram}
+          onWorkoutTypeChange={setWorkoutType}
+          isGenerating={isGenerating}
         />
 
-        {/* Simple Day Selector */}
-        <SimpleDaySelector
+        {/* Day Selector */}
+        <DaySelector
           selectedDayNumber={selectedDayNumber}
           setSelectedDayNumber={setSelectedDayNumber}
           weekStartDate={weekStartDate}

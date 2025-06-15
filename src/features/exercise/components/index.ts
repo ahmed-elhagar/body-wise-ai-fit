@@ -2,7 +2,7 @@
 export { ExercisePageContainer } from './ExercisePageContainer';
 export { ExercisePageLayout } from './ExercisePageLayout';
 export { ExerciseListEnhanced } from './ExerciseListEnhanced';
-export { CompactProgressSection } from './CompactProgressSection';
+export { ExerciseProgressSection } from './ExerciseProgressSection';
 export { RestDayCard } from './RestDayCard';
 export { ExercisePageContent } from './ExercisePageContent';
 export { InteractiveExerciseCard } from './InteractiveExerciseCard';
@@ -13,6 +13,6 @@ export { EnhancedDayNavigation } from './EnhancedDayNavigation';
 export { AIExerciseDialog } from './AIExerciseDialog';
 export { ExerciseErrorState } from './ExerciseErrorState';
 export { ExerciseEmptyState } from './ExerciseEmptyState';
-export { SimpleExerciseHeader } from './SimpleExerciseHeader';
-export { SimpleDaySelector } from './SimpleDaySelector';
+export { ExerciseHeader } from './ExerciseHeader';
+export { DaySelector } from './DaySelector';
 export { UnifiedExerciseContainer } from './UnifiedExerciseContainer';

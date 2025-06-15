@@ -2,7 +2,7 @@
 import { ExerciseListEnhanced } from "./ExerciseListEnhanced";
 import { RestDayCard } from "./RestDayCard";
 import { ExerciseEmptyState } from "./ExerciseEmptyState";
-import { CompactProgressSection } from "./CompactProgressSection";
+import { ExerciseProgressSection } from "./ExerciseProgressSection";
 import { useLanguage } from "@/contexts/LanguageContext";
 import SimpleLoadingIndicator from "@/components/ui/simple-loading-indicator";
 
@@ -38,14 +38,17 @@ export const ExercisePageContent = ({
   isRestDay,
   selectedDayNumber,
   onExerciseComplete,
-  onExerciseProgressUpdate
+  onExerciseProgressUpdate,
+  onGenerateAIProgram
 }: ExercisePageContentProps) => {
+  const { t } = useLanguage();
+
   if (isLoading) {
     return (
       <div className="p-6">
         <SimpleLoadingIndicator
-          message="Loading Workout Data"
-          description="Fetching your exercise plan..."
+          message={t('exercise.loadingExercises')}
+          description={t('exercise.fetchingWorkout')}
         />
       </div>
     );
@@ -59,13 +62,14 @@ export const ExercisePageContent = ({
 
   return (
     <div className="space-y-4">
-      {/* Compact Progress Section */}
-      <CompactProgressSection
+      {/* Progress Section */}
+      <ExerciseProgressSection
         completedExercises={completedExercises}
         totalExercises={totalExercises}
         progressPercentage={progressPercentage}
         isRestDay={isActualRestDay}
         selectedDayNumber={selectedDayNumber}
+        currentProgram={currentProgram}
       />
 
       {/* Main Content */}
@@ -73,7 +77,7 @@ export const ExercisePageContent = ({
         <RestDayCard />
       ) : todaysExercises.length === 0 ? (
         <ExerciseEmptyState
-          onGenerateProgram={() => console.log('Generate program')}
+          onGenerateProgram={onGenerateAIProgram}
           workoutType="home"
           dailyWorkoutId=""
         />
