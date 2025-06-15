@@ -17,7 +17,6 @@ interface WorkoutContentLayoutProps {
 
 export const WorkoutContentLayout = ({
   todaysExercises,
-  currentProgram,
   selectedDayNumber,
   onExerciseComplete,
   onExerciseProgressUpdate,
@@ -32,8 +31,7 @@ export const WorkoutContentLayout = ({
         isLoading={false}
         onExerciseComplete={onExerciseComplete}
         onExerciseProgressUpdate={onExerciseProgressUpdate}
-        isRestDay={isRestDay}
-        currentProgram={currentProgram}
+        isRestDay={isRestDay || false}
         selectedDayNumber={selectedDayNumber}
       />
     </div>

@@ -1,17 +1,15 @@
 
+import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Sparkles } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Sparkles, Dumbbell, Home, Building2 } from "lucide-react";
 
 interface AIExerciseDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   preferences: any;
-  onPreferencesChange: (preferences: any) => void;
+  onPreferencesChange: (prefs: any) => void;
   onGenerate: (preferences: any) => Promise<void>;
   isGenerating: boolean;
   workoutType: "home" | "gym";
@@ -33,73 +31,56 @@ export const AIExerciseDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Generate AI Exercise Program</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-purple-600" />
+            Generate Exercise Program
+          </DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4">
-          <div>
-            <Label>Fitness Level</Label>
-            <Select
-              value={preferences?.fitness_level || "beginner"}
-              onValueChange={(value) => onPreferencesChange({ ...preferences, fitness_level: value })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select fitness level" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="beginner">Beginner</SelectItem>
-                <SelectItem value="intermediate">Intermediate</SelectItem>
-                <SelectItem value="advanced">Advanced</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="text-center p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg">
+            <div className={`w-12 h-12 mx-auto mb-3 rounded-xl flex items-center justify-center ${
+              workoutType === 'gym' 
+                ? 'bg-purple-600' 
+                : 'bg-blue-600'
+            }`}>
+              {workoutType === 'gym' ? (
+                <Building2 className="w-6 h-6 text-white" />
+              ) : (
+                <Home className="w-6 h-6 text-white" />
+              )}
+            </div>
+            <h3 className="font-semibold text-gray-900 mb-2">
+              AI-Powered {workoutType === 'gym' ? 'Gym' : 'Home'} Program
+            </h3>
+            <p className="text-sm text-gray-600">
+              Generate a personalized 4-week exercise program tailored to your goals and preferences.
+            </p>
           </div>
 
-          <div>
-            <Label>Primary Goal</Label>
-            <Select
-              value={preferences?.goal_type || "general_fitness"}
-              onValueChange={(value) => onPreferencesChange({ ...preferences, goal_type: value })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select goal" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="weight_loss">Weight Loss</SelectItem>
-                <SelectItem value="muscle_gain">Muscle Gain</SelectItem>
-                <SelectItem value="strength">Strength</SelectItem>
-                <SelectItem value="endurance">Endurance</SelectItem>
-                <SelectItem value="general_fitness">General Fitness</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label>Session Duration (minutes)</Label>
-            <Input
-              type="number"
-              value={preferences?.session_duration || 45}
-              onChange={(e) => onPreferencesChange({ ...preferences, session_duration: parseInt(e.target.value) })}
-              min="15"
-              max="120"
-            />
-          </div>
-
-          <div>
-            <Label>Special Notes</Label>
-            <Textarea
-              value={preferences?.special_notes || ""}
-              onChange={(e) => onPreferencesChange({ ...preferences, special_notes: e.target.value })}
-              placeholder="Any specific requirements or limitations..."
-              rows={3}
-            />
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">Workout Type</span>
+              <Badge className={workoutType === 'gym' ? 'bg-purple-600' : 'bg-blue-600'}>
+                {workoutType === 'gym' ? '🏋️ Gym' : '🏠 Home'}
+              </Badge>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">Duration</span>
+              <Badge variant="outline">4 Weeks</Badge>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">Frequency</span>
+              <Badge variant="outline">4-5 Days/Week</Badge>
+            </div>
           </div>
 
           <Button
             onClick={handleGenerate}
             disabled={isGenerating}
-            className="w-full"
+            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
           >
             {isGenerating ? (
               <>
@@ -109,7 +90,7 @@ export const AIExerciseDialog = ({
             ) : (
               <>
                 <Sparkles className="w-4 h-4 mr-2" />
-                Generate {workoutType === 'gym' ? 'Gym' : 'Home'} Program
+                Generate Program
               </>
             )}
           </Button>
