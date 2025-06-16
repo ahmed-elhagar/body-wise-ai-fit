@@ -19,7 +19,7 @@ export const ExercisePageContainer = () => {
   const { programs, isLoading: programsLoading, refetch: refetchPrograms } = useExercisePrograms();
   const currentProgram = programs?.[0];
   
-  const { workouts, exercises, isLoading: workoutsLoading, refetch } = useDailyWorkouts(
+  const { workouts, exercises, isLoading: workoutsLoading, error, refetch } = useDailyWorkouts(
     currentProgram?.id, 
     selectedDayNumber, 
     workoutType

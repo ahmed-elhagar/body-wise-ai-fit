@@ -33,7 +33,7 @@ interface Exercise {
 export const useDailyWorkouts = (weeklyProgramId?: string, dayNumber: number = 1, workoutType: "home" | "gym" = "home") => {
   const { user } = useAuth();
 
-  const { data: workouts, isLoading: workoutsLoading, error: workoutsError, refetch: refetchWorkouts } = useQuery({
+  const workoutsQuery = useQuery({
     queryKey: ['daily-workouts', weeklyProgramId, dayNumber, workoutType],
     queryFn: async () => {
       if (!weeklyProgramId) return [];
@@ -51,15 +51,15 @@ export const useDailyWorkouts = (weeklyProgramId?: string, dayNumber: number = 1
     enabled: !!weeklyProgramId && !!user?.id,
   });
 
-  const { data: exercises, isLoading: exercisesLoading, error: exercisesError, refetch: refetchExercises } = useQuery({
-    queryKey: ['exercises', workouts?.[0]?.id],
+  const exercisesQuery = useQuery({
+    queryKey: ['exercises', workoutsQuery.data?.[0]?.id],
     queryFn: async () => {
-      if (!workouts?.[0]?.id) return [];
+      if (!workoutsQuery.data?.[0]?.id) return [];
       
       const { data, error } = await supabase
         .from('exercises')
         .select('*')
-        .eq('daily_workout_id', workouts[0].id)
+        .eq('daily_workout_id', workoutsQuery.data[0].id)
         .order('order_number', { ascending: true });
 
       if (error) throw error;
@@ -68,19 +68,19 @@ export const useDailyWorkouts = (weeklyProgramId?: string, dayNumber: number = 1
         completed: false
       })) || [];
     },
-    enabled: !!workouts?.[0]?.id,
+    enabled: !!workoutsQuery.data?.[0]?.id,
   });
 
   const refetch = async () => {
-    await refetchWorkouts();
-    await refetchExercises();
+    await workoutsQuery.refetch();
+    await exercisesQuery.refetch();
   };
 
   return {
-    workouts,
-    exercises,
-    isLoading: workoutsLoading || exercisesLoading,
-    error: workoutsError || exercisesError,
+    workouts: workoutsQuery.data || [],
+    exercises: exercisesQuery.data || [],
+    isLoading: workoutsQuery.isLoading || exercisesQuery.isLoading,
+    error: workoutsQuery.error || exercisesQuery.error,
     refetch,
   };
 };
