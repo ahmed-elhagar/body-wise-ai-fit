@@ -33,7 +33,7 @@ interface Exercise {
 export const useDailyWorkouts = (weeklyProgramId?: string, dayNumber: number = 1, workoutType: "home" | "gym" = "home") => {
   const { user } = useAuth();
 
-  const { data: workouts, isLoading: workoutsLoading, error: workoutsError } = useQuery({
+  const { data: workouts, isLoading: workoutsLoading, error: workoutsError, refetch: refetchWorkouts } = useQuery({
     queryKey: ['daily-workouts', weeklyProgramId, dayNumber, workoutType],
     queryFn: async () => {
       if (!weeklyProgramId) return [];
@@ -51,7 +51,7 @@ export const useDailyWorkouts = (weeklyProgramId?: string, dayNumber: number = 1
     enabled: !!weeklyProgramId && !!user?.id,
   });
 
-  const { data: exercises, isLoading: exercisesLoading, error: exercisesError } = useQuery({
+  const { data: exercises, isLoading: exercisesLoading, error: exercisesError, refetch: refetchExercises } = useQuery({
     queryKey: ['exercises', workouts?.[0]?.id],
     queryFn: async () => {
       if (!workouts?.[0]?.id) return [];
@@ -71,10 +71,16 @@ export const useDailyWorkouts = (weeklyProgramId?: string, dayNumber: number = 1
     enabled: !!workouts?.[0]?.id,
   });
 
+  const refetch = async () => {
+    await refetchWorkouts();
+    await refetchExercises();
+  };
+
   return {
     workouts,
     exercises,
     isLoading: workoutsLoading || exercisesLoading,
     error: workoutsError || exercisesError,
+    refetch,
   };
 };

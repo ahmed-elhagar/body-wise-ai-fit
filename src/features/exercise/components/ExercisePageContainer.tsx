@@ -19,7 +19,7 @@ export const ExercisePageContainer = () => {
   const { programs, isLoading: programsLoading, refetch: refetchPrograms } = useExercisePrograms();
   const currentProgram = programs?.[0];
   
-  const { workouts, exercises, isLoading: workoutsLoading, refetch: refetchWorkouts } = useDailyWorkouts(
+  const { workouts, exercises, isLoading: workoutsLoading, refetch } = useDailyWorkouts(
     currentProgram?.id, 
     selectedDayNumber, 
     workoutType
@@ -41,20 +41,20 @@ export const ExercisePageContainer = () => {
   const handleExerciseComplete = async (exerciseId: string) => {
     console.log('Toggle exercise completion:', exerciseId);
     // TODO: Implement exercise completion logic
-    await refetchWorkouts();
+    await refetch();
   };
 
   const handleExerciseProgressUpdate = async (exerciseId: string, sets: number, reps: string, notes?: string) => {
     console.log('Update exercise progress:', { exerciseId, sets, reps, notes });
     // TODO: Implement exercise progress update logic
-    await refetchWorkouts();
+    await refetch();
   };
 
   const handleWeekChange = (newOffset: number) => {
     console.log('Week changed to offset:', newOffset);
     setCurrentWeekOffset(newOffset);
     refetchPrograms();
-    refetchWorkouts();
+    refetch();
   };
 
   const handleGenerateProgram = () => {
