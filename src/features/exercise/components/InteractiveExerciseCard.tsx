@@ -9,7 +9,6 @@ import {
   CheckCircle2, 
   Clock, 
   Target, 
-  Dumbbell,
   Timer,
   Zap,
   Award,
@@ -35,12 +34,20 @@ export const InteractiveExerciseCard = ({
 }: InteractiveExerciseCardProps) => {
   const { t } = useLanguage();
   const [isActive, setIsActive] = useState(false);
-  const [currentSet, setCurrentSet] = useState(0); // Start from 0, not 1
-  const [completedSets, setCompletedSets] = useState(0); // Track completed sets
+  const [currentSet, setCurrentSet] = useState(0);
+  const [completedSets, setCompletedSets] = useState(exercise.actual_sets || 0);
   const [restTimer, setRestTimer] = useState(0);
   const [isResting, setIsResting] = useState(false);
   const [restInterval, setRestInterval] = useState<NodeJS.Timeout | null>(null);
   const [isCompleting, setIsCompleting] = useState(false);
+
+  // Initialize completed sets from exercise data
+  useEffect(() => {
+    if (exercise.actual_sets) {
+      setCompletedSets(exercise.actual_sets);
+      setCurrentSet(exercise.actual_sets);
+    }
+  }, [exercise.actual_sets]);
 
   // Cleanup timer on unmount
   useEffect(() => {
@@ -92,56 +99,70 @@ export const InteractiveExerciseCard = ({
     const newCompletedSets = completedSets + 1;
     
     setCompletedSets(newCompletedSets);
+    setCurrentSet(newCompletedSets);
     
-    // Update progress
-    onExerciseProgressUpdate(exercise.id, newCompletedSets, exercise.reps || '10');
-    
-    if (newCompletedSets < totalSets) {
-      setCurrentSet(newCompletedSets);
-      if (exercise.rest_seconds > 0) {
-        startRestTimer();
-      }
+    // Update progress immediately
+    try {
+      await onExerciseProgressUpdate(exercise.id, newCompletedSets, exercise.reps || '10');
       
-      toast({
-        title: `Set ${newCompletedSets} Complete! 🎯`,
-        description: `${totalSets - newCompletedSets} sets remaining`,
-      });
-    } else {
-      // Exercise complete - show loading state
-      setIsCompleting(true);
-      
-      try {
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate delay
-        onExerciseComplete(exercise.id);
-        setIsActive(false);
-        setCurrentSet(0);
-        setCompletedSets(0);
+      if (newCompletedSets < totalSets) {
+        if (exercise.rest_seconds > 0) {
+          startRestTimer();
+        }
         
         toast({
-          title: "Exercise Complete! 🏆",
-          description: `Great job completing ${exercise.name}!`,
+          title: `Set ${newCompletedSets} Complete! 🎯`,
+          description: `${totalSets - newCompletedSets} sets remaining`,
         });
-      } catch (error) {
-        console.error('Error completing exercise:', error);
-      } finally {
-        setIsCompleting(false);
+      } else {
+        // Exercise complete
+        setIsCompleting(true);
+        
+        try {
+          await onExerciseComplete(exercise.id);
+          setIsActive(false);
+          
+          toast({
+            title: "Exercise Complete! 🏆",
+            description: `Great job completing ${exercise.name}!`,
+          });
+        } catch (error) {
+          console.error('Error completing exercise:', error);
+          toast({
+            title: "Error",
+            description: "Failed to mark exercise as complete. Please try again.",
+            variant: "destructive"
+          });
+        } finally {
+          setIsCompleting(false);
+        }
       }
+    } catch (error) {
+      console.error('Error updating progress:', error);
+      // Revert state on error
+      setCompletedSets(completedSets);
+      setCurrentSet(completedSets);
+      toast({
+        title: "Error",
+        description: "Failed to update progress. Please try again.",
+        variant: "destructive"
+      });
     }
   };
 
   const handleStartExercise = () => {
     setIsActive(true);
-    setCurrentSet(0); // Start at 0, ready for first set
-    setCompletedSets(0);
+    setCurrentSet(completedSets); // Start from where we left off
     toast({
       title: "Exercise Started! 💪",
       description: `Let's crush ${exercise.name}!`,
     });
   };
 
-  // Calculate progress based on completed sets only
+  // Calculate progress based on completed sets
+  const targetSets = exercise.sets || 3;
   const progressPercentage = exercise.completed ? 100 : 
-    (completedSets / (exercise.sets || 3)) * 100;
+    (completedSets / targetSets) * 100;
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -186,7 +207,7 @@ export const InteractiveExerciseCard = ({
               <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
                 <div className="flex items-center gap-1">
                   <Target className="w-4 h-4" />
-                  <span className="font-medium">{exercise.sets || 3} × {exercise.reps || '10'}</span>
+                  <span className="font-medium">{targetSets} × {exercise.reps || '10'}</span>
                 </div>
                 
                 {exercise.rest_seconds && (
@@ -213,7 +234,7 @@ export const InteractiveExerciseCard = ({
                   className="h-8 px-3 bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
                 >
                   <Play className="w-3 h-3 mr-1" />
-                  Start
+                  {completedSets > 0 ? 'Resume' : 'Start'}
                 </Button>
               )}
               
@@ -234,7 +255,9 @@ export const InteractiveExerciseCard = ({
           {/* Progress Bar */}
           <div className="mb-3">
             <div className="flex justify-between items-center text-xs mb-1">
-              <span className="text-gray-500 font-medium">Progress</span>
+              <span className="text-gray-500 font-medium">
+                Progress ({completedSets}/{targetSets} sets)
+              </span>
               <span className="font-semibold text-gray-700">{Math.round(progressPercentage)}%</span>
             </div>
             <Progress value={progressPercentage} className="h-2" />
@@ -246,7 +269,7 @@ export const InteractiveExerciseCard = ({
               <div className="flex items-center justify-between">
                 <div className="text-sm">
                   <span className="font-semibold text-blue-900">
-                    Set {completedSets + 1}/{exercise.sets || 3}
+                    Set {completedSets + 1}/{targetSets}
                   </span>
                   {isResting && (
                     <div className="flex items-center gap-2 mt-1">
@@ -273,7 +296,7 @@ export const InteractiveExerciseCard = ({
                   className={`h-8 px-3 text-xs font-medium ${
                     isResting 
                       ? 'bg-orange-500 hover:bg-orange-600' 
-                      : completedSets >= (exercise.sets || 3) - 1
+                      : completedSets >= targetSets - 1
                       ? 'bg-green-600 hover:bg-green-700'
                       : 'bg-blue-600 hover:bg-blue-700'
                   }`}
@@ -288,10 +311,10 @@ export const InteractiveExerciseCard = ({
                       <Timer className="w-3 h-3 mr-1" />
                       Resting...
                     </>
-                  ) : completedSets >= (exercise.sets || 3) - 1 ? (
+                  ) : completedSets >= targetSets - 1 ? (
                     <>
                       <Award className="w-3 h-3 mr-1" />
-                      Finish
+                      Finish Exercise
                     </>
                   ) : (
                     <>

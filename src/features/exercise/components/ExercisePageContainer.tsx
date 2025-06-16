@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useExercisePrograms } from "@/hooks/useExercisePrograms";
 import { useDailyWorkouts } from "@/hooks/useDailyWorkouts";
+import { useExerciseActions } from "../hooks/useExerciseActions";
 import { CompactExerciseHeader } from "./CompactExerciseHeader";
 import { CompactExerciseNavigation } from "./CompactExerciseNavigation";
 import { UnifiedExerciseContainer } from "./UnifiedExerciseContainer";
@@ -9,6 +10,7 @@ import { getWeekStartDate } from "@/utils/mealPlanUtils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Card } from "@/components/ui/card";
 import EnhancedSpinner from "@/components/ui/enhanced-spinner";
+import { toast } from "@/hooks/use-toast";
 
 export const ExercisePageContainer = () => {
   const { t } = useLanguage();
@@ -25,6 +27,8 @@ export const ExercisePageContainer = () => {
     workoutType
   );
 
+  const { completeExercise, updateExerciseProgress } = useExerciseActions();
+
   const weekStartDate = getWeekStartDate(currentWeekOffset);
   const isToday = currentWeekOffset === 0 && selectedDayNumber === (new Date().getDay() || 7);
 
@@ -39,15 +43,37 @@ export const ExercisePageContainer = () => {
                    (!exercises || exercises.length === 0);
 
   const handleExerciseComplete = async (exerciseId: string) => {
-    console.log('Toggle exercise completion:', exerciseId);
-    // TODO: Implement exercise completion logic
-    await refetch();
+    console.log('🎯 ExercisePageContainer - Exercise complete:', exerciseId);
+    
+    try {
+      await completeExercise(exerciseId);
+      // Refetch data to update UI
+      await refetch();
+    } catch (error) {
+      console.error('❌ Error completing exercise:', error);
+      toast({
+        title: "Error",
+        description: "Failed to complete exercise. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleExerciseProgressUpdate = async (exerciseId: string, sets: number, reps: string, notes?: string) => {
-    console.log('Update exercise progress:', { exerciseId, sets, reps, notes });
-    // TODO: Implement exercise progress update logic
-    await refetch();
+  const handleExerciseProgressUpdate = async (exerciseId: string, sets: number, reps: string, notes?: string, weight?: number) => {
+    console.log('📊 ExercisePageContainer - Progress update:', { exerciseId, sets, reps, notes, weight });
+    
+    try {
+      await updateExerciseProgress(exerciseId, sets, reps, notes, weight);
+      // Refetch data to update UI
+      await refetch();
+    } catch (error) {
+      console.error('❌ Error updating exercise progress:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update exercise progress. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleWeekChange = (newOffset: number) => {
@@ -81,6 +107,25 @@ export const ExercisePageContainer = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <EnhancedSpinner size="lg" text={t('exercise.loadingProgram')} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <Card className="p-8 text-center max-w-md">
+          <h3 className="text-xl font-bold text-red-600 mb-4">Error Loading Workout</h3>
+          <p className="text-gray-600 mb-6">
+            Failed to load your workout data. Please try again.
+          </p>
+          <button 
+            onClick={() => refetch()} 
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Try Again
+          </button>
+        </Card>
       </div>
     );
   }
