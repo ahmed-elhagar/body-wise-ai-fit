@@ -438,255 +438,131 @@ const SecurityLayers = {
   },
   authorization: {
     model: 'Role-Based Access Control (RBAC)',
-    levels: ['normal', 'pro', 'admin', 'coach'],
-    enforcement: 'Row Level Security (RLS)'
+    levels: ['normal', 'coach', 'admin'],
+    policies: 'Row-Level Security (RLS)',
+    apiKeys: 'Environment-based secrets'
   },
   dataProtection: {
-    encryption: {
-      atRest: 'AES-256',
-      inTransit: 'TLS 1.3',
-      sensitive: 'Client-side encryption for PII'
-    },
-    validation: {
-      input: 'Zod schema validation',
-      output: 'Response sanitization',
-      files: 'MIME type verification'
-    }
+    encryption: 'TLS 1.3 in transit',
+    storage: 'AES-256 at rest',
+    pii: 'Hashed sensitive fields',
+    gdpr: 'Data anonymization support'
   }
 };
 
-// RLS Policy Examples
-const RLSPolicies = `
--- Users can only access their own data
-CREATE POLICY user_data_policy ON profiles
-FOR ALL USING (auth.uid() = id);
-
--- Meal plans are user-specific
-CREATE POLICY meal_plan_policy ON weekly_meal_plans
-FOR ALL USING (auth.uid() = user_id);
-
--- Admins can access all data
-CREATE POLICY admin_access_policy ON profiles
-FOR ALL USING (
-  auth.uid() IN (
-    SELECT id FROM profiles WHERE role = 'admin'
-  )
-);
+// RLS Policy Pattern
+const RLSPolicyExample = `
+  CREATE POLICY "Users can only access their own data" ON weekly_meal_plans
+    FOR ALL USING (auth.uid() = user_id);
+    
+  CREATE POLICY "Coaches can access trainee data" ON weekly_meal_plans
+    FOR SELECT USING (
+      auth.uid() = user_id OR 
+      EXISTS (
+        SELECT 1 FROM coach_trainees 
+        WHERE coach_id = auth.uid() AND trainee_id = user_id
+      )
+    );
 `;
-```
-
-### API Security Implementation
-```typescript
-// Input Validation Schema
-const ValidationSchemas = {
-  mealPlanGeneration: z.object({
-    userData: z.object({
-      age: z.number().min(13).max(120),
-      weight: z.number().min(30).max(300),
-      height: z.number().min(100).max(250),
-      gender: z.enum(['male', 'female', 'other']),
-      activityLevel: z.enum(['sedentary', 'lightly_active', 'moderately_active', 'very_active'])
-    }),
-    preferences: z.object({
-      cuisine: z.string().optional(),
-      maxPrepTime: z.string().optional(),
-      includeSnacks: z.boolean().default(true),
-      language: z.enum(['en', 'ar']).default('en')
-    })
-  }),
-  
-  fileUpload: z.object({
-    file: z.custom<File>((file) => {
-      return file instanceof File &&
-             file.size <= 10 * 1024 * 1024 && // 10MB max
-             ['image/jpeg', 'image/png', 'image/webp'].includes(file.type);
-    }),
-    purpose: z.enum(['profile_photo', 'food_analysis', 'progress_photo'])
-  })
-};
-
-// Rate Limiting Implementation
-const rateLimitMiddleware = async (req: Request, context: any) => {
-  const userId = await getUserIdFromRequest(req);
-  const endpoint = context.functionName;
-  
-  const rateLimitCheck = await checkRateLimit(userId, endpoint);
-  
-  if (!rateLimitCheck.allowed) {
-    return new Response(JSON.stringify({
-      error: 'Rate limit exceeded',
-      retryAfter: rateLimitCheck.resetTime
-    }), {
-      status: 429,
-      headers: {
-        'Retry-After': rateLimitCheck.resetTime.toString(),
-        'X-RateLimit-Remaining': '0'
-      }
-    });
-  }
-  
-  return null; // Continue to function
-};
 ```
 
 ## 📊 Monitoring & Observability
 
-### Performance Monitoring Setup
+### Performance Monitoring
 ```typescript
-// Performance Metrics Collection
-const PerformanceMonitoring = {
+// Key Performance Indicators
+const PerformanceMetrics = {
   frontend: {
-    tools: ['Web Vitals', 'Lighthouse CI', 'Sentry Performance'],
-    metrics: [
-      'First Contentful Paint (FCP)',
-      'Largest Contentful Paint (LCP)',
-      'Cumulative Layout Shift (CLS)',
-      'First Input Delay (FID)',
-      'Total Blocking Time (TBT)'
-    ]
+    firstContentfulPaint: '<1.5s',
+    largestContentfulPaint: '<2.5s',
+    cumulativeLayoutShift: '<0.1',
+    firstInputDelay: '<100ms',
+    timeToInteractive: '<3s'
   },
   backend: {
-    tools: ['Supabase Dashboard', 'Custom Metrics', 'Error Tracking'],
-    metrics: [
-      'API Response Time',
-      'Database Query Performance',
-      'Edge Function Execution Time',
-      'AI Model Response Time',
-      'Error Rate by Endpoint'
-    ]
+    apiResponseTime: '<500ms',
+    databaseQueryTime: '<100ms',
+    aiGenerationTime: '<10s',
+    edgeFunctionColdStart: '<200ms',
+    uptime: '>99.9%'
   },
   business: {
-    tools: ['PostHog', 'Google Analytics', 'Custom Dashboards'],
-    metrics: [
-      'User Engagement Rate',
-      'Feature Adoption Rate',
-      'AI Generation Success Rate',
-      'Subscription Conversion Rate',
-      'User Retention Cohorts'
-    ]
+    userEngagement: '>60% DAU/MAU',
+    aiGenerationSuccess: '>95%',
+    userRetention: '>70% week 1',
+    errorRate: '<0.1%',
+    conversionRate: '>15% free to paid'
   }
 };
 
-// Alert Configuration
-const AlertingStrategy = {
-  critical: {
-    triggers: ['API downtime > 1min', 'Error rate > 5%', 'Payment failures'],
-    channels: ['PagerDuty', 'Slack', 'Email'],
-    response: 'immediate'
-  },
-  warning: {
-    triggers: ['High response times', 'AI generation failures', 'Low conversion'],
-    channels: ['Slack', 'Email'],
-    response: 'within_1_hour'
-  },
-  info: {
-    triggers: ['New user registrations', 'Feature usage spikes', 'System updates'],
-    channels: ['Dashboard', 'Weekly reports'],
-    response: 'review_during_business_hours'
-  }
+// Monitoring Stack
+const MonitoringTools = {
+  errorTracking: 'Sentry',
+  performanceAPM: 'Vercel Analytics',
+  userBehavior: 'PostHog',
+  logs: 'Supabase Logs',
+  uptime: 'Better Stack',
+  alerts: 'PagerDuty integration'
 };
 ```
 
-## 🚀 Deployment & Infrastructure
+## 🚀 Scalability Architecture
 
-### CI/CD Pipeline Architecture
-```yaml
-# .github/workflows/deploy.yml
-name: FitFatta Deployment Pipeline
-
-on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-      - run: npm ci
-      - run: npm run test:unit
-      - run: npm run test:integration
-      - run: npm run test:e2e
-      - run: npm run build
-      - run: npm run lighthouse:ci
-
-  security:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - run: npm audit
-      - run: npm run security:scan
-      - run: npm run dependency:check
-
-  deploy-staging:
-    needs: [test, security]
-    if: github.ref == 'refs/heads/develop'
-    runs-on: ubuntu-latest
-    steps:
-      - run: npm run deploy:staging
-      - run: npm run test:staging
-
-  deploy-production:
-    needs: [test, security]
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    steps:
-      - run: npm run deploy:production
-      - run: npm run test:production
-      - run: npm run notify:deployment
-```
-
-### Infrastructure Scaling Strategy
+### Horizontal Scaling Strategy
 ```typescript
-// Auto-Scaling Configuration
-const InfrastructureConfig = {
-  database: {
-    primary: 'Supabase Pro',
-    readReplicas: 'Auto-scale based on load',
-    caching: 'Redis for session and API responses',
-    backup: 'Daily automated backups with point-in-time recovery'
-  },
-  
-  edgeFunctions: {
-    concurrency: 'Auto-scale up to 1000 concurrent executions',
-    regions: ['us-east-1', 'eu-west-1', 'ap-southeast-1'],
-    timeout: '60 seconds for AI functions, 30 seconds for others',
-    memory: '512MB standard, 1GB for AI processing'
-  },
-  
-  cdn: {
-    provider: 'Cloudflare',
-    caching: 'Static assets cached for 1 year',
-    compression: 'Brotli and Gzip',
-    optimization: 'Auto-minification and image optimization'
-  },
-  
-  monitoring: {
-    uptime: 'UptimeRobot for external monitoring',
-    performance: 'New Relic for application performance',
-    logs: 'Centralized logging with structured queries',
-    alerts: 'PagerDuty for critical issues'
-  }
+// Database Scaling
+const DatabaseScaling = {
+  readReplicas: 'Supabase Read Replicas',
+  connectionPooling: 'PgBouncer',
+  caching: 'Redis for session data',
+  partitioning: 'Time-based for logs and analytics',
+  archival: 'Cold storage for old data'
 };
 
-// Disaster Recovery Plan
-const DisasterRecovery = {
-  backupStrategy: {
-    database: 'Continuous backup with 1-hour point-in-time recovery',
-    files: 'Daily backup of user uploads to separate cloud storage',
-    configuration: 'Infrastructure as Code with version control'
+// Application Scaling
+const ApplicationScaling = {
+  frontend: 'CDN + Edge deployment',
+  api: 'Serverless auto-scaling',
+  storage: 'Supabase Storage with CDN',
+  search: 'PostgreSQL full-text search',
+  queue: 'Supabase Edge Functions'
+};
+
+// AI Scaling
+const AIScaling = {
+  loadBalancing: 'Multiple AI provider fallback',
+  caching: 'Response caching for common requests',
+  batching: 'Batch processing for bulk operations',
+  optimization: 'Model selection based on load',
+  monitoring: 'Token usage and cost tracking'
+};
+```
+
+## 🔧 Development Workflow
+
+### CI/CD Pipeline
+```typescript
+// Deployment Strategy
+const DeploymentPipeline = {
+  development: {
+    environment: 'Local Supabase',
+    testing: 'Unit + Integration tests',
+    linting: 'ESLint + Prettier',
+    typeCheck: 'TypeScript strict mode'
   },
-  
-  recoveryProcedures: {
-    rto: '4 hours maximum recovery time',
-    rpo: '1 hour maximum data loss',
-    testing: 'Monthly disaster recovery drills',
-    documentation: 'Step-by-step recovery runbooks'
+  staging: {
+    environment: 'Staging Supabase project',
+    testing: 'E2E tests with Playwright',
+    performance: 'Lighthouse CI',
+    security: 'OWASP security scan'
+  },
+  production: {
+    environment: 'Production Supabase',
+    deployment: 'Blue-green deployment',
+    monitoring: 'Real-time health checks',
+    rollback: 'Automated rollback on errors'
   }
 };
 ```
 
-This technical architecture provides a solid foundation for building a scalable, secure, and maintainable fitness platform that can grow from thousands to millions of users while maintaining high performance and reliability.
+This technical architecture provides a comprehensive foundation for building, scaling, and maintaining the FitFatta platform while ensuring security, performance, and reliability at scale.
