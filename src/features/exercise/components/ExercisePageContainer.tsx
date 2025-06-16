@@ -13,39 +13,68 @@ import EnhancedSpinner from "@/components/ui/enhanced-spinner";
 export const ExercisePageContainer = () => {
   const { t } = useLanguage();
   const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
-  const [selectedDayNumber, setSelectedDayNumber] = useState(1);
+  const [selectedDayNumber, setSelectedDayNumber] = useState(new Date().getDay() || 7);
   const [workoutType, setWorkoutType] = useState<"home" | "gym">("home");
 
-  const { programs, isLoading: programsLoading } = useExercisePrograms();
+  const { programs, isLoading: programsLoading, refetch: refetchPrograms } = useExercisePrograms();
   const currentProgram = programs?.[0];
   
-  const { workouts, exercises, isLoading: workoutsLoading } = useDailyWorkouts(
+  const { workouts, exercises, isLoading: workoutsLoading, refetch: refetchWorkouts } = useDailyWorkouts(
     currentProgram?.id, 
     selectedDayNumber, 
     workoutType
   );
 
   const weekStartDate = getWeekStartDate(currentWeekOffset);
-  const isToday = currentWeekOffset === 0;
+  const isToday = currentWeekOffset === 0 && selectedDayNumber === (new Date().getDay() || 7);
 
   // Calculate progress
   const completedExercises = exercises?.filter(ex => ex.completed).length || 0;
   const totalExercises = exercises?.length || 0;
   const progressPercentage = totalExercises > 0 ? (completedExercises / totalExercises) * 100 : 0;
 
-  // Check if it's a rest day - properly check the workout object
+  // Check if it's a rest day
   const todaysWorkout = workouts?.[0];
   const isRestDay = todaysWorkout?.workout_name?.toLowerCase().includes('rest') ||
                    (!exercises || exercises.length === 0);
 
-  const handleExerciseComplete = (exerciseId: string) => {
-    // TODO: Implement exercise completion logic
+  const handleExerciseComplete = async (exerciseId: string) => {
     console.log('Toggle exercise completion:', exerciseId);
+    // TODO: Implement exercise completion logic
+    await refetchWorkouts();
   };
 
-  const handleExerciseProgressUpdate = (exerciseId: string, sets: number, reps: string, notes?: string) => {
-    // TODO: Implement exercise progress update logic
+  const handleExerciseProgressUpdate = async (exerciseId: string, sets: number, reps: string, notes?: string) => {
     console.log('Update exercise progress:', { exerciseId, sets, reps, notes });
+    // TODO: Implement exercise progress update logic
+    await refetchWorkouts();
+  };
+
+  const handleWeekChange = (newOffset: number) => {
+    console.log('Week changed to offset:', newOffset);
+    setCurrentWeekOffset(newOffset);
+    refetchPrograms();
+    refetchWorkouts();
+  };
+
+  const handleGenerateProgram = () => {
+    console.log('Generate new program');
+    // TODO: Implement AI program generation
+  };
+
+  const handleRegenerateProgram = () => {
+    console.log('Regenerate program');
+    // TODO: Implement program regeneration
+  };
+
+  const handleShowAnalytics = () => {
+    console.log('Show analytics');
+    // TODO: Implement analytics view
+  };
+
+  const handleShowSettings = () => {
+    console.log('Show settings');
+    // TODO: Implement settings view
   };
 
   if (programsLoading) {
@@ -79,12 +108,17 @@ export const ExercisePageContainer = () => {
         <CompactExerciseHeader 
           currentProgram={currentProgram}
           workoutType={workoutType}
+          currentWeekOffset={currentWeekOffset}
+          onGenerateProgram={handleGenerateProgram}
+          onRegenerateProgram={handleRegenerateProgram}
+          onShowAnalytics={handleShowAnalytics}
+          onShowSettings={handleShowSettings}
         />
 
         {/* Compact Navigation */}
         <CompactExerciseNavigation
           currentWeekOffset={currentWeekOffset}
-          setCurrentWeekOffset={setCurrentWeekOffset}
+          setCurrentWeekOffset={handleWeekChange}
           weekStartDate={weekStartDate}
           selectedDayNumber={selectedDayNumber}
           setSelectedDayNumber={setSelectedDayNumber}

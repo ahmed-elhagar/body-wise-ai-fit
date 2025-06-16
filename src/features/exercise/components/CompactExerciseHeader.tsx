@@ -15,30 +15,24 @@ import { useCentralizedCredits } from "@/hooks/useCentralizedCredits";
 interface CompactExerciseHeaderProps {
   currentProgram: any;
   workoutType: "home" | "gym";
+  currentWeekOffset: number;
+  onGenerateProgram: () => void;
+  onRegenerateProgram: () => void;
+  onShowAnalytics: () => void;
+  onShowSettings: () => void;
 }
 
 export const CompactExerciseHeader = ({
   currentProgram,
-  workoutType
+  workoutType,
+  currentWeekOffset,
+  onGenerateProgram,
+  onRegenerateProgram,
+  onShowAnalytics,
+  onShowSettings
 }: CompactExerciseHeaderProps) => {
   const { t } = useLanguage();
   const { hasCredits } = useCentralizedCredits();
-
-  const handleGenerateProgram = () => {
-    console.log('Generate new program');
-  };
-
-  const handleRegenerateProgram = () => {
-    console.log('Regenerate program');
-  };
-
-  const handleShowAnalytics = () => {
-    console.log('Show analytics');
-  };
-
-  const handleShowSettings = () => {
-    console.log('Show settings');
-  };
 
   return (
     <Card className="p-4 bg-white border border-gray-200">
@@ -51,7 +45,7 @@ export const CompactExerciseHeader = ({
           
           <div>
             <h1 className="text-lg font-bold text-gray-900">
-              Exercise Program
+              {currentProgram?.program_name || 'Exercise Program'}
             </h1>
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <Badge variant="outline" className={`text-xs ${
@@ -61,46 +55,49 @@ export const CompactExerciseHeader = ({
               }`}>
                 {workoutType === 'gym' ? '🏋️ Gym' : '🏠 Home'}
               </Badge>
-              {currentProgram && (
-                <span className="text-xs">Week {currentProgram.current_week || 1} of 4</span>
-              )}
+              <span className="text-xs">
+                Week {currentWeekOffset + 1} of 4
+              </span>
             </div>
           </div>
         </div>
         
         {/* Right side - Action buttons */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
           <Button
-            onClick={handleShowAnalytics}
+            onClick={onShowAnalytics}
             variant="ghost"
             size="sm"
-            className="h-8 w-8 p-0"
+            className="h-8 px-3 text-xs"
           >
-            <BarChart3 className="w-4 h-4" />
+            <BarChart3 className="w-4 h-4 mr-1" />
+            Analytics
           </Button>
 
           <Button
-            onClick={handleShowSettings}
+            onClick={onShowSettings}
             variant="ghost"
             size="sm"
-            className="h-8 w-8 p-0"
+            className="h-8 px-3 text-xs"
           >
-            <Settings className="w-4 h-4" />
+            <Settings className="w-4 h-4 mr-1" />
+            Settings
           </Button>
 
           {currentProgram ? (
             <Button
-              onClick={handleRegenerateProgram}
+              onClick={onRegenerateProgram}
               disabled={!hasCredits}
               variant="ghost"
               size="sm"
-              className="h-8 w-8 p-0"
+              className="h-8 px-3 text-xs"
             >
-              <RotateCcw className="w-4 h-4" />
+              <RotateCcw className="w-4 h-4 mr-1" />
+              Regenerate
             </Button>
           ) : (
             <Button
-              onClick={handleGenerateProgram}
+              onClick={onGenerateProgram}
               disabled={!hasCredits}
               size="sm"
               className="bg-blue-600 hover:bg-blue-700 text-white h-8 px-3 text-xs"

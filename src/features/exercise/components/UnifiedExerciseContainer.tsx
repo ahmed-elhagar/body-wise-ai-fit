@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { InteractiveExerciseCard } from "./InteractiveExerciseCard";
 import { RestDayCard } from "./RestDayCard";
 import { AnimatedProgressRing } from "./AnimatedProgressRing";
-import { Target, Coffee, Zap, Trophy } from "lucide-react";
+import { Target, Trophy, Zap } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface UnifiedExerciseContainerProps {
@@ -38,7 +38,7 @@ export const UnifiedExerciseContainer = ({
 
   if (isLoading) {
     return (
-      <Card className="p-8">
+      <Card className="p-6">
         <div className="flex items-center justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
           <span className="ml-3 text-gray-600">Loading exercises...</span>
@@ -64,45 +64,46 @@ export const UnifiedExerciseContainer = ({
   }
 
   return (
-    <div className="space-y-6">
-      {/* Progress Section */}
-      <Card className="p-6 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+    <div className="space-y-4">
+      {/* Enhanced Progress Section */}
+      <Card className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200">
+        <div className="flex items-center gap-4">
+          <div className="flex-shrink-0">
             <AnimatedProgressRing
               completedExercises={completedExercises}
               totalExercises={totalExercises}
               progressPercentage={progressPercentage}
+              size={60}
+              strokeWidth={6}
             />
-            <div>
-              <h3 className="text-xl font-bold text-gray-900 mb-1">
-                Day {selectedDayNumber} Progress
-              </h3>
-              <p className="text-gray-600">
-                {completedExercises} of {totalExercises} exercises completed
-              </p>
-              <div className="flex items-center gap-2 mt-2">
-                {isToday && (
-                  <Badge className="bg-green-500 text-white">Today</Badge>
-                )}
-                <Badge variant="outline" className="text-blue-600 border-blue-300">
-                  {totalExercises} exercises
-                </Badge>
-              </div>
+          </div>
+          <div className="flex-1">
+            <h3 className="text-lg font-bold text-gray-900 mb-1">
+              Day {selectedDayNumber} Progress
+            </h3>
+            <p className="text-gray-600 text-sm">
+              {completedExercises} of {totalExercises} exercises completed
+            </p>
+            <div className="flex items-center gap-2 mt-2">
+              {isToday && (
+                <Badge className="bg-green-500 text-white text-xs">Today</Badge>
+              )}
+              <Badge variant="outline" className="text-blue-600 border-blue-300 text-xs">
+                {totalExercises} exercises
+              </Badge>
+              {progressPercentage === 100 && (
+                <div className="flex items-center gap-1 text-green-600">
+                  <Trophy className="w-4 h-4" />
+                  <span className="font-semibold text-xs">Complete!</span>
+                </div>
+              )}
             </div>
           </div>
-          
-          {progressPercentage === 100 && (
-            <div className="flex items-center gap-2 text-green-600">
-              <Trophy className="w-6 h-6" />
-              <span className="font-semibold">Complete!</span>
-            </div>
-          )}
         </div>
       </Card>
 
       {/* Exercises List */}
-      <div className="space-y-4">
+      <div className="space-y-3">
         {exercises.map((exercise, index) => (
           <InteractiveExerciseCard
             key={exercise.id}
@@ -116,12 +117,12 @@ export const UnifiedExerciseContainer = ({
 
       {/* Motivation Card */}
       {progressPercentage > 0 && progressPercentage < 100 && (
-        <Card className="p-6 bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-200">
+        <Card className="p-4 bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-200">
           <div className="flex items-center gap-3">
-            <Zap className="w-8 h-8 text-orange-500" />
+            <Zap className="w-6 h-6 text-orange-500 flex-shrink-0" />
             <div>
-              <h4 className="font-bold text-orange-800">Keep Going!</h4>
-              <p className="text-orange-600 text-sm">
+              <h4 className="font-bold text-orange-800 text-sm">Keep Going!</h4>
+              <p className="text-orange-600 text-xs">
                 You're {Math.round(progressPercentage)}% done with today's workout. You've got this!
               </p>
             </div>

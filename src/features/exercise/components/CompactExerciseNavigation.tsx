@@ -1,7 +1,7 @@
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Home, Building2, Coffee, Target } from "lucide-react";
+import { ChevronLeft, ChevronRight, Home, Building2, Coffee, Target, CheckCircle } from "lucide-react";
 import { format, addDays } from "date-fns";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -55,6 +55,14 @@ export const CompactExerciseNavigation = ({
     if (workout.workout_name?.toLowerCase().includes('rest')) return 'rest';
     if (workout.exercises?.length > 0) return 'workout';
     return 'empty';
+  };
+
+  const getDayProgress = (dayNumber: number) => {
+    const workout = getDayWorkout(dayNumber);
+    if (!workout || !workout.exercises) return 0;
+    const completed = workout.exercises.filter((ex: any) => ex.completed).length;
+    const total = workout.exercises.length;
+    return total > 0 ? (completed / total) * 100 : 0;
   };
 
   return (
@@ -129,39 +137,60 @@ export const CompactExerciseNavigation = ({
             const isSelected = selectedDayNumber === dayNumber;
             const isToday = new Date().getDay() === (dayNumber === 7 ? 0 : dayNumber);
             const status = getDayStatus(dayNumber);
+            const progress = getDayProgress(dayNumber);
             
             return (
               <Button
                 key={day}
                 variant={isSelected ? "default" : "ghost"}
-                className={`h-12 p-1 rounded-lg transition-all text-xs font-medium flex flex-col items-center justify-center relative ${
+                className={`h-16 p-1 rounded-lg transition-all text-xs font-medium flex flex-col items-center justify-center relative ${
                   isSelected 
                     ? 'bg-blue-600 text-white shadow-sm' 
                     : status === 'rest'
-                    ? 'bg-orange-50 hover:bg-orange-100 text-orange-700'
+                    ? 'bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200'
                     : status === 'workout'
-                    ? 'bg-green-50 hover:bg-green-100 text-green-700'
-                    : 'bg-gray-50 hover:bg-gray-100 text-gray-600'
-                } ${isToday ? 'ring-1 ring-blue-300' : ''}`}
+                    ? 'bg-green-50 hover:bg-green-100 text-green-700 border border-green-200'
+                    : 'bg-gray-50 hover:bg-gray-100 text-gray-600 border border-gray-200'
+                } ${isToday ? 'ring-2 ring-blue-300 ring-offset-1' : ''}`}
                 onClick={() => setSelectedDayNumber(dayNumber)}
               >
                 {/* Day name */}
                 <span className="font-semibold">{day}</span>
                 
                 {/* Status indicator */}
-                <div className="flex items-center justify-center mt-0.5">
+                <div className="flex items-center justify-center mt-1">
                   {status === 'rest' ? (
-                    <Coffee className="w-2.5 h-2.5" />
+                    <Coffee className="w-3 h-3" />
                   ) : status === 'workout' ? (
-                    <Target className="w-2.5 h-2.5" />
+                    progress === 100 ? (
+                      <CheckCircle className="w-3 h-3" />
+                    ) : (
+                      <Target className="w-3 h-3" />
+                    )
                   ) : (
-                    <div className="w-1.5 h-1.5 rounded-full bg-current opacity-40" />
+                    <div className="w-2 h-2 rounded-full bg-current opacity-40" />
                   )}
                 </div>
                 
+                {/* Progress bar for workout days */}
+                {status === 'workout' && (
+                  <div className="w-full h-1 bg-gray-200 rounded-full mt-1 overflow-hidden">
+                    <div 
+                      className={`h-full transition-all duration-300 rounded-full ${
+                        isSelected 
+                          ? 'bg-white' 
+                          : progress === 100 
+                          ? 'bg-green-500' 
+                          : 'bg-blue-500'
+                      }`}
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+                )}
+                
                 {/* Today indicator */}
                 {isToday && !isSelected && (
-                  <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <div className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full"></div>
                 )}
               </Button>
             );
