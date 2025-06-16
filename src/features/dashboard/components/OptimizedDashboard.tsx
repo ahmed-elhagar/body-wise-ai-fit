@@ -1,7 +1,8 @@
 
 import React, { Suspense } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useLanguage } from '@/hooks/useLanguage';
+import { useProfile } from '@/hooks/useProfile';
+import { useLanguage } from '@/contexts/LanguageContext';
 import ErrorBoundary from '@/components/ui/error-boundary';
 import EnhancedSpinner from '@/components/ui/enhanced-spinner';
 import { CardSkeleton } from '@/components/ui/skeleton-loader';
@@ -13,7 +14,8 @@ const RecentActivityCard = React.lazy(() => import('./RecentActivityCard'));
 const StatsGrid = React.lazy(() => import('../../../components/dashboard/StatsGrid'));
 
 const OptimizedDashboard = () => {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
+  const { profile } = useProfile();
   const { t } = useLanguage();
 
   if (!user) {
@@ -24,6 +26,8 @@ const OptimizedDashboard = () => {
     );
   }
 
+  const userName = profile?.first_name || 'User';
+
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-gradient-to-br from-fitness-primary-50 to-fitness-secondary-50">
@@ -31,7 +35,7 @@ const OptimizedDashboard = () => {
           
           {/* Header Section */}
           <Suspense fallback={<CardSkeleton className="h-24" />}>
-            <DashboardHeader />
+            <DashboardHeader userName={userName} />
           </Suspense>
 
           {/* Stats Grid */}

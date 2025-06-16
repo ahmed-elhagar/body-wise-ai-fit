@@ -35,7 +35,7 @@ export const useMealPlanData = (weekOffset: number = 0) => {
         handleError(error, {
           operation: 'Meal Plan Fetch',
           userId: user.id,
-          weekOffset,
+          weekOffset: weekOffset,
           retryable: true
         });
         throw error;

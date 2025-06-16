@@ -1,7 +1,7 @@
 
 import { useCallback } from 'react';
-import { useLanguage } from './useLanguage';
-import { useToast } from './use-toast';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useToast } from '@/hooks/use-toast';
 import { createErrorMessage, logError, ErrorContext, EnhancedError } from '@/utils/errorMessages';
 
 export const useEnhancedErrorHandling = () => {

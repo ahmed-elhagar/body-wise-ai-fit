@@ -5,6 +5,7 @@ export interface ErrorContext {
   operation?: string;
   component?: string;
   userId?: string;
+  weekOffset?: number;
   retryable?: boolean;
 }
 
