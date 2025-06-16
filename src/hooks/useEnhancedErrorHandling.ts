@@ -16,8 +16,8 @@ export const useEnhancedErrorHandling = () => {
     // Log the error
     logError(error, context);
 
-    // Create user-friendly message
-    const { message, retryable } = createErrorMessage(error, t, context);
+    // Create user-friendly message - cast t to any to avoid type issues
+    const { message, retryable } = createErrorMessage(error, t as any, context);
 
     // Show toast notification if requested
     if (showToast) {

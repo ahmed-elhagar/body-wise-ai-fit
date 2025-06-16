@@ -1,135 +1,106 @@
 
-import { format, addDays } from "date-fns";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { useOptimizedExerciseProgramPage } from "@/features/exercise/hooks/useOptimizedExerciseProgramPage";
-import { useEnhancedAIExercise } from "@/hooks/useEnhancedAIExercise";
-import { useAILoadingSteps } from "@/hooks/useAILoadingSteps";
 import { useState } from "react";
-import { ExercisePageLayout } from "./ExercisePageLayout";
-import { ExerciseAnalyticsContainer } from "./ExerciseAnalyticsContainer";
-import { useExerciseAISteps } from "../hooks/useExerciseAISteps";
+import { useExercisePrograms } from "@/hooks/useExercisePrograms";
+import { useDailyWorkouts } from "@/hooks/useDailyWorkouts";
+import { ModernExerciseNavigation } from "./ModernExerciseNavigation";
+import { UnifiedExerciseContainer } from "./UnifiedExerciseContainer";
+import { getWeekStartDate } from "@/utils/mealPlanUtils";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { Card } from "@/components/ui/card";
+import EnhancedSpinner from "@/components/ui/enhanced-spinner";
 
 export const ExercisePageContainer = () => {
-  const { language } = useLanguage();
-  const [showAnalytics, setShowAnalytics] = useState(false);
+  const { t } = useLanguage();
+  const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
+  const [selectedDayNumber, setSelectedDayNumber] = useState(1);
+  const [workoutType, setWorkoutType] = useState<"home" | "gym">("home");
+
+  const { programs, isLoading: programsLoading } = useExercisePrograms();
+  const currentProgram = programs?.[0];
   
-  const {
-    selectedDayNumber,
-    setSelectedDayNumber,
-    currentWeekOffset,
-    setCurrentWeekOffset,
-    workoutType,
-    setWorkoutType,
-    showAIDialog,
-    setShowAIDialog,
-    aiPreferences,
-    setAiPreferences,
-    currentProgram,
-    isLoading,
-    todaysExercises,
-    completedExercises,
-    totalExercises,
-    progressPercentage,
-    isRestDay,
-    error,
-    currentDate,
-    weekStartDate,
-    handleExerciseComplete,
-    handleExerciseProgressUpdate,
-    refetch
-  } = useOptimizedExerciseProgramPage();
-
-  const { isGenerating, generateExerciseProgram, regenerateProgram } = useEnhancedAIExercise();
-  const exerciseSteps = useExerciseAISteps(language);
-
-  const { currentStepIndex, isComplete, progress } = useAILoadingSteps(
-    exerciseSteps, 
-    isGenerating,
-    { stepDuration: 3500 }
+  const { workouts, exercises, isLoading: workoutsLoading } = useDailyWorkouts(
+    currentProgram?.id, 
+    selectedDayNumber, 
+    workoutType
   );
 
-  const currentSelectedDate = addDays(weekStartDate, selectedDayNumber - 1);
-  const isToday = format(currentSelectedDate, 'yyyy-MM-dd') === format(currentDate, 'yyyy-MM-dd');
+  const weekStartDate = getWeekStartDate(currentWeekOffset);
+  const isToday = currentWeekOffset === 0;
 
-  const handleGenerateAIProgram = async (preferences: any) => {
-    try {
-      setShowAIDialog(false);
-      
-      const enhancedPreferences = {
-        ...preferences,
-        workoutType,
-        weekStartDate: format(weekStartDate, 'yyyy-MM-dd'),
-        weekOffset: currentWeekOffset
-      };
-      
-      console.log('🎯 Starting AI program generation:', enhancedPreferences);
-      await generateExerciseProgram(enhancedPreferences);
-      refetch();
-    } catch (error) {
-      console.error('❌ Error generating exercise program:', error);
-    }
+  // Calculate progress
+  const completedExercises = exercises?.filter(ex => ex.completed).length || 0;
+  const totalExercises = exercises?.length || 0;
+  const progressPercentage = totalExercises > 0 ? (completedExercises / totalExercises) * 100 : 0;
+
+  // Check if it's a rest day
+  const todaysWorkout = workouts?.[0];
+  const isRestDay = todaysWorkout?.is_rest_day || false;
+
+  const handleExerciseComplete = (exerciseId: string) => {
+    // TODO: Implement exercise completion logic
+    console.log('Toggle exercise completion:', exerciseId);
   };
 
-  const handleRegenerateProgram = async () => {
-    try {
-      const weekStartDateString = format(weekStartDate, 'yyyy-MM-dd');
-      console.log('🔄 Starting program regeneration for week:', weekStartDateString);
-      await regenerateProgram(weekStartDateString);
-      refetch();
-    } catch (error) {
-      console.error('❌ Error regenerating exercise program:', error);
-    }
+  const handleExerciseProgressUpdate = (exerciseId: string, sets: number, reps: string, notes?: string) => {
+    // TODO: Implement exercise progress update logic
+    console.log('Update exercise progress:', { exerciseId, sets, reps, notes });
   };
 
-  if (showAnalytics) {
+  if (programsLoading) {
     return (
-      <ExerciseAnalyticsContainer
-        exercises={todaysExercises}
-        onClose={() => setShowAnalytics(false)}
-      />
+      <div className="min-h-screen flex items-center justify-center">
+        <EnhancedSpinner size="lg" text={t('exercise.loadingProgram')} />
+      </div>
+    );
+  }
+
+  if (!currentProgram) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <Card className="p-8 text-center max-w-md">
+          <h3 className="text-xl font-bold text-gray-900 mb-4">
+            {t('exercise.noProgramTitle') || 'No Exercise Program'}
+          </h3>
+          <p className="text-gray-600 mb-6">
+            {t('exercise.noProgramMessage') || 'You don\'t have an exercise program yet. Generate one to get started!'}
+          </p>
+        </Card>
+      </div>
     );
   }
 
   return (
-    <ExercisePageLayout
-      // Data props
-      currentProgram={currentProgram}
-      todaysExercises={todaysExercises}
-      completedExercises={completedExercises}
-      totalExercises={totalExercises}
-      progressPercentage={progressPercentage}
-      isRestDay={isRestDay}
-      isToday={isToday}
-      isLoading={isLoading}
-      error={error}
-      
-      // Navigation props
-      selectedDayNumber={selectedDayNumber}
-      setSelectedDayNumber={setSelectedDayNumber}
-      currentWeekOffset={currentWeekOffset}
-      setCurrentWeekOffset={setCurrentWeekOffset}
-      weekStartDate={weekStartDate}
-      workoutType={workoutType}
-      setWorkoutType={setWorkoutType}
-      
-      // AI props
-      showAIDialog={showAIDialog}
-      setShowAIDialog={setShowAIDialog}
-      aiPreferences={aiPreferences}
-      setAiPreferences={setAiPreferences}
-      isGenerating={isGenerating}
-      exerciseSteps={exerciseSteps}
-      currentStepIndex={currentStepIndex}
-      isComplete={isComplete}
-      progress={progress}
-      
-      // Actions
-      onShowAnalytics={() => setShowAnalytics(true)}
-      onGenerateAIProgram={handleGenerateAIProgram}
-      onRegenerateProgram={handleRegenerateProgram}
-      onExerciseComplete={handleExerciseComplete}
-      onExerciseProgressUpdate={handleExerciseProgressUpdate}
-      refetch={refetch}
-    />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+      <div className="container mx-auto px-4 py-6 space-y-6">
+        
+        {/* Modern Navigation */}
+        <ModernExerciseNavigation
+          currentWeekOffset={currentWeekOffset}
+          setCurrentWeekOffset={setCurrentWeekOffset}
+          weekStartDate={weekStartDate}
+          selectedDayNumber={selectedDayNumber}
+          setSelectedDayNumber={setSelectedDayNumber}
+          workoutType={workoutType}
+          onWorkoutTypeChange={setWorkoutType}
+          currentProgram={currentProgram}
+        />
+
+        {/* Exercise Content */}
+        <UnifiedExerciseContainer
+          exercises={exercises || []}
+          isLoading={workoutsLoading}
+          onExerciseComplete={handleExerciseComplete}
+          onExerciseProgressUpdate={handleExerciseProgressUpdate}
+          isRestDay={isRestDay}
+          completedExercises={completedExercises}
+          totalExercises={totalExercises}
+          progressPercentage={progressPercentage}
+          isToday={isToday}
+          currentProgram={currentProgram}
+          selectedDayNumber={selectedDayNumber}
+        />
+
+      </div>
+    </div>
   );
 };
