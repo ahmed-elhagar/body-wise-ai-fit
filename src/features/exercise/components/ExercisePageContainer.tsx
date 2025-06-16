@@ -2,7 +2,8 @@
 import { useState } from "react";
 import { useExercisePrograms } from "@/hooks/useExercisePrograms";
 import { useDailyWorkouts } from "@/hooks/useDailyWorkouts";
-import { ModernExerciseNavigation } from "./ModernExerciseNavigation";
+import { CompactExerciseHeader } from "./CompactExerciseHeader";
+import { CompactExerciseNavigation } from "./CompactExerciseNavigation";
 import { UnifiedExerciseContainer } from "./UnifiedExerciseContainer";
 import { getWeekStartDate } from "@/utils/mealPlanUtils";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -32,10 +33,9 @@ export const ExercisePageContainer = () => {
   const totalExercises = exercises?.length || 0;
   const progressPercentage = totalExercises > 0 ? (completedExercises / totalExercises) * 100 : 0;
 
-  // Check if it's a rest day - handle both possible property names
+  // Check if it's a rest day - properly check the workout object
   const todaysWorkout = workouts?.[0];
-  const isRestDay = todaysWorkout?.is_rest_day || 
-                   (todaysWorkout?.workout_name?.toLowerCase().includes('rest')) ||
+  const isRestDay = todaysWorkout?.workout_name?.toLowerCase().includes('rest') ||
                    (!exercises || exercises.length === 0);
 
   const handleExerciseComplete = (exerciseId: string) => {
@@ -72,11 +72,17 @@ export const ExercisePageContainer = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
-      <div className="container mx-auto px-4 py-6 space-y-6">
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto px-4 py-4 space-y-4">
         
-        {/* Modern Navigation */}
-        <ModernExerciseNavigation
+        {/* Compact Header */}
+        <CompactExerciseHeader 
+          currentProgram={currentProgram}
+          workoutType={workoutType}
+        />
+
+        {/* Compact Navigation */}
+        <CompactExerciseNavigation
           currentWeekOffset={currentWeekOffset}
           setCurrentWeekOffset={setCurrentWeekOffset}
           weekStartDate={weekStartDate}
