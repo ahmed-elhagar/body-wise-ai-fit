@@ -32,9 +32,11 @@ export const ExercisePageContainer = () => {
   const totalExercises = exercises?.length || 0;
   const progressPercentage = totalExercises > 0 ? (completedExercises / totalExercises) * 100 : 0;
 
-  // Check if it's a rest day
+  // Check if it's a rest day - handle both possible property names
   const todaysWorkout = workouts?.[0];
-  const isRestDay = todaysWorkout?.is_rest_day || false;
+  const isRestDay = todaysWorkout?.is_rest_day || 
+                   (todaysWorkout?.workout_name?.toLowerCase().includes('rest')) ||
+                   (!exercises || exercises.length === 0);
 
   const handleExerciseComplete = (exerciseId: string) => {
     // TODO: Implement exercise completion logic

@@ -1,6 +1,4 @@
 
-import { motion } from "framer-motion";
-
 interface AnimatedProgressRingProps {
   completedExercises: number;
   totalExercises: number;
@@ -40,7 +38,7 @@ export const AnimatedProgressRing = ({
         />
         
         {/* Progress Circle */}
-        <motion.circle
+        <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
@@ -50,24 +48,16 @@ export const AnimatedProgressRing = ({
           strokeDasharray={strokeDasharray}
           strokeDashoffset={strokeDashoffset}
           strokeLinecap="round"
-          className="text-blue-600"
-          initial={{ strokeDashoffset: circumference }}
-          animate={{ strokeDashoffset }}
-          transition={{ duration: 1, ease: "easeInOut" }}
+          className="text-blue-600 transition-all duration-1000 ease-in-out"
         />
       </svg>
       
       {/* Center Content */}
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="text-center">
-          <motion.div
-            className="text-sm font-bold text-blue-600"
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.5, duration: 0.3 }}
-          >
+          <div className="text-sm font-bold text-blue-600">
             {Math.round(progressPercentage)}%
-          </motion.div>
+          </div>
           <div className="text-xs text-gray-500">
             {completedExercises}/{totalExercises}
           </div>
