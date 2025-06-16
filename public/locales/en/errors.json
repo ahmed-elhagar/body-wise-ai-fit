@@ -1,11 +1,15 @@
 
 {
+  "authenticationRequired": "Please log in to continue",
+  "networkError": "Network connection error. Please check your internet connection and try again.",
+  "requestTimeout": "Request timed out. Please try again.",
+  "rateLimitExceeded": "Too many requests. Please wait a moment before trying again.",
   "mealPlanGeneration": "Failed to generate meal plan. Please try again.",
-  "exerciseGeneration": "Failed to generate exercise program. Please try again.",
-  "foodAnalysis": "Failed to analyze food image. Please try again.",
-  "networkError": "Network error. Please check your connection.",
-  "unknownError": "An unexpected error occurred. Please try again.",
-  "authenticationRequired": "Authentication required. Please log in.",
-  "insufficientCredits": "Insufficient AI credits. Please upgrade your plan.",
-  "validationError": "Please check your input and try again."
+  "exerciseProgram": "Failed to load exercise program. Please try again.",
+  "foodAnalysis": "Failed to analyze food. Please try again.",
+  "profileUpdate": "Failed to update profile. Please try again.",
+  "dataFetch": "Failed to load data. Please try again.",
+  "general": "An unexpected error occurred. Please try again.",
+  "imageLoadFailed": "Failed to load image",
+  "validationError": "Please check your input and try again"
 }
