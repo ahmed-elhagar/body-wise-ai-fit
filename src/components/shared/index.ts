@@ -1,6 +1,6 @@
 
 // Shared components used across features
-export { GlobalFeedbackButton } from '../GlobalFeedbackButton';
-export { ProfileCompletionBanner } from '../ProfileCompletionBanner';
-export { DebugPanel } from '../DebugPanel';
-export { LazyPages } from '../LazyPages';
+export { default as GlobalFeedbackButton } from '../GlobalFeedbackButton';
+export { default as ProfileCompletionBanner } from '../ProfileCompletionBanner';
+export { default as DebugPanel } from '../DebugPanel';
+export { default as LazyPages } from '../LazyPages';

@@ -1,4 +1,3 @@
-
 import { useI18n } from "@/hooks/useI18n"
 import {
   Sidebar,
@@ -11,6 +10,8 @@ import { SidebarHeader as CustomSidebarHeader } from "./sidebar/SidebarHeader"
 import { SidebarMainNavigation } from "./sidebar/SidebarMainNavigation"
 import { SidebarFooter as CustomSidebarFooter } from "./sidebar/SidebarFooter"
 import { cn } from "@/lib/utils"
+import SidebarAdminPanel from '@/features/admin/components/SidebarAdminPanel';
+import SidebarManagementPanel from '@/features/sidebar/components/SidebarManagementPanel';
 
 const AppSidebar = () => {
   const { isRTL } = useI18n()

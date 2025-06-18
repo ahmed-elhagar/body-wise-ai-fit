@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,7 +9,7 @@ import Layout from "@/components/Layout";
 import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import { SubscriptionDebugPanel } from "@/components/SubscriptionDebugPanel";
+import SubscriptionDebugPanel from '@/components/ui/SubscriptionDebugPanel';
 
 const Pro = () => {
   const { isPro, role, refetch: refetchRole } = useRole();
