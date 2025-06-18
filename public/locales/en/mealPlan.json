@@ -32,6 +32,8 @@
   "today": "Today",
   "dailyView": "Daily View",
   "weeklyView": "Weekly View",
+  "planGeneratedSuccess": "Meal plan generated successfully!",
+  "planGenerationFailed": "Failed to generate meal plan. Please try again.",
   "addSnackDialog": {
     "analyzing": "Analyzing your nutrition needs...",
     "creating": "Creating perfect snack...",

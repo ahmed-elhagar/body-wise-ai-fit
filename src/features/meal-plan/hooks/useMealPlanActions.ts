@@ -1,6 +1,8 @@
 
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
+import { useEnhancedMealPlan } from '@/hooks/useEnhancedMealPlan';
+import { useLanguage } from '@/contexts/LanguageContext';
 import type { MealPlanFetchResult } from '../types';
 
 export const useMealPlanActions = (
@@ -10,29 +12,42 @@ export const useMealPlanActions = (
   refetch: () => Promise<any>
 ) => {
   const [isGenerating, setIsGenerating] = useState(false);
+  const { generateMealPlan } = useEnhancedMealPlan();
+  const { t = (key: string) => key } = useLanguage() || {};
 
   const handle = useCallback(async () => {
-    if (isGenerating) return;
+    if (isGenerating) return false;
 
-    setIsGenerating(true);
+    console.log('🤖 Starting meal plan generation with preferences:', aiPreferences);
+    
     try {
-      console.log('🤖 Generating AI meal plan with preferences:', aiPreferences);
+      setIsGenerating(true);
       
-      // Simulate API call for meal plan generation
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      const success = await generateMealPlan(aiPreferences, { weekOffset: currentWeekOffset });
       
-      toast.success('Meal plan generated successfully!');
-      
-      // Refetch data after generation
-      await refetch();
-      
+      if (success) {
+        console.log('✅ Meal plan generation successful');
+        toast.success(t('mealPlan.planGeneratedSuccess') || 'Meal plan generated successfully!');
+        
+        // Wait a moment then refetch data
+        setTimeout(async () => {
+          await refetch();
+        }, 1000);
+        
+        return true;
+      } else {
+        console.error('❌ Meal plan generation failed');
+        toast.error(t('mealPlan.planGenerationFailed') || 'Failed to generate meal plan');
+        return false;
+      }
     } catch (error) {
-      console.error('❌ Error generating meal plan:', error);
-      toast.error('Failed to generate meal plan. Please try again.');
+      console.error('❌ Error in meal plan generation:', error);
+      toast.error(t('mealPlan.planGenerationFailed') || 'Failed to generate meal plan');
+      return false;
     } finally {
       setIsGenerating(false);
     }
-  }, [aiPreferences, refetch, isGenerating]);
+  }, [aiPreferences, refetch, isGenerating, generateMealPlan, currentWeekOffset, t]);
 
   return {
     handle,

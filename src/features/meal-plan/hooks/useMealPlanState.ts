@@ -109,20 +109,26 @@ export const useMealPlanState = () => {
 
   // AI preferences state
   const [aiPreferences, setAiPreferences] = useState({
-    duration: "7",
     cuisine: "mixed",
     maxPrepTime: "30",
     includeSnacks: true,
-    mealTypes: "breakfast,lunch,dinner",
   });
 
-  // Actions
+  // Actions with proper dialog handling
   const { handle: handleGenerateAIPlan, isGenerating } = useMealPlanActions(
     currentWeekPlan,
     currentWeekOffset,
     aiPreferences,
     refetch
   );
+
+  // Enhanced AI generation handler that closes dialog on success
+  const handleAIGeneration = useCallback(async () => {
+    const success = await handleGenerateAIPlan();
+    if (success) {
+      setShowAIDialog(false); // Close dialog on success
+    }
+  }, [handleGenerateAIPlan]);
 
   // Enhanced week change handler
   const setCurrentWeekOffset = useCallback(async (newOffset: number) => {
@@ -205,7 +211,7 @@ export const useMealPlanState = () => {
     
     // Actions
     refetch,
-    handleGenerateAIPlan,
+    handleGenerateAIPlan: handleAIGeneration, // Use enhanced handler
     
     // Dialog handlers
     openAIDialog,

@@ -1,21 +1,34 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { useEnhancedMealPlan } from '@/hooks/useEnhancedMealPlan';
+import { useLanguage } from '@/contexts/LanguageContext';
 import type { MealPlanPreferences } from '../types';
 
 export const useMealGeneration = () => {
   const [isGenerating, setIsGenerating] = useState(false);
+  const { generateMealPlan } = useEnhancedMealPlan();
+  const { t = (key: string) => key } = useLanguage() || {};
 
-  const generateMealPlan = async (preferences: MealPlanPreferences) => {
+  const generateMealPlanAction = async (preferences: MealPlanPreferences) => {
+    if (isGenerating) return false;
+    
     setIsGenerating(true);
     try {
-      // Mock implementation
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      toast.success('Meal plan generated successfully!');
-      return true;
+      console.log('🍽️ Generating meal plan with preferences:', preferences);
+      
+      const success = await generateMealPlan(preferences);
+      
+      if (success) {
+        toast.success(t('mealPlan.planGeneratedSuccess') || 'Meal plan generated successfully!');
+        return true;
+      } else {
+        toast.error(t('mealPlan.planGenerationFailed') || 'Failed to generate meal plan');
+        return false;
+      }
     } catch (error) {
-      console.error('Error generating meal plan:', error);
-      toast.error('Failed to generate meal plan');
+      console.error('❌ Error generating meal plan:', error);
+      toast.error(t('errors.aiGenerationFailed') || 'AI generation failed');
       return false;
     } finally {
       setIsGenerating(false);
@@ -23,7 +36,7 @@ export const useMealGeneration = () => {
   };
 
   return {
-    generateMealPlan,
+    generateMealPlan: generateMealPlanAction,
     isGenerating
   };
 };

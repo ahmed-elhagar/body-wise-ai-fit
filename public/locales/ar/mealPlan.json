@@ -32,6 +32,8 @@
   "today": "اليوم",
   "dailyView": "العرض اليومي",
   "weeklyView": "العرض الأسبوعي",
+  "planGeneratedSuccess": "تم توليد خطة الوجبات بنجاح!",
+  "planGenerationFailed": "فشل في توليد خطة الوجبات. يرجى المحاولة مرة أخرى.",
   "addSnackDialog": {
     "analyzing": "جاري تحليل احتياجاتك الغذائية...",
     "creating": "جاري إنشاء الوجبة الخفيفة المثالية...",
