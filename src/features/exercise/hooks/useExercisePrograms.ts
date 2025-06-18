@@ -51,11 +51,11 @@ export const useExercisePrograms = (weekOffset: number = 0) => {
         user_id: weeklyProgramData.user_id,
         week_start_date: weeklyProgramData.week_start_date,
         program_name: weeklyProgramData.program_name,
-        program_type: 'mixed', // Default value since it's not in DB
-        total_workouts: 7, // Default value
-        estimated_weekly_hours: 5, // Default value
+        program_type: 'mixed',
+        total_workouts: 7,
+        estimated_weekly_hours: 5,
         difficulty_level: (weeklyProgramData.difficulty_level as 'beginner' | 'intermediate' | 'advanced') || 'beginner',
-        target_muscle_groups: ['full_body'], // Default value
+        target_muscle_groups: ['full_body'],
         workout_type: (weeklyProgramData.workout_type as 'home' | 'gym') || 'home',
         current_week: weeklyProgramData.current_week || 1,
         status: weeklyProgramData.status || 'active',
@@ -111,7 +111,10 @@ export const useExercisePrograms = (weekOffset: number = 0) => {
           created_at: exercise.created_at,
           updated_at: exercise.updated_at
         })),
-        is_rest_day: workout.is_rest_day || false,
+        // Check if this workout is a rest day based on workout name or lack of exercises
+        is_rest_day: workout.workout_name?.toLowerCase().includes('rest') || 
+                     workout.workout_name?.toLowerCase().includes('recovery') || 
+                     (workout.exercises?.length === 0),
         created_at: workout.created_at,
         updated_at: workout.updated_at
       }));
@@ -124,6 +127,6 @@ export const useExercisePrograms = (weekOffset: number = 0) => {
       };
     },
     enabled: !!user?.id,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
   });
 };
