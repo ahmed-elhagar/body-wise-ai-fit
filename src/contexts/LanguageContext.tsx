@@ -1,72 +1,69 @@
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import i18n from '@/i18n/config';
+import React, { createContext, useContext, useState } from 'react';
 
-export type Language = 'en' | 'ar';
+type Language = 'en' | 'ar';
 
-export interface LanguageContextType {
+interface LanguageContextType {
   language: Language;
+  setLanguage: (lang: Language) => void;
+  t: (key: string, fallback?: string) => string;
   isRTL: boolean;
-  changeLanguage: (lng: Language) => void;
-  t: (key: string, options?: any) => string;
-  setLanguage: (lng: Language) => void;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { t } = useTranslation();
-  const [language, setLanguageState] = useState<Language>('en');
-  const [isRTL, setIsRTL] = useState(false);
+// Simple translation function - in a real app, you'd use i18next
+const translations = {
+  en: {
+    'Welcome': 'Welcome',
+    'Dashboard': 'Dashboard',
+    'Meal Plan': 'Meal Plan',
+    'Exercise': 'Exercise',
+    'Profile': 'Profile',
+    'Coach': 'Coach',
+    'Sign In': 'Sign In',
+    'Sign Up': 'Sign Up',
+    'Sign Out': 'Sign Out',
+  },
+  ar: {
+    'Welcome': 'مرحباً',
+    'Dashboard': 'لوحة التحكم',
+    'Meal Plan': 'خطة الوجبات',
+    'Exercise': 'التمارين',
+    'Profile': 'الملف الشخصي',
+    'Coach': 'المدرب',
+    'Sign In': 'تسجيل الدخول',
+    'Sign Up': 'إنشاء حساب',
+    'Sign Out': 'تسجيل الخروج',
+  }
+};
 
-  useEffect(() => {
-    const storedLanguage = localStorage.getItem('preferred-language') as Language;
-    if (storedLanguage && ['en', 'ar'].includes(storedLanguage)) {
-      setLanguageState(storedLanguage);
-      // Use the imported i18n instance directly
-      i18n.changeLanguage(storedLanguage);
-    }
-  }, []);
+export const LanguageProvider = ({ children }: { children: React.ReactNode }) => {
+  const [language, setLanguage] = useState<Language>('en');
 
-  useEffect(() => {
-    const rtl = language === 'ar';
-    setIsRTL(rtl);
-    document.documentElement.dir = rtl ? 'rtl' : 'ltr';
-    document.documentElement.lang = language;
-  }, [language]);
-
-  const changeLanguage = async (lng: Language) => {
-    try {
-      // Use the imported i18n instance directly
-      await i18n.changeLanguage(lng);
-      setLanguageState(lng);
-      localStorage.setItem('preferred-language', lng);
-    } catch (error) {
-      console.error('Failed to change language:', error);
-    }
+  const t = (key: string, fallback?: string) => {
+    return translations[language][key as keyof typeof translations.en] || fallback || key;
   };
 
-  const setLanguage = (lng: Language) => {
-    changeLanguage(lng);
+  const value = {
+    language,
+    setLanguage,
+    t,
+    isRTL: language === 'ar'
   };
 
   return (
-    <LanguageContext.Provider value={{
-      language,
-      isRTL,
-      changeLanguage,
-      setLanguage,
-      t
-    }}>
-      {children}
+    <LanguageContext.Provider value={value}>
+      <div dir={language === 'ar' ? 'rtl' : 'ltr'} className={language === 'ar' ? 'font-arabic' : ''}>
+        {children}
+      </div>
     </LanguageContext.Provider>
   );
 };
 
-export const useLanguage = (): LanguageContextType => {
+export const useLanguage = () => {
   const context = useContext(LanguageContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error('useLanguage must be used within a LanguageProvider');
   }
   return context;
