@@ -1,6 +1,6 @@
 
-import { Card, CardContent } from "@/components/ui/card";
-import { Target, CheckCircle, Clock } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TrendingUp, Target, Trophy } from "lucide-react";
 
 interface GoalsOverviewProps {
   totalGoals: number;
@@ -9,31 +9,48 @@ interface GoalsOverviewProps {
 }
 
 export const GoalsOverview = ({ totalGoals, completedGoals, activeGoals }: GoalsOverviewProps) => {
+  const completionRate = totalGoals > 0 ? Math.round((completedGoals / totalGoals) * 100) : 0;
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-        <CardContent className="p-6 text-center">
-          <Target className="w-8 h-8 text-blue-600 mx-auto mb-3" />
-          <div className="text-3xl font-bold text-blue-900 mb-1">{totalGoals}</div>
-          <div className="text-sm text-blue-600">Total Goals</div>
-        </CardContent>
-      </Card>
-
-      <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
-        <CardContent className="p-6 text-center">
-          <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-3" />
-          <div className="text-3xl font-bold text-green-900 mb-1">{completedGoals}</div>
-          <div className="text-sm text-green-600">Completed</div>
-        </CardContent>
-      </Card>
-
-      <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
-        <CardContent className="p-6 text-center">
-          <Clock className="w-8 h-8 text-orange-600 mx-auto mb-3" />
-          <div className="text-3xl font-bold text-orange-900 mb-1">{activeGoals}</div>
-          <div className="text-sm text-orange-600">In Progress</div>
-        </CardContent>
-      </Card>
-    </div>
+    <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-purple-900">
+          <TrendingUp className="w-5 h-5" />
+          Goals Overview
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-3 gap-4">
+          <div className="text-center p-4 bg-white/70 rounded-lg">
+            <div className="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-full mx-auto mb-2">
+              <Target className="w-5 h-5 text-blue-600" />
+            </div>
+            <div className="text-2xl font-bold text-blue-600">{totalGoals}</div>
+            <div className="text-sm text-blue-600">Total Goals</div>
+          </div>
+          
+          <div className="text-center p-4 bg-white/70 rounded-lg">
+            <div className="flex items-center justify-center w-10 h-10 bg-orange-100 rounded-full mx-auto mb-2">
+              <Target className="w-5 h-5 text-orange-600" />
+            </div>
+            <div className="text-2xl font-bold text-orange-600">{activeGoals}</div>
+            <div className="text-sm text-orange-600">Active</div>
+          </div>
+          
+          <div className="text-center p-4 bg-white/70 rounded-lg">
+            <div className="flex items-center justify-center w-10 h-10 bg-green-100 rounded-full mx-auto mb-2">
+              <Trophy className="w-5 h-5 text-green-600" />
+            </div>
+            <div className="text-2xl font-bold text-green-600">{completedGoals}</div>
+            <div className="text-sm text-green-600">Completed</div>
+          </div>
+        </div>
+        
+        <div className="mt-6 text-center">
+          <div className="text-sm text-purple-600 mb-2">Completion Rate</div>
+          <div className="text-3xl font-bold text-purple-800">{completionRate}%</div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
