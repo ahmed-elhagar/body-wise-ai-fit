@@ -44,13 +44,13 @@ export const useLifePhaseProfile = () => {
           .single();
 
         if (profile) {
-          // Safe type conversion for arrays
+          // Safe type conversion for arrays - handle Json[] properly
           const healthConditions = Array.isArray(profile.health_conditions) 
-            ? profile.health_conditions 
+            ? profile.health_conditions.filter((item): item is string => typeof item === 'string')
             : [];
           
           const specialConditions = Array.isArray(profile.special_conditions) 
-            ? profile.special_conditions 
+            ? profile.special_conditions.filter((item): item is string => typeof item === 'string')
             : [];
 
           const context: NutritionContext = {
@@ -61,7 +61,7 @@ export const useLifePhaseProfile = () => {
             isMuslimFasting: profile.fasting_type === 'muslim' || false,
             fastingType: profile.fasting_type,
             fastingStartDate: profile.condition_start_date || undefined,
-            fastingEndDate: undefined, // Calculate based on fasting type if needed
+            fastingEndDate: undefined,
             hasHealthConditions: healthConditions.length > 0,
             healthConditions: healthConditions,
             hasSpecialConditions: specialConditions.length > 0,
