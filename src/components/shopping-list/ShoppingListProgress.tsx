@@ -1,7 +1,7 @@
 
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Clock } from "lucide-react";
+import React from 'react';
+import { Progress } from "@/components/ui/progress";
+import { CheckCircle } from "lucide-react";
 
 interface ShoppingListProgressProps {
   progress: number;
@@ -10,40 +10,36 @@ interface ShoppingListProgressProps {
   remainingItems: number;
 }
 
-export const ShoppingListProgress = ({ 
-  progress, 
-  checkedCount, 
-  totalItems, 
-  remainingItems 
+export const ShoppingListProgress = ({
+  progress,
+  checkedCount,
+  totalItems,
+  remainingItems
 }: ShoppingListProgressProps) => {
   return (
-    <Card className="rounded-none border-0 border-b bg-gradient-to-r from-green-50 to-emerald-50">
-      <CardContent className="p-4">
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-700">Shopping Progress</span>
-            <span className="text-lg font-bold text-green-600">{Math.round(progress)}%</span>
-          </div>
-          
-          <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-            <div 
-              className="bg-gradient-to-r from-green-500 to-emerald-600 h-3 rounded-full transition-all duration-500 ease-out"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-          
-          <div className="flex items-center justify-between text-xs">
-            <div className="flex items-center gap-1 text-green-600">
-              <CheckCircle className="w-3 h-3" />
-              <span>{checkedCount} completed</span>
-            </div>
-            <div className="flex items-center gap-1 text-orange-600">
-              <Clock className="w-3 h-3" />
-              <span>{remainingItems} remaining</span>
-            </div>
-          </div>
+    <div className="p-4 bg-gradient-to-r from-violet-50 to-purple-50 border-b">
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <CheckCircle className="w-4 h-4 text-violet-600" />
+          <span className="text-sm font-medium text-violet-900">
+            Progress: {Math.round(progress)}%
+          </span>
         </div>
-      </CardContent>
-    </Card>
+        <span className="text-xs text-violet-700">
+          {checkedCount}/{totalItems} completed
+        </span>
+      </div>
+      
+      <Progress 
+        value={progress} 
+        className="h-2 bg-white/50"
+      />
+      
+      {remainingItems > 0 && (
+        <p className="text-xs text-violet-600 mt-2">
+          {remainingItems} items remaining
+        </p>
+      )}
+    </div>
   );
 };

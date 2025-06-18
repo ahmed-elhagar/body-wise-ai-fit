@@ -117,7 +117,7 @@ export const useMealPlanState = () => {
   });
 
   // Actions
-  const { handleGenerateAIPlan, isGenerating } = useMealPlanActions(
+  const { handle: handleGenerateAIPlan, isGenerating } = useMealPlanActions(
     currentWeekPlan,
     currentWeekOffset,
     aiPreferences,

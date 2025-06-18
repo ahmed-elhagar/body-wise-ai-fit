@@ -1,9 +1,7 @@
 
-import { Card, CardContent } from "@/components/ui/card";
+import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, Mail, Download, X } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { X, Mail, Download, ShoppingCart } from "lucide-react";
 
 interface ShoppingListHeaderProps {
   totalItems: number;
@@ -13,68 +11,56 @@ interface ShoppingListHeaderProps {
   onClose: () => void;
 }
 
-export const ShoppingListHeader = ({ 
-  totalItems, 
-  checkedCount, 
-  onSendEmail, 
-  onExport, 
-  onClose 
+export const ShoppingListHeader = ({
+  totalItems,
+  checkedCount,
+  onSendEmail,
+  onExport,
+  onClose
 }: ShoppingListHeaderProps) => {
-  const { isRTL } = useLanguage();
-
   return (
-    <Card className="rounded-none border-0 border-b bg-white shadow-sm">
-      <CardContent className="p-4">
-        <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-          <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
-              <ShoppingCart className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-gray-800">Smart Shopping List</h2>
-              <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                <Badge className="bg-green-100 text-green-700 border-green-200">
-                  {totalItems} items
-                </Badge>
-                <Badge className="bg-blue-100 text-blue-700 border-blue-200">
-                  {checkedCount} done
-                </Badge>
-              </div>
-            </div>
-          </div>
-
-          <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <Button
-              onClick={onSendEmail}
-              variant="outline"
-              size="sm"
-              className="text-xs"
-            >
-              <Mail className="w-3 h-3 mr-1" />
-              Email
-            </Button>
-            
-            <Button
-              onClick={onExport}
-              variant="outline"
-              size="sm"
-              className="text-xs"
-            >
-              <Download className="w-3 h-3 mr-1" />
-              Export
-            </Button>
-
-            <Button
-              onClick={onClose}
-              variant="ghost"
-              size="sm"
-              className="text-gray-500 hover:text-gray-700"
-            >
-              <X className="w-4 h-4" />
-            </Button>
-          </div>
+    <div className="p-4 bg-white border-b border-gray-200">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <ShoppingCart className="w-5 h-5 text-violet-600" />
+          <h2 className="text-lg font-semibold text-gray-900">Shopping List</h2>
         </div>
-      </CardContent>
-    </Card>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onClose}
+          className="h-8 w-8 p-0"
+        >
+          <X className="w-4 h-4" />
+        </Button>
+      </div>
+      
+      <div className="flex items-center justify-between">
+        <div className="text-sm text-gray-600">
+          {totalItems} items total
+        </div>
+        
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onSendEmail}
+            className="text-xs"
+          >
+            <Mail className="w-3 h-3 mr-1" />
+            Email
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onExport}
+            className="text-xs"
+          >
+            <Download className="w-3 h-3 mr-1" />
+            Export
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 };
