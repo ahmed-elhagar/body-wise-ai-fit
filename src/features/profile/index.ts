@@ -5,5 +5,5 @@ export * from './components';
 export * from './hooks';
 export * from './utils';
 
-// Main entry point for profile feature
+// Main entry points
 export { default as ProfilePage } from './components/ProfilePage';
