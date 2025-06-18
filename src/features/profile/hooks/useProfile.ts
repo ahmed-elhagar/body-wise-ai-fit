@@ -11,35 +11,36 @@ export const useProfile = () => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  useEffect(() => {
+  const fetchProfile = async () => {
     if (!user?.id) {
       setIsLoading(false);
       return;
     }
 
-    const fetchProfile = async () => {
-      try {
-        setIsLoading(true);
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
+    try {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
 
-        if (error) {
-          console.error('Error fetching profile:', error);
-          setError(error);
-        } else {
-          setProfile(data);
-        }
-      } catch (err) {
-        console.error('Unexpected error:', err);
-        setError(err as Error);
-      } finally {
-        setIsLoading(false);
+      if (error) {
+        console.error('Error fetching profile:', error);
+        setError(error);
+      } else {
+        setProfile(data);
+        setError(null);
       }
-    };
+    } catch (err) {
+      console.error('Unexpected error:', err);
+      setError(err as Error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchProfile();
   }, [user?.id]);
 
@@ -61,6 +62,7 @@ export const useProfile = () => {
       }
       
       setProfile(data);
+      setError(null);
       return { error: null, data };
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -70,11 +72,16 @@ export const useProfile = () => {
     }
   };
 
+  const refetch = () => {
+    fetchProfile();
+  };
+
   return {
     profile,
     isLoading,
     isUpdating,
     error,
-    updateProfile
+    updateProfile,
+    refetch
   };
 };
