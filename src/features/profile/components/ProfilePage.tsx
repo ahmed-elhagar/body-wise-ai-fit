@@ -4,13 +4,12 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
 import { PageHeader } from "@/components/ui/page-header";
 import { User } from "lucide-react";
-import { useOptimizedProfile } from "@/hooks/useOptimizedProfile";
+import { useProfileData } from "../hooks/useProfileData";
 import { Badge } from "@/components/ui/badge";
 import OptimizedProfileSummary from "./OptimizedProfileSummary";
 
 const ProfilePage = React.memo(() => {
-  const { profileMetrics } = useOptimizedProfile();
-  const completionPercentage = profileMetrics?.completionScore || 0;
+  const { profileMetrics, completionPercentage } = useProfileData();
 
   const getCompletionColor = () => {
     if (completionPercentage >= 80) return "text-green-600";

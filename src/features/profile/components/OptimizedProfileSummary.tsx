@@ -2,7 +2,7 @@
 import React from "react";
 import { Card } from "@/components/ui/card";
 import { Tabs } from "@/components/ui/tabs";
-import { useOptimizedProfile } from "@/hooks/useOptimizedProfile";
+import { useProfileData } from "../hooks/useProfileData";
 import ProfileTabNavigation from "./ProfileTabNavigation";
 import ProfileTabContent from "./ProfileTabContent";
 
@@ -15,7 +15,7 @@ const OptimizedProfileSummary = React.memo(() => {
     saveGoalsAndActivity,
     isUpdating,
     validationErrors,
-  } = useOptimizedProfile();
+  } = useProfileData();
 
   const [activeTab, setActiveTab] = React.useState("overview");
 

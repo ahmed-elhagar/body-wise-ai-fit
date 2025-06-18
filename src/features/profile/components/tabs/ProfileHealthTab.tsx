@@ -1,6 +1,6 @@
 
-import ProfileHealthCard from "../ProfileHealthCard";
 import { useOptimizedProfile } from "@/hooks/useOptimizedProfile";
+import { ProfileHealthCard } from "../";
 
 const ProfileHealthTab = () => {
   const {
