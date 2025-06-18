@@ -14,6 +14,13 @@ export interface WeightEntry {
   notes?: string;
 }
 
+export interface WeightStats {
+  currentWeight: number;
+  weeklyChange: number;
+  totalChange: number;
+  entryCount: number;
+}
+
 export const useWeightTracking = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -58,10 +65,37 @@ export const useWeightTracking = () => {
     },
   });
 
+  const getWeightStats = (): WeightStats | null => {
+    if (!weightEntries || weightEntries.length === 0) return null;
+
+    const currentWeight = weightEntries[0].weight;
+    const entryCount = weightEntries.length;
+
+    // Calculate weekly change (last 7 days)
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    const weekAgoEntry = weightEntries.find(entry => 
+      new Date(entry.recorded_at) <= weekAgo
+    );
+    const weeklyChange = weekAgoEntry ? currentWeight - weekAgoEntry.weight : 0;
+
+    // Calculate total change
+    const firstEntry = weightEntries[weightEntries.length - 1];
+    const totalChange = currentWeight - firstEntry.weight;
+
+    return {
+      currentWeight,
+      weeklyChange,
+      totalChange,
+      entryCount
+    };
+  };
+
   return {
     weightEntries,
     isLoading,
     addWeightEntry: addWeightEntry.mutate,
     isAddingEntry: addWeightEntry.isPending,
+    getWeightStats,
   };
 };
