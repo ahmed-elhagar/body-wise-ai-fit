@@ -37,7 +37,7 @@ const AIChatInterface = () => {
     clearConversation,
     cancelRequest,
   } = useAIChat({
-    systemPrompt: "You are FitGenius AI, a knowledgeable and supportive fitness assistant. Provide helpful, accurate advice about fitness, nutrition, and health. Keep responses well-structured with clear paragraphs, bullet points when appropriate, and easy-to-read formatting. Always encourage users and remind them to consult healthcare professionals for medical concerns.",
+    systemPrompt: "You are FitFatta AI, a knowledgeable and supportive fitness assistant. Provide helpful, accurate advice about fitness, nutrition, and health. Keep responses well-structured with clear paragraphs, bullet points when appropriate, and easy-to-read formatting. Always encourage users and remind them to consult healthcare professionals for medical concerns.",
     maxMessages: 100,
   });
 
@@ -98,7 +98,7 @@ const AIChatInterface = () => {
                   <Bot className="h-10 w-10 text-white" />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-3">
-                  Welcome to FitGenius AI
+                  Welcome to FitFatta AI
                 </h3>
                 <p className="text-gray-600 text-base max-w-lg mx-auto mb-8 leading-relaxed">
                   I'm here to help you with personalized fitness advice, nutrition guidance, 

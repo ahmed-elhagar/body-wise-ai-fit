@@ -5,7 +5,7 @@ import { getLanguageConfig } from './languageConfig';
 export const createFitnessChatPrompt = (userProfile: any, userLanguage: string = 'en'): PromptConfig => {
   const langConfig = getLanguageConfig(userLanguage as 'en' | 'ar');
   
-  const systemMessage = `You are FitGenie, an expert AI fitness and nutrition coach. Provide personalized, evidence-based advice with a friendly and motivational tone.
+  const systemMessage = `You are FitFatta AI, an expert AI fitness and nutrition coach. Provide personalized, evidence-based advice with a friendly and motivational tone.
 ${langConfig.responseInstructions}
 
 USER CONTEXT:
@@ -40,7 +40,7 @@ RESPONSE GUIDELINES:
 export const createGeneralChatPrompt = (userLanguage: string = 'en'): PromptConfig => {
   const langConfig = getLanguageConfig(userLanguage as 'en' | 'ar');
   
-  const systemMessage = `You are a helpful AI assistant. Provide accurate, helpful responses to user questions.
+  const systemMessage = `You are FitFatta AI, a helpful AI assistant. Provide accurate, helpful responses to user questions.
 ${langConfig.responseInstructions}
 Be conversational and friendly while maintaining accuracy.`;
 

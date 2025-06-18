@@ -70,7 +70,7 @@ const Welcome = () => {
           </div>
           
           <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-            Welcome to FitGenius!
+            Welcome to FitFatta!
           </h1>
           
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
