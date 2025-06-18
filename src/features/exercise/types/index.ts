@@ -7,11 +7,12 @@ export interface Exercise {
   reps?: string;
   actual_sets?: number;
   actual_reps?: string;
-  completed?: boolean;
+  completed: boolean; // Made required to match usage
   instructions?: string;
   muscle_groups?: string[];
   equipment?: string;
   difficulty?: string;
+  difficulty_level?: string; // Added for service compatibility
   youtube_search_term?: string;
   notes?: string;
   rest_seconds?: number;
@@ -31,6 +32,7 @@ export interface ExerciseProgram {
   difficulty_level?: string;
   total_estimated_calories?: number;
   current_week?: number;
+  daily_workouts_count?: number; // Added for service compatibility
   created_at: string;
   updated_at: string;
 }
@@ -46,4 +48,36 @@ export interface DailyWorkout {
   completed?: boolean;
   created_at: string;
   updated_at: string;
+}
+
+// Add missing types for hooks
+export interface WeeklyExerciseProgram {
+  id: string;
+  user_id: string;
+  week_start_date: string;
+  program_name: string;
+  program_type: string;
+  total_workouts: number;
+  estimated_weekly_hours: number;
+  difficulty_level: 'beginner' | 'intermediate' | 'advanced';
+  target_muscle_groups: string[];
+  workout_type: 'home' | 'gym';
+  current_week: number;
+  status: string;
+  daily_workouts: DailyWorkout[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ExerciseFetchResult {
+  weeklyProgram: WeeklyExerciseProgram | null;
+  dailyWorkouts: DailyWorkout[];
+}
+
+export interface ExercisePreferences {
+  workoutType: 'home' | 'gym';
+  difficultyLevel: 'beginner' | 'intermediate' | 'advanced';
+  targetMuscleGroups: string[];
+  workoutDuration: number;
+  fitnessGoals: string[];
 }
