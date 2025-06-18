@@ -26,7 +26,7 @@ const EnhancedSignupForm = () => {
     setCurrentStep
   } = useSignupState();
   
-  const { signup, isLoading } = useSignup();
+  const signupMutation = useSignup();
 
   const handleNext = () => {
     console.log(`Attempting to move from step ${currentStep} to ${currentStep + 1}`);
@@ -98,7 +98,7 @@ const EnhancedSignupForm = () => {
       };
 
       console.log('📤 Submitting signup data:', signupData);
-      await signup(signupData);
+      await signupMutation.mutateAsync(signupData);
       
     } catch (error) {
       console.error('❌ Signup submission failed:', error);
@@ -106,15 +106,19 @@ const EnhancedSignupForm = () => {
     }
   };
 
+  const handleArrayInput = (field: string, value: string[]) => {
+    updateField(field, value);
+  };
+
   const renderStep = () => {
     const bodyCompositionProps = {
       formData: {
         height: formData.height,
         weight: formData.weight,
-        targetWeight: formData.targetWeight,
+        targetWeight: formData.targetWeight || '',
         bodyShape: formData.bodyShape,
         bodyFatPercentage: formData.bodyFatPercentage?.toString() || '',
-        muscleMass: formData.muscleMass,
+        muscleMass: formData.muscleMass || '',
         activityLevel: formData.activityLevel
       },
       updateField
@@ -122,7 +126,15 @@ const EnhancedSignupForm = () => {
 
     switch (currentStep) {
       case 1:
-        return <AccountCreationStep formData={formData} updateField={updateField} />;
+        return (
+          <AccountCreationStep 
+            formData={formData} 
+            updateField={updateField}
+            onNext={handleNext}
+            isLoading={signupMutation.isPending}
+            accountCreated={false}
+          />
+        );
       case 2:
         return <PhysicalInfoStep formData={formData} updateField={updateField} />;
       case 3:
@@ -130,9 +142,23 @@ const EnhancedSignupForm = () => {
       case 4:
         return <GoalsActivityStep formData={formData} updateField={updateField} />;
       case 5:
-        return <HealthInfoStep formData={formData} updateField={updateField} />;
+        return (
+          <HealthInfoStep 
+            formData={formData} 
+            updateField={updateField}
+            handleArrayInput={handleArrayInput}
+          />
+        );
       default:
-        return <AccountCreationStep formData={formData} updateField={updateField} />;
+        return (
+          <AccountCreationStep 
+            formData={formData} 
+            updateField={updateField}
+            onNext={handleNext}
+            isLoading={signupMutation.isPending}
+            accountCreated={false}
+          />
+        );
     }
   };
 
@@ -141,8 +167,7 @@ const EnhancedSignupForm = () => {
       <div className="container mx-auto px-4 max-w-2xl">
         <SignupProgress 
           currentStep={currentStep} 
-          totalSteps={5}
-          onStepClick={handleStepClick}
+          setCurrentStep={handleStepClick}
         />
         
         <Card className="mt-8 shadow-xl border-0 bg-white/95 backdrop-blur-sm">
@@ -152,11 +177,11 @@ const EnhancedSignupForm = () => {
             <SignupNavigation
               currentStep={currentStep}
               totalSteps={5}
+              isStepValid={validateSignupStep(currentStep, formData)}
+              isLoading={signupMutation.isPending}
+              onBack={handlePrevious}
               onNext={handleNext}
-              onPrevious={handlePrevious}
-              onSubmit={handleSubmit}
-              isLoading={isLoading}
-              canProceed={validateSignupStep(currentStep, formData)}
+              onComplete={handleSubmit}
             />
           </CardContent>
         </Card>
