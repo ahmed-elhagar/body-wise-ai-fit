@@ -1,6 +1,10 @@
 
-// Food tracker feature exports
+// Food Tracker feature exports
 export type * from './types';
-
-// Components
 export * from './components';
+export * from './hooks';
+export * from './services';
+export * from './utils';
+
+// Main entry point for food tracker feature
+export { default as FoodTrackerPage } from './components/FoodTrackerContainer';
