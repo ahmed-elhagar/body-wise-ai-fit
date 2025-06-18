@@ -2,22 +2,22 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useMealPlanData } from './useMealPlanData';
 import { useMealPlanActions } from './useMealPlanActions';
+import { useMealPlanNavigation } from './useMealPlanNavigation';
+import { useMealPlanDialogs } from './useMealPlanDialogs';
 import { useCentralizedCredits } from '@/hooks/useCentralizedCredits';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
-import { getWeekStartDate, getCurrentSaturdayDay } from '@/utils/mealPlanUtils';
-import type { DailyMeal, MealPlanFetchResult } from '@/features/meal-plan/types';
 
 export const useMealPlanState = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const { remaining: userCredits, isPro, hasCredits } = useCentralizedCredits();
   
-  // Navigation state
-  const [currentWeekOffset, setCurrentWeekOffsetInternal] = useState(0);
-  const [selectedDayNumber, setSelectedDayNumber] = useState(() => getCurrentSaturdayDay());
+  // Use focused navigation hook
+  const navigation = useMealPlanNavigation();
   
-  const weekStartDate = useMemo(() => getWeekStartDate(currentWeekOffset), [currentWeekOffset]);
+  // Use focused dialogs hook
+  const dialogs = useMealPlanDialogs();
 
   // Core meal plan data
   const {
@@ -25,11 +25,11 @@ export const useMealPlanState = () => {
     isLoading,
     error,
     refetch: originalRefetch,
-  } = useMealPlanData(currentWeekOffset);
+  } = useMealPlanData(navigation.currentWeekOffset);
 
   // Enhanced refetch that properly invalidates and refreshes data
   const refetch = useCallback(async () => {
-    console.log('🔄 Enhanced refetch - invalidating all meal plan queries for week offset:', currentWeekOffset);
+    console.log('🔄 Enhanced refetch - invalidating all meal plan queries for week offset:', navigation.currentWeekOffset);
     
     // Clear all meal plan related caches
     await queryClient.invalidateQueries({
@@ -60,13 +60,13 @@ export const useMealPlanState = () => {
     }
     
     return result;
-  }, [queryClient, currentWeekOffset, originalRefetch]);
+  }, [queryClient, navigation.currentWeekOffset, originalRefetch]);
 
-  // Enhanced calculations - inline to avoid external dependencies
+  // Enhanced calculations
   const { dailyMeals, todaysMeals, totalCalories, totalProtein, targetDayCalories } = useMemo(() => {
     // Calculate daily meals for selected day
     const dailyMeals = currentWeekPlan?.dailyMeals?.filter(
-      meal => meal.day_number === selectedDayNumber
+      meal => meal.day_number === navigation.selectedDayNumber
     ) || null;
 
     // Calculate today's meals
@@ -94,18 +94,7 @@ export const useMealPlanState = () => {
       totalProtein,
       targetDayCalories
     };
-  }, [currentWeekPlan?.dailyMeals, selectedDayNumber]);
-
-  // Dialog states
-  const [showAIDialog, setShowAIDialog] = useState(false);
-  const [showRecipeDialog, setShowRecipeDialog] = useState(false);
-  const [showExchangeDialog, setShowExchangeDialog] = useState(false);
-  const [showAddSnackDialog, setShowAddSnackDialog] = useState(false);
-  const [showShoppingListDialog, setShowShoppingListDialog] = useState(false);
-
-  // Selected items
-  const [selectedMeal, setSelectedMeal] = useState<DailyMeal | null>(null);
-  const [selectedMealIndex, setSelectedMealIndex] = useState<number | null>(null);
+  }, [currentWeekPlan?.dailyMeals, navigation.selectedDayNumber]);
 
   // AI preferences state
   const [aiPreferences, setAiPreferences] = useState({
@@ -117,7 +106,7 @@ export const useMealPlanState = () => {
   // Actions with proper dialog handling
   const { handle: handleGenerateAIPlan, isGenerating } = useMealPlanActions(
     currentWeekPlan,
-    currentWeekOffset,
+    navigation.currentWeekOffset,
     aiPreferences,
     refetch
   );
@@ -126,43 +115,9 @@ export const useMealPlanState = () => {
   const handleAIGeneration = useCallback(async () => {
     const success = await handleGenerateAIPlan();
     if (success) {
-      setShowAIDialog(false); // Close dialog on success
+      dialogs.closeAIDialog(); // Close dialog on success
     }
-  }, [handleGenerateAIPlan]);
-
-  // Enhanced week change handler
-  const setCurrentWeekOffset = useCallback(async (newOffset: number) => {
-    console.log('📅 Changing week from', currentWeekOffset, 'to', newOffset);
-    setCurrentWeekOffsetInternal(newOffset);
-  }, [currentWeekOffset]);
-
-  // Dialog handlers
-  const openAIDialog = useCallback(() => setShowAIDialog(true), []);
-  const closeAIDialog = useCallback(() => setShowAIDialog(false), []);
-  
-  const openRecipeDialog = useCallback((meal: DailyMeal) => {
-    setSelectedMeal(meal);
-    setShowRecipeDialog(true);
-  }, []);
-  const closeRecipeDialog = useCallback(() => {
-    setSelectedMeal(null);
-    setShowRecipeDialog(false);
-  }, []);
-
-  const openExchangeDialog = useCallback((meal: DailyMeal) => {
-    setSelectedMeal(meal);
-    setShowExchangeDialog(true);
-  }, []);
-  const closeExchangeDialog = useCallback(() => {
-    setSelectedMeal(null);
-    setShowExchangeDialog(false);
-  }, []);
-
-  const openAddSnackDialog = useCallback(() => setShowAddSnackDialog(true), []);
-  const closeAddSnackDialog = useCallback(() => setShowAddSnackDialog(false), []);
-
-  const openShoppingListDialog = useCallback(() => setShowShoppingListDialog(true), []);
-  const closeShoppingListDialog = useCallback(() => setShowShoppingListDialog(false), []);
+  }, [handleGenerateAIPlan, dialogs.closeAIDialog]);
 
   const updateAIPreferences = useCallback((newPrefs: any) => {
     setAiPreferences(prev => ({ ...prev, ...newPrefs }));
@@ -177,12 +132,8 @@ export const useMealPlanState = () => {
     totalProtein,
     targetDayCalories,
     
-    // Navigation
-    currentWeekOffset,
-    setCurrentWeekOffset,
-    selectedDayNumber,
-    setSelectedDayNumber,
-    weekStartDate,
+    // Navigation - spread from navigation hook
+    ...navigation,
     
     // Loading states
     isLoading,
@@ -194,16 +145,8 @@ export const useMealPlanState = () => {
     isPro,
     hasCredits,
     
-    // Dialog states
-    showAIDialog,
-    showRecipeDialog,
-    showExchangeDialog,
-    showAddSnackDialog,
-    showShoppingListDialog,
-    
-    // Selected items
-    selectedMeal,
-    selectedMealIndex,
+    // Dialog states - spread from dialogs hook
+    ...dialogs,
     
     // AI preferences
     aiPreferences,
@@ -212,17 +155,5 @@ export const useMealPlanState = () => {
     // Actions
     refetch,
     handleGenerateAIPlan: handleAIGeneration, // Use enhanced handler
-    
-    // Dialog handlers
-    openAIDialog,
-    closeAIDialog,
-    openRecipeDialog,
-    closeRecipeDialog,
-    openExchangeDialog,
-    closeExchangeDialog,
-    openAddSnackDialog,
-    closeAddSnackDialog,
-    openShoppingListDialog,
-    closeShoppingListDialog,
   };
 };
