@@ -1,17 +1,14 @@
+
 import { useState } from "react";
-import { useExercisePrograms } from "../hooks/useExercisePrograms";
+import { useExerciseProgramQuery } from "../hooks/useExerciseProgramQuery";
 import { useWorkoutGeneration } from "../hooks/useWorkoutGeneration";
 import { ExercisePreferences } from "../types";
-
-interface ExerciseContainerProps {
-  // Component props
-}
 
 export const ExerciseContainer = () => {
   const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
   const [workoutType, setWorkoutType] = useState<"home" | "gym">("home");
 
-  const { data: programs, isLoading, error, refetch } = useExercisePrograms(currentWeekOffset);
+  const { data: currentProgram, isLoading, error, refetch } = useExerciseProgramQuery(currentWeekOffset, workoutType);
   const { generateWorkoutPlan, isGenerating } = useWorkoutGeneration();
 
   const handleGenerateProgram = async () => {
@@ -29,21 +26,19 @@ export const ExerciseContainer = () => {
     }
   };
 
-  const currentProgram = programs?.weeklyProgram;
-  const todaysWorkouts = programs?.dailyWorkouts?.filter(
+  const todaysWorkouts = currentProgram?.daily_workouts?.filter(
     workout => workout.day_number === 1 // Default to Monday
   ) || [];
 
   const todaysExercises = todaysWorkouts.flatMap(workout => 
-    workout.exercises?.map(ex => ex.exercise) || []
+    workout.exercises || []
   );
 
   const isRestDay = todaysWorkouts.length === 0 || 
-    todaysWorkouts.every(w => w.workout_name?.toLowerCase().includes('rest'));
+    todaysWorkouts.every(w => w.is_rest_day || w.workout_name?.toLowerCase().includes('rest'));
 
   const handleExerciseComplete = async (exerciseId: string) => {
     console.log('Completing exercise:', exerciseId);
-    // This would integrate with the exercise tracking system
   };
 
   const handleExerciseProgressUpdate = async (
@@ -54,7 +49,6 @@ export const ExerciseContainer = () => {
     weight?: number
   ) => {
     console.log('Updating exercise progress:', { exerciseId, sets, reps, notes, weight });
-    // This would integrate with the exercise tracking system
   };
 
   if (isLoading) {

@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useExercisePrograms } from "../hooks/useExercisePrograms";
+import { useExerciseProgramQuery } from "../hooks/useExerciseProgramQuery";
 import { useExerciseTracking } from "../hooks/useExerciseTracking";
 import { useWorkoutGeneration } from "../hooks/useWorkoutGeneration";
 import { ExercisePreferences } from "../types";
@@ -17,31 +17,26 @@ export const ExercisePageContainer = () => {
   const [selectedDayNumber, setSelectedDayNumber] = useState(new Date().getDay() || 7);
   const [workoutType, setWorkoutType] = useState<"home" | "gym">("home");
 
-  const { data: programs, isLoading, error, refetch } = useExercisePrograms(currentWeekOffset);
+  const { data: currentProgram, isLoading, error, refetch } = useExerciseProgramQuery(currentWeekOffset, workoutType);
   const { startWorkout, completeWorkout, isTracking } = useExerciseTracking();
   const { generateWorkoutPlan, isGenerating } = useWorkoutGeneration();
 
-  const currentProgram = programs?.weeklyProgram;
-  const todaysWorkouts = programs?.dailyWorkouts?.filter(
+  const todaysWorkouts = currentProgram?.daily_workouts?.filter(
     workout => workout.day_number === selectedDayNumber
   ) || [];
 
-  // Create mock exercises from workouts since exercises property doesn't exist
-  const todaysExercises = todaysWorkouts.map(workout => ({
-    id: workout.id,
-    name: workout.workout_name,
-    daily_workout_id: workout.id,
-    sets: 3,
-    reps: '12',
-    completed: workout.completed || false,
-    muscle_groups: workout.target_muscle_groups || [],
-    estimated_duration: workout.estimated_duration,
-    created_at: workout.created_at,
-    updated_at: workout.updated_at
+  const todaysExercises = todaysWorkouts.flatMap(workout => 
+    workout.exercises || []
+  ).map(exercise => ({
+    ...exercise,
+    muscle_groups: exercise.muscle_groups || [],
+    estimated_duration: todaysWorkouts[0]?.estimated_duration,
+    created_at: exercise.created_at || new Date().toISOString(),
+    updated_at: exercise.updated_at || new Date().toISOString()
   }));
 
   const isRestDay = todaysWorkouts.length === 0 || 
-    todaysWorkouts.every(w => w.workout_name?.toLowerCase().includes('rest'));
+    todaysWorkouts.every(w => w.is_rest_day || w.workout_name?.toLowerCase().includes('rest'));
 
   const handleExerciseComplete = async (exerciseId: string) => {
     console.log('Completing exercise:', exerciseId);
@@ -83,7 +78,6 @@ export const ExercisePageContainer = () => {
   if (!currentProgram) {
     return (
       <div className="space-y-6">
-        {/* Header */}
         <Card className="bg-gradient-to-r from-fitness-primary-600 to-fitness-primary-700 border-0 shadow-xl rounded-2xl overflow-hidden">
           <div className="px-6 py-4">
             <div className="flex items-center justify-between">
@@ -132,7 +126,6 @@ export const ExercisePageContainer = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <Card className="bg-gradient-to-r from-fitness-primary-600 to-fitness-primary-700 border-0 shadow-xl rounded-2xl overflow-hidden">
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
@@ -176,7 +169,6 @@ export const ExercisePageContainer = () => {
         </div>
       </Card>
 
-      {/* Day Navigation */}
       <Card className="p-4">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-gray-900">Select Day</h3>
@@ -195,7 +187,11 @@ export const ExercisePageContainer = () => {
           {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => {
             const dayNumber = index + 1;
             const isSelected = selectedDayNumber === dayNumber;
-            const hasWorkout = programs?.dailyWorkouts?.some(w => w.day_number === dayNumber && !w.workout_name?.toLowerCase().includes('rest'));
+            const hasWorkout = currentProgram?.daily_workouts?.some(w => 
+              w.day_number === dayNumber && 
+              !w.is_rest_day && 
+              !w.workout_name?.toLowerCase().includes('rest')
+            );
             
             return (
               <Button
@@ -215,14 +211,12 @@ export const ExercisePageContainer = () => {
         </div>
       </Card>
 
-      {/* Exercise Content */}
       <ExerciseListEnhanced
         exercises={todaysExercises}
         isLoading={false}
         onExerciseComplete={handleExerciseComplete}
         onExerciseProgressUpdate={handleExerciseProgressUpdate}
         isRestDay={isRestDay}
-        currentProgram={currentProgram}
         selectedDayNumber={selectedDayNumber}
       />
     </div>

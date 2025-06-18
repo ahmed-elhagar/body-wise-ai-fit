@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Exercise, DailyWorkout, ExerciseProgram } from '../types';
 
@@ -15,7 +16,6 @@ export class ExerciseService {
 
     if (error) throw error;
     
-    // Transform database result to our Exercise type
     return {
       id: data.id,
       daily_workout_id: data.daily_workout_id,
@@ -64,7 +64,6 @@ export class ExerciseService {
 
     if (error) throw error;
     
-    // Transform database result to our Exercise type
     return {
       id: data.id,
       daily_workout_id: data.daily_workout_id,
@@ -109,7 +108,6 @@ export class ExerciseService {
     if (error) throw error;
     
     if (data) {
-      // Transform daily workouts to match our type
       const transformedDailyWorkouts: DailyWorkout[] = (data.daily_workouts || []).map((workout: any) => ({
         id: workout.id,
         weekly_program_id: workout.weekly_program_id,
@@ -122,49 +120,43 @@ export class ExerciseService {
         completed: workout.completed || false,
         exercises: (workout.exercises || []).map((exercise: any) => ({
           id: exercise.id,
-          exercise_id: exercise.id,
-          exercise: {
-            id: exercise.id,
-            daily_workout_id: exercise.daily_workout_id,
-            name: exercise.name,
-            muscle_groups: exercise.muscle_groups || [],
-            equipment: exercise.equipment,
-            difficulty_level: (exercise.difficulty as 'beginner' | 'intermediate' | 'advanced') || 'beginner',
-            instructions: exercise.instructions || '',
-            youtube_search_term: exercise.youtube_search_term,
-            sets: exercise.sets,
-            reps: exercise.reps,
-            rest_seconds: exercise.rest_seconds,
-            order_number: exercise.order_number || 1,
-            completed: exercise.completed || false,
-            notes: exercise.notes,
-            actual_sets: exercise.actual_sets,
-            actual_reps: exercise.actual_reps,
-            created_at: exercise.created_at,
-            updated_at: exercise.updated_at
-          },
-          sets: exercise.sets || 3,
-          reps_min: 8,
-          reps_max: 12,
-          rest_seconds: exercise.rest_seconds || 60,
-          order_index: exercise.order_number || 1
+          daily_workout_id: exercise.daily_workout_id,
+          name: exercise.name,
+          muscle_groups: exercise.muscle_groups || [],
+          equipment: exercise.equipment,
+          difficulty_level: (exercise.difficulty as 'beginner' | 'intermediate' | 'advanced') || 'beginner',
+          instructions: exercise.instructions || '',
+          youtube_search_term: exercise.youtube_search_term,
+          sets: exercise.sets,
+          reps: exercise.reps,
+          rest_seconds: exercise.rest_seconds,
+          order_number: exercise.order_number || 1,
+          completed: exercise.completed || false,
+          notes: exercise.notes,
+          actual_sets: exercise.actual_sets,
+          actual_reps: exercise.actual_reps,
+          created_at: exercise.created_at,
+          updated_at: exercise.updated_at
         })),
+        is_rest_day: workout.is_rest_day || false,
         created_at: workout.created_at,
         updated_at: workout.updated_at
       }));
 
       return {
         id: data.id,
+        user_id: data.user_id,
         program_name: data.program_name,
-        difficulty_level: data.difficulty_level,
-        workout_type: data.workout_type as "home" | "gym",
-        current_week: data.current_week,
         week_start_date: data.week_start_date,
-        created_at: data.created_at,
-        daily_workouts_count: transformedDailyWorkouts.length,
+        workout_type: data.workout_type as "home" | "gym",
+        status: data.status,
+        difficulty_level: data.difficulty_level,
         total_estimated_calories: data.total_estimated_calories,
-        generation_prompt: data.generation_prompt,
-        daily_workouts: transformedDailyWorkouts
+        current_week: data.current_week,
+        daily_workouts_count: transformedDailyWorkouts.length,
+        daily_workouts: transformedDailyWorkouts,
+        created_at: data.created_at,
+        updated_at: data.updated_at
       };
     }
     

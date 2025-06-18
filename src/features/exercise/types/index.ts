@@ -7,12 +7,12 @@ export interface Exercise {
   reps?: string;
   actual_sets?: number;
   actual_reps?: string;
-  completed: boolean; // Made required to match usage
+  completed: boolean;
   instructions?: string;
   muscle_groups?: string[];
   equipment?: string;
   difficulty?: string;
-  difficulty_level?: string; // Added for service compatibility
+  difficulty_level?: string;
   youtube_search_term?: string;
   notes?: string;
   rest_seconds?: number;
@@ -20,6 +20,23 @@ export interface Exercise {
   daily_workout_id: string;
   created_at?: string;
   updated_at?: string;
+}
+
+export interface DailyWorkout {
+  id: string;
+  weekly_program_id: string;
+  day_number: number;
+  workout_name: string;
+  target_muscle_groups?: string[];
+  muscle_groups?: string[];
+  estimated_duration?: number;
+  estimated_calories?: number;
+  difficulty_level?: string;
+  completed?: boolean;
+  exercises?: Exercise[];
+  is_rest_day?: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface ExerciseProgram {
@@ -32,25 +49,12 @@ export interface ExerciseProgram {
   difficulty_level?: string;
   total_estimated_calories?: number;
   current_week?: number;
-  daily_workouts_count?: number; // Added for service compatibility
+  daily_workouts_count?: number;
+  daily_workouts?: DailyWorkout[];
   created_at: string;
   updated_at: string;
 }
 
-export interface DailyWorkout {
-  id: string;
-  weekly_program_id: string;
-  day_number: number;
-  workout_name: string;
-  muscle_groups?: string[];
-  estimated_duration?: number;
-  estimated_calories?: number;
-  completed?: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
-// Add missing types for hooks
 export interface WeeklyExerciseProgram {
   id: string;
   user_id: string;
