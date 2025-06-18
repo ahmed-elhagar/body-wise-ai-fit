@@ -8,7 +8,7 @@ import SimpleLoadingIndicator from "@/components/ui/simple-loading-indicator";
 
 const EnhancedCoachDashboard = () => {
   const [selectedClient, setSelectedClient] = useState<string | null>(null);
-  const { data: trainees = [], isLoading, error } = useCoachTrainees();
+  const { trainees = [], isLoading, error } = useCoachTrainees();
 
   if (isLoading) {
     return <SimpleLoadingIndicator message="Loading coach dashboard..." />;

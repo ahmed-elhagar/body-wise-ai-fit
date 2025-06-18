@@ -1,6 +1,5 @@
 
 // Coach feature components
-export { default as SidebarAdminPanel } from './SidebarAdminPanel';
 export { CoachStatsCards } from './CoachStatsCards';
 export { CoachTabs } from './CoachTabs';
 export { CoachHeader } from './CoachHeader';

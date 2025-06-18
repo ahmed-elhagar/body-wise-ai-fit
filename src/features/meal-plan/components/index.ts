@@ -31,3 +31,8 @@ export { MealPlanAILoadingDialog } from './dialogs/MealPlanAILoadingDialog';
 export { MealExchangeDialog } from './dialogs/MealExchangeDialog';
 export { default as AIGenerationDialog } from './dialogs/AIGenerationDialog';
 export { default as EnhancedAddSnackDialog } from './dialogs/EnhancedAddSnackDialog';
+
+// Add snack dialog components
+export { default as AddSnackHeader } from './dialogs/AddSnackHeader';
+export { default as CalorieProgressCard } from './dialogs/CalorieProgressCard';
+export { default as SnackFeatures } from './dialogs/SnackFeatures';
