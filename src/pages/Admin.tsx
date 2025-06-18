@@ -6,13 +6,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Shield, Users, TrendingUp, CreditCard, Settings, Brain } from "lucide-react";
 import { useRole } from "@/hooks/useRole";
 import { Navigate } from "react-router-dom";
-import UsersTable from "@/components/admin/UsersTable";
-import AnalyticsTab from "@/components/admin/AnalyticsTab";
-import SubscriptionsTab from "@/components/admin/SubscriptionsTab";
-import CoachesTab from "@/components/admin/CoachesTab";
-import EnhancedStatsCards from "@/components/admin/EnhancedStatsCards";
-import EnhancedSystemTab from "@/components/admin/EnhancedSystemTab";
-import AIModelsTab from "@/components/admin/AIModelsTab";
+import {
+  UsersTable,
+  AnalyticsTab,
+  SubscriptionsTab,
+  CoachesTab,
+  EnhancedStatsCards,
+  EnhancedSystemTab,
+  AIModelsTab
+} from "@/features/admin/components";
 import { Card } from "@/components/ui/card";
 import { AlertTriangle } from "lucide-react";
 

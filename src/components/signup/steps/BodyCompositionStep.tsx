@@ -1,6 +1,6 @@
 
 import { Target } from "lucide-react";
-import BodyShapeSelector from "@/components/auth/BodyShapeSelector";
+import { BodyShapeSelector } from "@/features/auth/components/BodyShapeSelector";
 import { SignupFormData } from "../types";
 import { mapBodyFatToBodyShape } from "@/utils/signupValidation";
 import { useEffect } from "react";

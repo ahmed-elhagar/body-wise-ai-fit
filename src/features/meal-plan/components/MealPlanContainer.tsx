@@ -12,7 +12,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { formatWeekRange, getDayName } from '@/utils/mealPlanUtils';
 import { MealExchangeDialog } from './dialogs/MealExchangeDialog';
-import { AIGenerationDialog } from './dialogs/AIGenerationDialog';
+import AIGenerationDialog from './dialogs/AIGenerationDialog';
 import { EnhancedRecipeDialog } from './EnhancedRecipeDialog';
 import EnhancedAddSnackDialog from './dialogs/EnhancedAddSnackDialog';
 import ModernShoppingListDrawer from '@/components/shopping-list/ModernShoppingListDrawer';

@@ -3,7 +3,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
 import { PageHeader } from "@/components/ui/page-header";
 import { Camera } from "lucide-react";
-import FoodPhotoAnalyzer from "@/components/calorie/FoodPhotoAnalyzer";
+import { FoodPhotoAnalyzer } from "@/features/food-analysis/components";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
