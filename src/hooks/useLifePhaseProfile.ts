@@ -44,6 +44,15 @@ export const useLifePhaseProfile = () => {
           .single();
 
         if (profile) {
+          // Safe type conversion for arrays
+          const healthConditions = Array.isArray(profile.health_conditions) 
+            ? profile.health_conditions 
+            : [];
+          
+          const specialConditions = Array.isArray(profile.special_conditions) 
+            ? profile.special_conditions 
+            : [];
+
           const context: NutritionContext = {
             isPregnant: !!profile.pregnancy_trimester,
             pregnancyTrimester: profile.pregnancy_trimester,
@@ -51,10 +60,12 @@ export const useLifePhaseProfile = () => {
             breastfeedingLevel: profile.breastfeeding_level,
             isMuslimFasting: profile.fasting_type === 'muslim' || false,
             fastingType: profile.fasting_type,
-            hasHealthConditions: profile.health_conditions?.length > 0 || false,
-            healthConditions: profile.health_conditions || [],
-            hasSpecialConditions: profile.special_conditions?.length > 0 || false,
-            specialConditions: profile.special_conditions || [],
+            fastingStartDate: profile.condition_start_date || undefined,
+            fastingEndDate: undefined, // Calculate based on fasting type if needed
+            hasHealthConditions: healthConditions.length > 0,
+            healthConditions: healthConditions,
+            hasSpecialConditions: specialConditions.length > 0,
+            specialConditions: specialConditions,
             extraCalories: 0
           };
 
