@@ -1,5 +1,5 @@
 
-import { AIPromptService } from '../../../src/services/aiPromptService.ts';
+import { createMealPlanPrompt } from '../_shared/promptService.ts';
 
 export const generateEnhancedMealPlanPrompt = (
   userProfile: any,
@@ -8,11 +8,7 @@ export const generateEnhancedMealPlanPrompt = (
 ): { systemMessage: string; userPrompt: string } => {
   console.log('🎯 Using centralized prompt service for meal plan generation');
   
-  const promptConfig = AIPromptService.getMealPlanPrompt(
-    userProfile,
-    preferences,
-    dailyCalories
-  );
+  const promptConfig = createMealPlanPrompt(userProfile, preferences, dailyCalories);
   
   return {
     systemMessage: promptConfig.systemMessage,
