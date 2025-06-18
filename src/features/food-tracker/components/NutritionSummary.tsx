@@ -7,10 +7,10 @@ import { Button } from "@/components/ui/button";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import type { NutritionSummary as NutritionSummaryType } from '../types';
+import type { FoodTrackerNutritionSummary } from '../types';
 
 interface NutritionSummaryProps {
-  summary: NutritionSummaryType;
+  summary: FoodTrackerNutritionSummary;
   selectedDate: Date;
   onDateChange: (date: Date) => void;
 }
