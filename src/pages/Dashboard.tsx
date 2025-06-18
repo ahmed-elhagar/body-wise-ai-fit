@@ -1,5 +1,5 @@
 
-import { CanonicalDashboard } from "@/features/dashboard";
+import { CanonicalDashboard } from '@/features/dashboard';
 
 const Dashboard = () => {
   return <CanonicalDashboard />;

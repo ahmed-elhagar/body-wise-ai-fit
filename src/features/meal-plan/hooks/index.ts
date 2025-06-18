@@ -1,8 +1,7 @@
 
-export { useMealPlans } from './useMealPlans';
-export { useMealRecipe } from './useMealRecipe';
-export { useCalorieCalculations } from './useCalorieCalculations';
-export { useMealExchange } from './useMealExchange';
+// Meal plan hooks exports
 export { useMealPlanState } from './useMealPlanState';
 export { useMealPlanData } from './useMealPlanData';
 export { useMealPlanActions } from './useMealPlanActions';
+export { useMealGeneration } from './useMealGeneration';
+export { useMealExchange } from './useMealExchange';

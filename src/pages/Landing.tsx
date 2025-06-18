@@ -1,5 +1,5 @@
 
-import { LandingPage } from "@/features/auth";
+import { LandingPage } from '@/features/auth';
 
 const Landing = () => {
   return <LandingPage />;

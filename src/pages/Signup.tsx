@@ -1,5 +1,5 @@
 
-import { SignupPage } from "@/features/auth";
+import { SignupPage } from '@/features/auth';
 
 const Signup = () => {
   return <SignupPage />;
