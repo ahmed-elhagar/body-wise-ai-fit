@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { useProfile } from '../useProfile';
+import { useProfile } from '@/features/profile';
 import { useProfileValidation } from './useProfileValidation';
 import type { ProfileFormData } from './types';
 import { toast } from 'sonner';

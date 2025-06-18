@@ -1,9 +1,8 @@
-
 import { Label } from "@/components/ui/label";
 import { Info } from "lucide-react";
 import { SignupFormData } from "../types";
 import HealthConditionsAutocompleteEnhanced from "@/components/onboarding/HealthConditionsAutocompleteEnhanced";
-import TagsAutocomplete from "@/components/profile/TagsAutocomplete";
+import TagsAutocomplete from "@/components/ui/tags-autocomplete";
 
 interface HealthInfoStepProps {
   formData: SignupFormData;

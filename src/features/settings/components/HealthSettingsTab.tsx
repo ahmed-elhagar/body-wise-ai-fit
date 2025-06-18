@@ -1,11 +1,18 @@
 
-import React from 'react';
-import { HealthConditionsSettings } from '@/components/settings/HealthConditionsSettings';
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-export const HealthSettingsTab = () => {
+const HealthSettingsTab = () => {
   return (
-    <div className="space-y-6">
-      <HealthConditionsSettings />
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>Health Settings</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="text-gray-600">Health settings coming soon...</p>
+      </CardContent>
+    </Card>
   );
 };
+
+export default HealthSettingsTab;

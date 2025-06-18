@@ -1,6 +1,6 @@
 
 import { useState, useCallback, useMemo } from 'react';
-import { useProfile } from '../useProfile';
+import { useProfile } from '@/features/profile';
 import type { ProfileFormData, ValidationErrors } from './types';
 
 export const useProfileFormData = () => {

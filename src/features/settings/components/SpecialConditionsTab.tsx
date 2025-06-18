@@ -1,11 +1,18 @@
 
-import React from 'react';
-import { SpecialConditionsSettings } from '@/components/settings/SpecialConditionsSettings';
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-export const SpecialConditionsTab = () => {
+const SpecialConditionsTab = () => {
   return (
-    <div className="space-y-6">
-      <SpecialConditionsSettings />
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>Special Conditions</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="text-gray-600">Special conditions settings coming soon...</p>
+      </CardContent>
+    </Card>
   );
 };
+
+export default SpecialConditionsTab;
