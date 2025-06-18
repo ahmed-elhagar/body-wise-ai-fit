@@ -1,3 +1,4 @@
+
 import { Label } from "@/components/ui/label";
 import { Info } from "lucide-react";
 import { SignupFormData } from "../types";
@@ -6,7 +7,7 @@ import TagsAutocomplete from "@/components/ui/tags-autocomplete";
 
 interface HealthInfoStepProps {
   formData: SignupFormData;
-  handleArrayInput: (field: keyof SignupFormData, value: string) => void;
+  handleArrayInput: (field: keyof SignupFormData, value: string[]) => void;
   updateField: (field: keyof SignupFormData, value: any) => void;
 }
 

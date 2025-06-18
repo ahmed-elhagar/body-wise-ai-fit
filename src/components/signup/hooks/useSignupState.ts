@@ -137,7 +137,11 @@ export const useSignupState = () => {
     setIsLoading(true);
     try {
       // Ensure body shape is set based on body fat percentage and gender
-      const calculatedBodyShape = mapBodyFatToBodyShape(formData.bodyFatPercentage, formData.gender);
+      const bodyFatNumber = typeof formData.bodyFatPercentage === 'string' 
+        ? parseFloat(formData.bodyFatPercentage) 
+        : formData.bodyFatPercentage || 20;
+      
+      const calculatedBodyShape = mapBodyFatToBodyShape(bodyFatNumber, formData.gender);
       
       // Validate that the body shape is correct
       if (!isValidBodyShape(calculatedBodyShape)) {
@@ -146,7 +150,7 @@ export const useSignupState = () => {
       }
 
       console.log('🔍 Profile completion data preparation:', {
-        bodyFatPercentage: formData.bodyFatPercentage,
+        bodyFatPercentage: bodyFatNumber,
         gender: formData.gender,
         calculatedBodyShape,
         isValidShape: isValidBodyShape(calculatedBodyShape)
@@ -159,16 +163,16 @@ export const useSignupState = () => {
         gender: formData.gender,
         height: parseFloat(formData.height),
         weight: parseFloat(formData.weight),
-        nationality: formData.nationality.trim(),
+        nationality: formData.nationality?.trim() || 'US',
         fitness_goal: formData.fitnessGoal,
         activity_level: formData.activityLevel,
-        body_fat_percentage: formData.bodyFatPercentage,
+        body_fat_percentage: bodyFatNumber,
         body_shape: calculatedBodyShape,
-        health_conditions: formData.healthConditions.filter(Boolean),
-        allergies: formData.allergies.filter(Boolean),
-        dietary_restrictions: formData.dietaryRestrictions.filter(Boolean),
-        preferred_foods: formData.preferredFoods.filter(Boolean),
-        special_conditions: formData.specialConditions.filter(Boolean),
+        health_conditions: (formData.healthConditions || []).filter(Boolean),
+        allergies: (formData.allergies || []).filter(Boolean),
+        dietary_restrictions: (formData.dietaryRestrictions || []).filter(Boolean),
+        preferred_foods: (formData.preferredFoods || []).filter(Boolean),
+        special_conditions: (formData.specialConditions || []).filter(Boolean),
         profile_completion_score: 95,
         onboarding_completed: true,
         updated_at: new Date().toISOString()

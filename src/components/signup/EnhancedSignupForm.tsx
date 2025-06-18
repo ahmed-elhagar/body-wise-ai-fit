@@ -106,7 +106,7 @@ const EnhancedSignupForm = () => {
     }
   };
 
-  const handleArrayInput = (field: string, value: string[]) => {
+  const handleArrayInput = (field: keyof typeof formData, value: string[]) => {
     updateField(field, value);
   };
 

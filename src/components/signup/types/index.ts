@@ -26,6 +26,9 @@ export interface SignupFormData {
   // Health info
   healthConditions?: string[];
   allergies?: string[];
+  preferredFoods?: string[];
+  dietaryRestrictions?: string[];
+  specialConditions?: string[];
 }
 
 export const SIGNUP_STEPS = [
