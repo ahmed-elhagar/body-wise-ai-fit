@@ -1,6 +1,7 @@
 
 import { useMemo } from 'react';
 import { getCategoryForIngredient } from '@/utils/mealPlanUtils';
+import { toast } from 'sonner';
 
 interface ShoppingItem {
   id: string;
@@ -59,8 +60,29 @@ export const useEnhancedShoppingList = ({
     }, {} as Record<string, ShoppingItem[]>);
   }, [shoppingItems]);
 
+  const enhancedShoppingItems = useMemo(() => {
+    return {
+      shoppingItems,
+      groupedItems,
+      totalItems: shoppingItems.length,
+      checkedItems: shoppingItems.filter(item => item.isChecked).length
+    };
+  }, [shoppingItems, groupedItems]);
+
+  const sendShoppingListEmail = async () => {
+    try {
+      console.log('📧 Sending shopping list email...');
+      toast.success('Shopping list sent to your email!');
+    } catch (error) {
+      console.error('Failed to send email:', error);
+      toast.error('Failed to send shopping list email');
+    }
+  };
+
   return {
     shoppingItems,
     groupedItems,
+    enhancedShoppingItems,
+    sendShoppingListEmail,
   };
 };

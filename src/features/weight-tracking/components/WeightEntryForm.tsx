@@ -14,7 +14,7 @@ interface WeightEntryFormProps {
 
 export const WeightEntryForm = ({ onSubmit, onSuccess, isLoading }: WeightEntryFormProps) => {
   const [weight, setWeight] = useState('');
-  const { addWeightEntry, isAdding } = useWeightTracking();
+  const { addWeightEntry, isAddingEntry } = useWeightTracking();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,7 +34,7 @@ export const WeightEntryForm = ({ onSubmit, onSuccess, isLoading }: WeightEntryF
     }
   };
 
-  const loading = isLoading || isAdding;
+  const loading = isLoading || isAddingEntry;
 
   return (
     <Card className="p-6">

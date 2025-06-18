@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { useMealPlanState } from '../hooks/useMealPlanState';
 import MealPlanHeader from './MealPlanHeader';
@@ -16,6 +17,7 @@ import { EnhancedRecipeDialog } from './EnhancedRecipeDialog';
 import EnhancedAddSnackDialog from './dialogs/EnhancedAddSnackDialog';
 import ModernShoppingListDrawer from '@/components/shopping-list/ModernShoppingListDrawer';
 import { MealPlanAILoadingDialog } from './dialogs/MealPlanAILoadingDialog';
+import { format } from 'date-fns';
 
 const MealPlanContainer = () => {
   const mealPlanState = useMealPlanState();
@@ -97,7 +99,7 @@ const MealPlanContainer = () => {
               
               <div className="text-center">
                 <h3 className="text-base font-semibold text-gray-900">
-                  {formatWeekRange(mealPlanState.weekStartDate)}
+                  {formatWeekRange(format(mealPlanState.weekStartDate, 'yyyy-MM-dd'))}
                 </h3>
               </div>
               
