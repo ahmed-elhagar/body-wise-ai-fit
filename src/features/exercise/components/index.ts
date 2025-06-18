@@ -6,3 +6,4 @@ export { ExerciseEmptyState } from './ExerciseEmptyState';
 export { ExerciseErrorState } from './ExerciseErrorState';
 export { ExercisePageLayout } from './ExercisePageLayout';
 export { ExercisePageContainer } from './ExercisePageContainer';
+export { ExerciseListEnhanced } from './ExerciseListEnhanced';

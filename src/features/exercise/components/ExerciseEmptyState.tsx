@@ -5,10 +5,11 @@ import { Dumbbell, Sparkles } from "lucide-react";
 
 interface ExerciseEmptyStateProps {
   workoutType: string;
-  onGenerateClick: () => void;
+  onGenerateProgram: () => void;
+  dailyWorkoutId?: string;
 }
 
-export const ExerciseEmptyState = ({ workoutType, onGenerateClick }: ExerciseEmptyStateProps) => {
+export const ExerciseEmptyState = ({ workoutType, onGenerateProgram }: ExerciseEmptyStateProps) => {
   return (
     <div className="flex items-center justify-center min-h-[400px]">
       <Card className="max-w-md w-full">
@@ -21,7 +22,7 @@ export const ExerciseEmptyState = ({ workoutType, onGenerateClick }: ExerciseEmp
             Generate your personalized {workoutType} workout program with AI to start your fitness journey.
           </p>
           <Button 
-            onClick={onGenerateClick}
+            onClick={onGenerateProgram}
             className="bg-blue-600 hover:bg-blue-700 text-white"
           >
             <Sparkles className="h-4 w-4 mr-2" />
