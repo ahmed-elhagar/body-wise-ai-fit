@@ -14,8 +14,8 @@ export const DashboardHeader = ({ stats }: DashboardHeaderProps) => {
   const greeting = new Date().getHours() < 12 ? 'Good Morning' : 
                   new Date().getHours() < 18 ? 'Good Afternoon' : 'Good Evening';
 
-  // Use both firstName and first_name for compatibility
-  const displayName = user?.firstName || user?.first_name || 'User';
+  // Use first_name from AuthUser type
+  const displayName = user?.first_name || 'User';
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">

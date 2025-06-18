@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Plus, X, Clock, Utensils } from "lucide-react";
-import { useCalorieCalculations } from '../hooks';
+import { useCalorieCalculations } from '../hooks/useCalorieCalculations';
 import { toast } from 'sonner';
 
 interface EnhancedAddSnackDialogProps {
