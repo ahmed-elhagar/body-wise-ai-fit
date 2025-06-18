@@ -1,100 +1,114 @@
 
-import React from 'react';
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Settings, Palette, Globe, Bell, Shield, Loader2 } from "lucide-react";
-import { useLanguage, Language } from "@/contexts/LanguageContext";
-import { useSettingsData } from '../hooks/useSettingsData';
-import { toast } from "sonner";
+import { Settings, Globe, Bell, Shield, Moon, Sun, Monitor } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
+import { useSettingsData } from "../hooks/useSettingsData";
 
 export const GeneralSettingsTab = () => {
-  const { language, setLanguage } = useLanguage();
-  const { settingsData, updateSettingsData, saveSettings, isLoading } = useSettingsData();
+  const { language, isRTL } = useLanguage();
+  const { t } = useI18n();
+  const { settingsData, updateSettingsData, saveSettings } = useSettingsData();
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleLanguageChange = (newLanguage: string) => {
-    setLanguage(newLanguage as Language);
-    updateSettingsData('general', { preferred_language: newLanguage });
-  };
-
-  const handleSaveSettings = async () => {
-    const result = await saveSettings();
-    if (result.success) {
-      toast.success('Settings saved successfully!');
-    } else {
-      toast.error('Failed to save settings');
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      await saveSettings();
+      // Show success message
+    } catch (error) {
+      // Show error message
+    } finally {
+      setIsSaving(false);
     }
   };
 
+  const generalSettings = settingsData.general || {};
+
   return (
     <div className="space-y-6">
-      {/* Language & Localization */}
+      {/* Language & Region */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Globe className="w-5 h-5 text-fitness-primary" />
+            <Globe className="h-5 w-5" />
             Language & Region
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
-            <Label htmlFor="language">Display Language</Label>
-            <Select value={language} onValueChange={handleLanguageChange}>
-              <SelectTrigger className="mt-1">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="en">English</SelectItem>
-                <SelectItem value="ar">العربية</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div>
-            <Label htmlFor="units">Measurement Units</Label>
-            <Select 
-              value={settingsData?.general?.measurement_units || 'metric'} 
-              onValueChange={(value) => updateSettingsData('general', { measurement_units: value })}
-            >
-              <SelectTrigger className="mt-1">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="metric">Metric (kg, cm)</SelectItem>
-                <SelectItem value="imperial">Imperial (lbs, ft)</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="language">Preferred Language</Label>
+              <Select
+                value={generalSettings.preferred_language || 'en'}
+                onValueChange={(value) => updateSettingsData('general', { preferred_language: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="en">English</SelectItem>
+                  <SelectItem value="ar">العربية</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="measurement">Measurement Units</Label>
+              <Select
+                value={generalSettings.measurement_units || 'metric'}
+                onValueChange={(value) => updateSettingsData('general', { measurement_units: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="metric">Metric (kg, cm)</SelectItem>
+                  <SelectItem value="imperial">Imperial (lbs, ft)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Appearance */}
+      {/* Theme & Display */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Palette className="w-5 h-5 text-fitness-primary" />
-            Appearance
+            <Monitor className="h-5 w-5" />
+            Theme & Display
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div>
-            <Label htmlFor="theme">Theme</Label>
-            <Select 
-              value={settingsData?.general?.theme_preference || 'light'} 
-              onValueChange={(value) => updateSettingsData('general', { theme_preference: value })}
-            >
-              <SelectTrigger className="mt-1">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="light">Light</SelectItem>
-                <SelectItem value="dark">Dark</SelectItem>
-                <SelectItem value="auto">Auto</SelectItem>
-              </SelectContent>
-            </Select>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>Theme Preference</Label>
+            <div className="flex gap-2">
+              {[
+                { value: 'light', icon: Sun, label: 'Light' },
+                { value: 'dark', icon: Moon, label: 'Dark' },
+                { value: 'auto', icon: Monitor, label: 'Auto' }
+              ].map(({ value, icon: Icon, label }) => (
+                <Button
+                  key={value}
+                  variant={generalSettings.theme_preference === value ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => updateSettingsData('general', { theme_preference: value })}
+                  className="flex items-center gap-2"
+                >
+                  <Icon className="h-4 w-4" />
+                  {label}
+                </Button>
+              ))}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -103,58 +117,95 @@ export const GeneralSettingsTab = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Bell className="w-5 h-5 text-fitness-primary" />
+            <Bell className="h-5 w-5" />
             Notifications
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <Label htmlFor="notifications">Push Notifications</Label>
-              <p className="text-sm text-gray-600">Receive workout and meal reminders</p>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Push Notifications</Label>
+                <p className="text-sm text-muted-foreground">
+                  Receive notifications about your fitness progress
+                </p>
+              </div>
+              <Switch
+                checked={generalSettings.push_notifications ?? true}
+                onCheckedChange={(checked) => updateSettingsData('general', { push_notifications: checked })}
+              />
             </div>
-            <Switch
-              id="notifications"
-              checked={settingsData?.general?.push_notifications ?? true}
-              onCheckedChange={(checked) => updateSettingsData('general', { push_notifications: checked })}
-            />
-          </div>
-          
-          <Separator />
-          
-          <div className="flex items-center justify-between">
-            <div>
-              <Label htmlFor="emailUpdates">Email Updates</Label>
-              <p className="text-sm text-gray-600">Weekly progress reports and tips</p>
+
+            <Separator />
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Email Notifications</Label>
+                <p className="text-sm text-muted-foreground">
+                  Get weekly summaries and important updates via email
+                </p>
+              </div>
+              <Switch
+                checked={generalSettings.email_notifications ?? false}
+                onCheckedChange={(checked) => updateSettingsData('general', { email_notifications: checked })}
+              />
             </div>
-            <Switch
-              id="emailUpdates"
-              checked={settingsData?.general?.email_notifications ?? false}
-              onCheckedChange={(checked) => updateSettingsData('general', { email_notifications: checked })}
-            />
+
+            <Separator />
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Marketing Emails</Label>
+                <p className="text-sm text-muted-foreground">
+                  Receive updates about new features and tips
+                </p>
+              </div>
+              <Switch
+                checked={generalSettings.marketing_emails ?? false}
+                onCheckedChange={(checked) => updateSettingsData('general', { marketing_emails: checked })}
+              />
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Privacy */}
+      {/* Privacy & Data */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Shield className="w-5 h-5 text-fitness-primary" />
-            Privacy
+            <Shield className="h-5 w-5" />
+            Privacy & Data
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <div>
-              <Label htmlFor="dataSharing">Anonymous Data Sharing</Label>
-              <p className="text-sm text-gray-600">Help improve our AI recommendations</p>
+        <CardContent className="space-y-4">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Analytics Data Sharing</Label>
+                <p className="text-sm text-muted-foreground">
+                  Help us improve the app by sharing anonymous usage data
+                </p>
+              </div>
+              <Switch
+                checked={generalSettings.data_sharing_analytics ?? false}
+                onCheckedChange={(checked) => updateSettingsData('general', { data_sharing_analytics: checked })}
+              />
             </div>
-            <Switch
-              id="dataSharing"
-              checked={settingsData?.general?.data_sharing_analytics ?? false}
-              onCheckedChange={(checked) => updateSettingsData('general', { data_sharing_analytics: checked })}
-            />
+
+            <Separator />
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Research Data Sharing</Label>
+                <p className="text-sm text-muted-foreground">
+                  Contribute to health and fitness research (optional)
+                </p>
+              </div>
+              <Switch
+                checked={generalSettings.data_sharing_research ?? false}
+                onCheckedChange={(checked) => updateSettingsData('general', { data_sharing_research: checked })}
+              />
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -162,20 +213,15 @@ export const GeneralSettingsTab = () => {
       {/* Save Button */}
       <div className="flex justify-end">
         <Button 
-          onClick={handleSaveSettings}
-          className="bg-fitness-gradient hover:opacity-90"
-          disabled={isLoading}
+          onClick={handleSave} 
+          disabled={isSaving}
+          className="min-w-[120px]"
         >
-          {isLoading ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Saving...
-            </>
-          ) : (
-            'Save Settings'
-          )}
+          {isSaving ? 'Saving...' : 'Save Changes'}
         </Button>
       </div>
     </div>
   );
 };
+
+export default GeneralSettingsTab;
