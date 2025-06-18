@@ -99,9 +99,10 @@ export const useCentralizedCredits = () => {
         .from('ai_generation_logs')
         .insert({
           user_id: user.id,
-          feature_type: featureType,
+          generation_type: featureType,
           status: 'pending',
-          credits_used: 1
+          credits_used: 1,
+          prompt_data: {}
         })
         .select()
         .single();
