@@ -7,7 +7,7 @@ export { UpdateNotesDialog } from './UpdateNotesDialog';
 export { UserSearchDropdown } from './UserSearchDropdown';
 export { CoachAnalyticsTab } from './CoachAnalyticsTab';
 export { default as TraineeProgressCard } from './TraineeProgressCard';
-export { EnhancedTraineesTab } from './EnhancedTraineesTab';
+export { default as EnhancedTraineesTab } from './EnhancedTraineesTab';
 export { default as CoachMetricsOverview } from './CoachMetricsOverview';
 export { TraineeFilterBar } from './TraineeFilterBar';
 export { AssignTraineeDialog } from './AssignTraineeDialog';
@@ -23,7 +23,7 @@ export { default as MessageActionsMenu } from './chat/MessageActionsMenu';
 
 // Overview components  
 export { QuickActions } from './overview/QuickActions';
-export { CompactTasksPanel } from './overview/CompactTasksPanel';
+export { default as CompactTasksPanel } from './overview/CompactTasksPanel';
 export { TraineeProgressOverview } from './overview/TraineeProgressOverview';
 
 // Types

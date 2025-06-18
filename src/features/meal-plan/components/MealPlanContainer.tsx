@@ -207,7 +207,7 @@ const MealPlanContainer = () => {
 
       {/* AI Generation Dialog */}
       <AIGenerationDialog
-        open={mealPlanState.showAIDialog}
+        isOpen={mealPlanState.showAIDialog}
         onClose={() => mealPlanState.closeAIDialog()}
         preferences={mealPlanState.aiPreferences}
         onPreferencesChange={mealPlanState.updateAIPreferences}

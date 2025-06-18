@@ -1,7 +1,8 @@
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MessageCircle, TrendingUp } from "lucide-react";
-import { EnhancedTraineesTab } from "./EnhancedTraineesTab";
+import EnhancedTraineesTab from "./EnhancedTraineesTab";
 import { useI18n } from "@/hooks/useI18n";
 
 interface CoachTabsProps {

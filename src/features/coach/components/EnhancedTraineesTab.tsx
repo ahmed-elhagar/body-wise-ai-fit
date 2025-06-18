@@ -8,14 +8,21 @@ import { Users, Search, Plus, MessageCircle, TrendingUp } from "lucide-react";
 import { useCoach } from "@/hooks/useCoach";
 import CompactTasksPanel from "./overview/CompactTasksPanel";
 
-const EnhancedTraineesTab = () => {
-  const { trainees, isLoading } = useCoach();
+interface EnhancedTraineesTabProps {
+  trainees?: any[];
+  onChatClick?: (clientId: string) => void;
+}
+
+const EnhancedTraineesTab = ({ trainees: propTrainees, onChatClick }: EnhancedTraineesTabProps) => {
+  const { trainees: hookTrainees, isLoading } = useCoach();
   const [searchTerm, setSearchTerm] = useState("");
 
-  const filteredTrainees = trainees?.filter(trainee =>
-    trainee.profiles?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    trainee.profiles?.last_name?.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
+  const trainees = propTrainees || hookTrainees || [];
+
+  const filteredTrainees = trainees.filter(trainee =>
+    trainee?.trainee_profile?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    trainee?.trainee_profile?.last_name?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const mockTasks = [
     {
@@ -113,10 +120,10 @@ const EnhancedTraineesTab = () => {
                     </div>
                     <div>
                       <CardTitle className="text-lg">
-                        {trainee.profiles?.first_name} {trainee.profiles?.last_name}
+                        {trainee.trainee_profile?.first_name} {trainee.trainee_profile?.last_name}
                       </CardTitle>
                       <p className="text-sm text-gray-500">
-                        Member since {new Date(trainee.created_at).toLocaleDateString()}
+                        Member since {new Date(trainee.assigned_at).toLocaleDateString()}
                       </p>
                     </div>
                   </div>
@@ -139,7 +146,12 @@ const EnhancedTraineesTab = () => {
                   </div>
                   
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="flex-1">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1"
+                      onClick={() => onChatClick?.(trainee.id)}
+                    >
                       <MessageCircle className="h-4 w-4 mr-1" />
                       Chat
                     </Button>
