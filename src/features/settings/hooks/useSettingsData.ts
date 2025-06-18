@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/features/profile';
@@ -6,7 +7,12 @@ export const useSettingsData = () => {
   const { user } = useAuth();
   const { profile, isLoading: profileLoading } = useProfile();
   const [isLoading, setIsLoading] = useState(true);
-  const [settings, setSettings] = useState<any>(null);
+  const [settingsData, setSettingsData] = useState<any>({
+    general: {},
+    health: {},
+    food: {},
+    conditions: {}
+  });
 
   useEffect(() => {
     if (!user?.id) {
@@ -20,26 +26,40 @@ export const useSettingsData = () => {
     }
 
     // Map profile data to settings state
-    setSettings({
-      theme: 'system', // Example setting
-      notificationsEnabled: true, // Example setting
-      language: 'en', // Example setting
-      ...profile
+    setSettingsData({
+      general: {
+        theme_preference: 'light',
+        measurement_units: 'metric',
+        push_notifications: true,
+        email_notifications: false,
+        data_sharing_analytics: false,
+        preferred_language: 'en',
+        ...profile
+      },
+      health: profile,
+      food: profile,
+      conditions: profile
     });
 
     setIsLoading(false);
   }, [user?.id, profile]);
 
-  const updateSetting = (key: string, value: any) => {
-    setSettings(prevSettings => ({
+  const updateSettingsData = (section: string, data: any) => {
+    setSettingsData(prevSettings => ({
       ...prevSettings,
-      [key]: value
+      [section]: { ...prevSettings[section], ...data }
     }));
   };
 
+  const saveSettings = async () => {
+    // TODO: Implement settings save logic
+    return { success: true };
+  };
+
   return {
-    settings,
+    settingsData,
     isLoading: isLoading || profileLoading,
-    updateSetting
+    updateSettingsData,
+    saveSettings
   };
 };

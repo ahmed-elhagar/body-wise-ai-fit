@@ -56,7 +56,7 @@ export const GeneralSettingsTab = () => {
           <div>
             <Label htmlFor="units">Measurement Units</Label>
             <Select 
-              value={settingsData.general.measurement_units || 'metric'} 
+              value={settingsData?.general?.measurement_units || 'metric'} 
               onValueChange={(value) => updateSettingsData('general', { measurement_units: value })}
             >
               <SelectTrigger className="mt-1">
@@ -83,7 +83,7 @@ export const GeneralSettingsTab = () => {
           <div>
             <Label htmlFor="theme">Theme</Label>
             <Select 
-              value={settingsData.general.theme_preference || 'light'} 
+              value={settingsData?.general?.theme_preference || 'light'} 
               onValueChange={(value) => updateSettingsData('general', { theme_preference: value })}
             >
               <SelectTrigger className="mt-1">
@@ -115,7 +115,7 @@ export const GeneralSettingsTab = () => {
             </div>
             <Switch
               id="notifications"
-              checked={settingsData.general.push_notifications ?? true}
+              checked={settingsData?.general?.push_notifications ?? true}
               onCheckedChange={(checked) => updateSettingsData('general', { push_notifications: checked })}
             />
           </div>
@@ -129,7 +129,7 @@ export const GeneralSettingsTab = () => {
             </div>
             <Switch
               id="emailUpdates"
-              checked={settingsData.general.email_notifications ?? false}
+              checked={settingsData?.general?.email_notifications ?? false}
               onCheckedChange={(checked) => updateSettingsData('general', { email_notifications: checked })}
             />
           </div>
@@ -152,7 +152,7 @@ export const GeneralSettingsTab = () => {
             </div>
             <Switch
               id="dataSharing"
-              checked={settingsData.general.data_sharing_analytics ?? false}
+              checked={settingsData?.general?.data_sharing_analytics ?? false}
               onCheckedChange={(checked) => updateSettingsData('general', { data_sharing_analytics: checked })}
             />
           </div>

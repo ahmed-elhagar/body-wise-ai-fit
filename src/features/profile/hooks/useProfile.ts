@@ -8,6 +8,7 @@ export const useProfile = () => {
   const { user } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
@@ -43,8 +44,9 @@ export const useProfile = () => {
   }, [user?.id]);
 
   const updateProfile = async (updates: any) => {
-    if (!user?.id) return;
+    if (!user?.id) return { error: new Error('No user ID'), data: null };
 
+    setIsUpdating(true);
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -53,19 +55,25 @@ export const useProfile = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating profile:', error);
+        return { error, data: null };
+      }
       
       setProfile(data);
-      return data;
+      return { error: null, data };
     } catch (error) {
       console.error('Error updating profile:', error);
-      throw error;
+      return { error: error as Error, data: null };
+    } finally {
+      setIsUpdating(false);
     }
   };
 
   return {
     profile,
     isLoading,
+    isUpdating,
     error,
     updateProfile
   };
