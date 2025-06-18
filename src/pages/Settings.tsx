@@ -3,7 +3,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
 import { PageHeader } from "@/components/ui/page-header";
 import { Settings as SettingsIcon } from "lucide-react";
-import { EnhancedSettingsPage } from "@/components/settings/EnhancedSettingsPage";
+import { SettingsPage } from "@/features/settings";
 
 const Settings = () => {
   return (
@@ -18,7 +18,7 @@ const Settings = () => {
           
           <div className="px-6 pb-8">
             <div className="w-full max-w-7xl mx-auto">
-              <EnhancedSettingsPage />
+              <SettingsPage />
             </div>
           </div>
         </div>
