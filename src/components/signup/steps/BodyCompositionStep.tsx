@@ -1,60 +1,120 @@
 
-import { Target } from "lucide-react";
-import { BodyShapeSelector } from "@/features/auth/components/BodyShapeSelector";
-import { SignupFormData } from "../types";
-import { mapBodyFatToBodyShape } from "@/utils/signupValidation";
-import { useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { Scale, User, Target } from "lucide-react";
+import { BodyShapeSelector } from "@/features/auth";
 
 interface BodyCompositionStepProps {
-  formData: SignupFormData;
-  updateField: (field: keyof SignupFormData, value: any) => void;
+  formData: {
+    height: string;
+    weight: string;
+    targetWeight: string;
+    bodyShape: string;
+    bodyFat: string;
+    muscleMass: string;
+    activityLevel: string;
+  };
+  updateField: (field: string, value: string) => void;
+  onNext: () => void;
+  onPrev: () => void;
+  currentStep: number;
+  totalSteps: number;
 }
 
-const BodyCompositionStep = ({ formData, updateField }: BodyCompositionStepProps) => {
-  // Ensure there's always a default value
-  const currentBodyFat = formData.bodyFatPercentage || (formData.gender === 'male' ? 20 : 25);
-  
-  const handleBodyFatChange = (value: number) => {
-    console.log('Body fat percentage changed to:', value);
-    updateField("bodyFatPercentage", value);
-    
-    // Auto-update body shape based on fat percentage
-    const autoBodyShape = mapBodyFatToBodyShape(value, formData.gender || 'male');
-    updateField("bodyShape", autoBodyShape);
+const BodyCompositionStep = ({ 
+  formData, 
+  updateField, 
+  onNext, 
+  onPrev, 
+  currentStep, 
+  totalSteps 
+}: BodyCompositionStepProps) => {
+  const handleBodyShapeChange = (shape: string) => {
+    updateField('bodyShape', shape);
   };
 
-  // Auto-set body shape when component mounts or gender changes
-  useEffect(() => {
-    if (formData.bodyFatPercentage && formData.gender) {
-      const autoBodyShape = mapBodyFatToBodyShape(formData.bodyFatPercentage, formData.gender);
-      updateField("bodyShape", autoBodyShape);
-    }
-  }, [formData.gender, updateField]);
-
   return (
-    <div className="space-y-6">
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl mb-4 shadow-lg">
-          <Target className="w-8 h-8 text-white" />
+    <Card className="w-full max-w-2xl mx-auto">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Scale className="h-5 w-5" />
+            Body Composition
+          </CardTitle>
+          <div className="text-sm text-gray-500">
+            Step {currentStep} of {totalSteps}
+          </div>
         </div>
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">Body Composition</h2>
-        <p className="text-gray-600">Select your current body fat percentage to help us create your personalized plan</p>
-      </div>
+        <Progress value={(currentStep / totalSteps) * 100} className="mt-2" />
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="height">Height (cm)</Label>
+            <Input
+              id="height"
+              type="number"
+              value={formData.height}
+              onChange={(e) => updateField('height', e.target.value)}
+              placeholder="170"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="weight">Current Weight (kg)</Label>
+            <Input
+              id="weight"
+              type="number"
+              value={formData.weight}
+              onChange={(e) => updateField('weight', e.target.value)}
+              placeholder="70"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="targetWeight">Target Weight (kg)</Label>
+            <Input
+              id="targetWeight"
+              type="number"
+              value={formData.targetWeight}
+              onChange={(e) => updateField('targetWeight', e.target.value)}
+              placeholder="65"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="bodyFat">Body Fat % (optional)</Label>
+            <Input
+              id="bodyFat"
+              type="number"
+              value={formData.bodyFat}
+              onChange={(e) => updateField('bodyFat', e.target.value)}
+              placeholder="20"
+            />
+          </div>
+        </div>
 
-      <div className="space-y-6">
-        <BodyShapeSelector
-          value={currentBodyFat}
-          onChange={handleBodyFatChange}
-          gender={formData.gender || 'male'}
-        />
-      </div>
-      
-      <div className="text-center">
-        <p className="text-sm text-gray-500">
-          Don't worry if you're not sure - you can always adjust this later in your profile settings.
-        </p>
-      </div>
-    </div>
+        <div>
+          <Label>Body Shape</Label>
+          <BodyShapeSelector
+            value={formData.bodyShape}
+            onChange={handleBodyShapeChange}
+          />
+        </div>
+
+        <div className="flex justify-between pt-4">
+          <Button variant="outline" onClick={onPrev}>
+            Previous
+          </Button>
+          <Button onClick={onNext}>
+            Next
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

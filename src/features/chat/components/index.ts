@@ -1,5 +1,4 @@
 
-// Chat feature components - moved from src/components/chat
 export { default as AIChatInterface } from './AIChatInterface';
 export { default as AIChatMessage } from './AIChatMessage';
 export { default as ChatHistory } from './ChatHistory';
