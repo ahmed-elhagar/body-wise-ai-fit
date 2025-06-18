@@ -15,9 +15,16 @@ export interface SignupData {
 export interface AuthUser {
   id: string;
   email: string;
-  firstName?: string;
-  lastName?: string;
+  first_name?: string;
+  last_name?: string;
+  firstName?: string; // Alias for compatibility
+  lastName?: string; // Alias for compatibility
   role: 'normal' | 'coach' | 'admin';
+  user_metadata?: {
+    role?: string;
+    first_name?: string;
+    last_name?: string;
+  };
 }
 
 export interface AuthState {

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -6,7 +7,7 @@ import { ChefHat, Clock, Users, Utensils, Youtube, ExternalLink, Sparkles, Image
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useMealRecipe } from '../hooks';
 import { toast } from 'sonner';
-import type { DailyMeal } from '@/features/meal-plan/types';
+import type { DailyMeal, MealIngredient } from '@/features/meal-plan/types';
 
 interface EnhancedRecipeDialogProps {
   isOpen: boolean;
@@ -33,27 +34,20 @@ export const EnhancedRecipeDialog = ({ isOpen, onClose, meal, onRecipeUpdated }:
       const updatedMeal = await generateRecipe(currentMeal.id);
       
       if (updatedMeal) {
-        // Convert the updated meal data to our DailyMeal type
         const convertedMeal: DailyMeal = {
           ...currentMeal,
           ingredients: Array.isArray(updatedMeal.ingredients) 
             ? updatedMeal.ingredients 
-            : typeof updatedMeal.ingredients === 'string'
-              ? JSON.parse(updatedMeal.ingredients)
-              : [],
+            : [],
           instructions: Array.isArray(updatedMeal.instructions)
             ? updatedMeal.instructions
-            : typeof updatedMeal.instructions === 'string'
-              ? JSON.parse(updatedMeal.instructions)
-              : [],
+            : [],
           alternatives: Array.isArray(updatedMeal.alternatives)
             ? updatedMeal.alternatives
-            : typeof updatedMeal.alternatives === 'string'
-              ? JSON.parse(updatedMeal.alternatives)
-              : [],
+            : [],
           youtube_search_term: updatedMeal.youtube_search_term || currentMeal.youtube_search_term,
           image_url: updatedMeal.image_url || currentMeal.image_url,
-          recipe_fetched: true
+          recipeFetched: true
         };
         
         setCurrentMeal(convertedMeal);
@@ -62,7 +56,6 @@ export const EnhancedRecipeDialog = ({ isOpen, onClose, meal, onRecipeUpdated }:
       }
     } catch (error) {
       console.error('Error generating recipe:', error);
-      // Don't show additional error toast since useMealRecipe already handles it
     }
   };
 
@@ -126,7 +119,7 @@ export const EnhancedRecipeDialog = ({ isOpen, onClose, meal, onRecipeUpdated }:
             </div>
             <div className={`flex items-center gap-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <Utensils className="w-4 h-4" />
-              <span className="capitalize">{currentMeal.meal_type}</span>
+              <span className="capitalize">{currentMeal.meal_type || currentMeal.mealType}</span>
             </div>
           </div>
 
@@ -182,7 +175,7 @@ export const EnhancedRecipeDialog = ({ isOpen, onClose, meal, onRecipeUpdated }:
             <div>
               <h3 className="font-semibold mb-3">Ingredients</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {currentMeal.ingredients.map((ingredient, index) => (
+                {currentMeal.ingredients.map((ingredient: MealIngredient, index: number) => (
                   <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded">
                     <span>{ingredient.name}</span>
                     <span className="text-sm text-gray-600">
@@ -199,7 +192,7 @@ export const EnhancedRecipeDialog = ({ isOpen, onClose, meal, onRecipeUpdated }:
             <div>
               <h3 className="font-semibold mb-3">Instructions</h3>
               <ol className="space-y-2">
-                {currentMeal.instructions.map((instruction, index) => (
+                {currentMeal.instructions.map((instruction: string, index: number) => (
                   <li key={index} className={`flex gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
                     <span className="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-medium">
                       {index + 1}
@@ -216,7 +209,7 @@ export const EnhancedRecipeDialog = ({ isOpen, onClose, meal, onRecipeUpdated }:
             <div>
               <h3 className="font-semibold mb-3">Alternative Ingredients</h3>
               <div className="space-y-2">
-                {currentMeal.alternatives.map((alternative, index) => (
+                {currentMeal.alternatives.map((alternative: string, index: number) => (
                   <div key={index} className="p-2 bg-blue-50 rounded border-l-4 border-blue-200">
                     <span className="text-blue-800">{alternative}</span>
                   </div>

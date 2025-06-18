@@ -4,13 +4,21 @@ import { DashboardHeader } from "./DashboardHeader";
 import { QuickActionsGrid } from "./QuickActionsGrid";
 import { RecentActivityCard } from "./RecentActivityCard";
 import { useDashboardData } from "../hooks";
-import { EnhancedPageLoading } from "@/components/EnhancedPageLoading";
+import SimpleLoadingIndicator from "@/components/ui/simple-loading-indicator";
 
 const CanonicalDashboard = () => {
   const { data: dashboardData, isLoading } = useDashboardData();
 
   if (isLoading) {
-    return <EnhancedPageLoading message="Loading Dashboard" />;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+        <SimpleLoadingIndicator
+          message="Loading Dashboard"
+          description="Please wait while we load your dashboard..."
+          size="lg"
+        />
+      </div>
+    );
   }
 
   return (

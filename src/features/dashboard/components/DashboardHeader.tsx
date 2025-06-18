@@ -14,12 +14,15 @@ export const DashboardHeader = ({ stats }: DashboardHeaderProps) => {
   const greeting = new Date().getHours() < 12 ? 'Good Morning' : 
                   new Date().getHours() < 18 ? 'Good Afternoon' : 'Good Evening';
 
+  // Use both firstName and first_name for compatibility
+  const displayName = user?.firstName || user?.first_name || 'User';
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
-            {greeting}, {user?.firstName || 'User'}! 👋
+            {greeting}, {displayName}! 👋
           </h1>
           <p className="text-gray-600 mt-1">
             {t('dashboard.welcome.subtitle')}

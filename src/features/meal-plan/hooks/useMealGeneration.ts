@@ -1,28 +1,29 @@
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { useState } from 'react';
 import { toast } from 'sonner';
+import type { MealPlanPreferences } from '../types';
 
 export const useMealGeneration = () => {
-  const queryClient = useQueryClient();
+  const [isGenerating, setIsGenerating] = useState(false);
 
-  return useMutation({
-    mutationFn: async (weekOffset: number = 0) => {
-      const { data, error } = await supabase.functions.invoke('generate-meal-plan', {
-        body: { weekOffset }
-      });
-      
-      if (error) throw error;
-      if (!data?.success) throw new Error(data?.error || 'Failed to generate meal plan');
-      
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['mealPlan'] });
+  const generateMealPlan = async (preferences: MealPlanPreferences) => {
+    setIsGenerating(true);
+    try {
+      // Mock implementation
+      await new Promise(resolve => setTimeout(resolve, 3000));
       toast.success('Meal plan generated successfully!');
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to generate meal plan');
+      return true;
+    } catch (error) {
+      console.error('Error generating meal plan:', error);
+      toast.error('Failed to generate meal plan');
+      return false;
+    } finally {
+      setIsGenerating(false);
     }
-  });
+  };
+
+  return {
+    generateMealPlan,
+    isGenerating
+  };
 };

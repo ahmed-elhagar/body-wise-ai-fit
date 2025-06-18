@@ -6,22 +6,22 @@ import { toast } from 'sonner';
 
 export const useSignup = () => {
   return useMutation({
-    mutationFn: async (signupData: SignupData) => {
-      const { data, error } = await supabase.auth.signUp({
-        email: signupData.email,
-        password: signupData.password,
+    mutationFn: async (data: SignupData) => {
+      const { data: authData, error } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
         options: {
           data: {
-            first_name: signupData.firstName,
-            last_name: signupData.lastName
+            first_name: data.firstName,
+            last_name: data.lastName,
           }
         }
       });
       if (error) throw error;
-      return data;
+      return authData;
     },
     onSuccess: () => {
-      toast.success('Account created successfully! Please check your email.');
+      toast.success('Account created successfully!');
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Signup failed');
