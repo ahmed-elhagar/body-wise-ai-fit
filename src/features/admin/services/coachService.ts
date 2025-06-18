@@ -9,7 +9,7 @@ export const coachService = {
       .from('coach_trainees')
       .select(`
         *,
-        trainee:profiles!coach_trainees_trainee_id_fkey(
+        trainee:trainee_id(
           id,
           first_name,
           last_name,
@@ -24,7 +24,25 @@ export const coachService = {
       .order('assigned_at', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    
+    // Map to proper type structure
+    return (data || []).map((item: any) => ({
+      id: item.id,
+      coach_id: item.coach_id,
+      trainee_id: item.trainee_id,
+      assigned_at: item.assigned_at,
+      notes: item.notes,
+      trainee: item.trainee ? {
+        id: item.trainee.id,
+        email: item.trainee.email,
+        first_name: item.trainee.first_name,
+        last_name: item.trainee.last_name,
+        role: item.trainee.role as 'admin' | 'coach' | 'normal',
+        created_at: item.trainee.created_at,
+        last_seen: item.trainee.last_seen,
+        is_online: item.trainee.is_online,
+      } : undefined,
+    }));
   },
 
   async assignTrainee(coachId: string, traineeId: string, notes?: string): Promise<CoachTrainee> {
@@ -51,7 +69,21 @@ export const coachService = {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    
+    // Map to proper type with casting
+    return (data || []).map((task: any) => ({
+      id: task.id,
+      coach_id: task.coach_id,
+      trainee_id: task.trainee_id,
+      title: task.title,
+      description: task.description,
+      type: task.type as 'review' | 'follow_up' | 'assessment' | 'other',
+      priority: task.priority as 'low' | 'medium' | 'high',
+      completed: task.completed,
+      due_date: task.due_date,
+      created_at: task.created_at,
+      updated_at: task.updated_at,
+    }));
   },
 
   async createTask(task: Omit<CoachTask, 'id' | 'created_at' | 'updated_at'>): Promise<CoachTask> {
@@ -62,7 +94,21 @@ export const coachService = {
       .single();
 
     if (error) throw error;
-    return data;
+    
+    // Map to proper type
+    return {
+      id: data.id,
+      coach_id: data.coach_id,
+      trainee_id: data.trainee_id,
+      title: data.title,
+      description: data.description,
+      type: data.type as 'review' | 'follow_up' | 'assessment' | 'other',
+      priority: data.priority as 'low' | 'medium' | 'high',
+      completed: data.completed,
+      due_date: data.due_date,
+      created_at: data.created_at,
+      updated_at: data.updated_at,
+    };
   },
 
   async updateTask(taskId: string, updates: Partial<CoachTask>): Promise<void> {
@@ -84,7 +130,20 @@ export const coachService = {
       .order('created_at', { ascending: true });
 
     if (error) throw error;
-    return data || [];
+    
+    // Map to proper type with casting
+    return (data || []).map((message: any) => ({
+      id: message.id,
+      coach_id: message.coach_id,
+      trainee_id: message.trainee_id,
+      sender_id: message.sender_id,
+      sender_type: message.sender_type as 'coach' | 'trainee',
+      message: message.message,
+      message_type: message.message_type as 'text' | 'file' | 'system',
+      is_read: message.is_read,
+      created_at: message.created_at,
+      updated_at: message.updated_at,
+    }));
   },
 
   async sendMessage(
@@ -108,6 +167,19 @@ export const coachService = {
       .single();
 
     if (error) throw error;
-    return data;
+    
+    // Map to proper type
+    return {
+      id: data.id,
+      coach_id: data.coach_id,
+      trainee_id: data.trainee_id,
+      sender_id: data.sender_id,
+      sender_type: data.sender_type as 'coach' | 'trainee',
+      message: data.message,
+      message_type: data.message_type as 'text' | 'file' | 'system',
+      is_read: data.is_read,
+      created_at: data.created_at,
+      updated_at: data.updated_at,
+    };
   },
 };

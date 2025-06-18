@@ -21,7 +21,20 @@ export const adminService = {
       .range(offset, offset + limit - 1);
 
     if (error) throw error;
-    return data || [];
+    
+    // Filter out 'pro' role and map to AdminUser type
+    return (data || [])
+      .filter((user: any) => user.role !== 'pro')
+      .map((user: any) => ({
+        id: user.id,
+        email: user.email,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        role: user.role as 'admin' | 'coach' | 'normal',
+        created_at: user.created_at,
+        last_seen: user.last_seen,
+        is_online: user.is_online,
+      }));
   },
 
   async updateUserRole(userId: string, role: 'admin' | 'coach' | 'normal'): Promise<void> {
@@ -51,7 +64,17 @@ export const adminService = {
       .range(offset, offset + limit - 1);
 
     if (error) throw error;
-    return data || [];
+    
+    // Map to proper type with status casting
+    return (data || []).map((log: any) => ({
+      id: log.id,
+      user_id: log.user_id,
+      generation_type: log.generation_type,
+      status: log.status as 'success' | 'failed' | 'pending',
+      credits_used: log.credits_used,
+      created_at: log.created_at,
+      error_message: log.error_message,
+    }));
   },
 
   // System health monitoring

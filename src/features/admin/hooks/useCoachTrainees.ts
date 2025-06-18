@@ -23,7 +23,7 @@ export const useCoachTrainees = () => {
         .from('coach_trainees')
         .select(`
           *,
-          trainee:profiles!coach_trainees_trainee_id_fkey(
+          trainee:trainee_id(
             id,
             first_name,
             last_name,
@@ -38,7 +38,25 @@ export const useCoachTrainees = () => {
         .order('assigned_at', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      
+      // Map to proper type structure
+      return (data || []).map((item: any) => ({
+        id: item.id,
+        coach_id: item.coach_id,
+        trainee_id: item.trainee_id,
+        assigned_at: item.assigned_at,
+        notes: item.notes,
+        trainee: item.trainee ? {
+          id: item.trainee.id,
+          email: item.trainee.email,
+          first_name: item.trainee.first_name,
+          last_name: item.trainee.last_name,
+          role: item.trainee.role as 'admin' | 'coach' | 'normal',
+          created_at: item.trainee.created_at,
+          last_seen: item.trainee.last_seen,
+          is_online: item.trainee.is_online,
+        } : undefined,
+      }));
     },
     enabled: !!user?.id,
   });

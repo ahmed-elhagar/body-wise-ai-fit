@@ -27,7 +27,20 @@ export const useCoachMessages = (traineeId?: string) => {
         .order('created_at', { ascending: true });
 
       if (error) throw error;
-      return data || [];
+      
+      // Map to proper type with casting
+      return (data || []).map((message: any) => ({
+        id: message.id,
+        coach_id: message.coach_id,
+        trainee_id: message.trainee_id,
+        sender_id: message.sender_id,
+        sender_type: message.sender_type as 'coach' | 'trainee',
+        message: message.message,
+        message_type: message.message_type as 'text' | 'file' | 'system',
+        is_read: message.is_read,
+        created_at: message.created_at,
+        updated_at: message.updated_at,
+      }));
     },
     enabled: !!user?.id && !!traineeId,
   });

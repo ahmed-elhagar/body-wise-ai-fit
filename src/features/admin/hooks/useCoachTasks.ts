@@ -35,7 +35,21 @@ export const useCoachTasks = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      
+      // Map to proper type with casting
+      return (data || []).map((task: any) => ({
+        id: task.id,
+        coach_id: task.coach_id,
+        trainee_id: task.trainee_id,
+        title: task.title,
+        description: task.description,
+        type: task.type as 'review' | 'follow_up' | 'assessment' | 'other',
+        priority: task.priority as 'low' | 'medium' | 'high',
+        completed: task.completed,
+        due_date: task.due_date,
+        created_at: task.created_at,
+        updated_at: task.updated_at,
+      }));
     },
     enabled: !!user?.id,
   });
