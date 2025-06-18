@@ -20,7 +20,7 @@ interface TraineeProgressCardProps {
   className?: string;
 }
 
-const TraineeProgressCard = ({ 
+export const TraineeProgressCard = ({ 
   trainee, 
   onChatClick, 
   onProgressClick, 
