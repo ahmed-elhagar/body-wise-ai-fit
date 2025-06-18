@@ -4,7 +4,20 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import type { FoodConsumptionLog, FoodItem } from '../types';
+import type { FoodConsumptionLog } from '../types';
+
+interface FoodConsumptionInput {
+  food_item_id: string;
+  quantity_g: number;
+  calories_consumed: number;
+  protein_consumed: number;
+  carbs_consumed: number;
+  fat_consumed: number;
+  meal_type: 'breakfast' | 'lunch' | 'dinner' | 'snack';
+  consumed_at: string;
+  notes?: string;
+  source: 'manual' | 'ai_analysis' | 'barcode';
+}
 
 export const useFoodTracking = () => {
   const { user } = useAuth();
@@ -47,14 +60,23 @@ export const useFoodTracking = () => {
 
   // Add food consumption
   const addFoodMutation = useMutation({
-    mutationFn: async (foodData: Partial<FoodConsumptionLog>) => {
+    mutationFn: async (foodData: FoodConsumptionInput) => {
       if (!user?.id) throw new Error('User not authenticated');
 
       const { data, error } = await supabase
         .from('food_consumption_log')
         .insert({
-          ...foodData,
           user_id: user.id,
+          food_item_id: foodData.food_item_id,
+          quantity_g: foodData.quantity_g,
+          calories_consumed: foodData.calories_consumed,
+          protein_consumed: foodData.protein_consumed,
+          carbs_consumed: foodData.carbs_consumed,
+          fat_consumed: foodData.fat_consumed,
+          meal_type: foodData.meal_type,
+          consumed_at: foodData.consumed_at,
+          notes: foodData.notes,
+          source: foodData.source,
         })
         .select()
         .single();

@@ -55,13 +55,6 @@ const ManualTab = ({ onFoodAdded, onClose, preSelectedFood }: ManualTabProps) =>
       consumed_at: new Date().toISOString(),
       notes: notes || undefined,
       source: (preSelectedFood ? 'ai_analysis' : 'manual') as 'manual' | 'ai_analysis' | 'barcode',
-      food_item: {
-        name: foodName,
-        calories_per_100g: caloriesNum,
-        protein_per_100g: proteinNum,
-        carbs_per_100g: carbsNum,
-        fat_per_100g: fatNum,
-      }
     };
 
     addFoodConsumption(foodConsumption);

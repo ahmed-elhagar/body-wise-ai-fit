@@ -39,7 +39,7 @@ export interface FoodConsumptionLog {
   updated_at?: string;
 }
 
-export interface NutritionSummary {
+export interface FoodTrackerNutritionSummary {
   totalCalories: number;
   totalProtein: number;
   totalCarbs: number;

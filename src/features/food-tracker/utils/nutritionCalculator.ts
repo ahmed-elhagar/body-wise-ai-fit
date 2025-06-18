@@ -1,8 +1,8 @@
 
-import type { FoodConsumptionLog, NutritionSummary } from '../types';
+import type { FoodConsumptionLog, FoodTrackerNutritionSummary } from '../types';
 
 export const nutritionCalculator = {
-  calculateDailyNutrition(logs: FoodConsumptionLog[]): NutritionSummary {
+  calculateDailyNutrition(logs: FoodConsumptionLog[]): FoodTrackerNutritionSummary {
     return logs.reduce(
       (summary, log) => ({
         totalCalories: summary.totalCalories + (log.calories_consumed || 0),
@@ -19,7 +19,7 @@ export const nutritionCalculator = {
     );
   },
 
-  calculateMacroPercentages(nutrition: NutritionSummary) {
+  calculateMacroPercentages(nutrition: FoodTrackerNutritionSummary) {
     const totalCalories = nutrition.totalCalories;
     if (totalCalories === 0) {
       return { proteinPercent: 0, carbsPercent: 0, fatPercent: 0 };

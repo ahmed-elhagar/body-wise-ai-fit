@@ -45,7 +45,12 @@ export const foodTrackingService = {
       .order('consumed_at', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    
+    // Type assertion with proper meal_type casting
+    return (data || []).map(item => ({
+      ...item,
+      meal_type: item.meal_type as 'breakfast' | 'lunch' | 'dinner' | 'snack'
+    })) as FoodConsumptionLog[];
   },
 
   async addFoodConsumption(
@@ -58,7 +63,10 @@ export const foodTrackingService = {
       .single();
 
     if (error) throw error;
-    return data;
+    return {
+      ...data,
+      meal_type: data.meal_type as 'breakfast' | 'lunch' | 'dinner' | 'snack'
+    } as FoodConsumptionLog;
   },
 
   async updateFoodConsumption(
@@ -73,7 +81,10 @@ export const foodTrackingService = {
       .single();
 
     if (error) throw error;
-    return data;
+    return {
+      ...data,
+      meal_type: data.meal_type as 'breakfast' | 'lunch' | 'dinner' | 'snack'
+    } as FoodConsumptionLog;
   },
 
   async deleteFoodConsumption(id: string): Promise<void> {
