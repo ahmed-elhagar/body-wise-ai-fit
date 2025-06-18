@@ -2,7 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/features/auth';
-import type { ExerciseFetchResult, WeeklyExerciseProgram, DailyWorkout } from '../types';
+import type { ExerciseFetchResult, WeeklyExerciseProgram, DailyWorkout, Exercise } from '../types';
 
 export const useExercisePrograms = (weekOffset: number = 0) => {
   const { user } = useAuth();
@@ -79,7 +79,7 @@ export const useExercisePrograms = (weekOffset: number = 0) => {
         throw workoutsError;
       }
 
-      // Transform daily workouts data
+      // Transform daily workouts data with proper Exercise type
       const dailyWorkouts: DailyWorkout[] = (dailyWorkoutsData || []).map(workout => ({
         id: workout.id,
         weekly_program_id: workout.weekly_program_id,
@@ -88,37 +88,30 @@ export const useExercisePrograms = (weekOffset: number = 0) => {
         target_muscle_groups: workout.muscle_groups || [],
         estimated_duration: workout.estimated_duration || 45,
         estimated_calories: workout.estimated_calories,
-        difficulty_level: 'beginner' as const, // Default value
+        difficulty_level: 'beginner' as const,
         completed: workout.completed || false,
-        exercises: (workout.exercises || []).map((exercise: any) => ({
+        exercises: (workout.exercises || []).map((exercise: any): Exercise => ({
           id: exercise.id,
-          exercise_id: exercise.id,
-          exercise: {
-            id: exercise.id,
-            daily_workout_id: exercise.daily_workout_id,
-            name: exercise.name,
-            muscle_groups: exercise.muscle_groups || [],
-            equipment: exercise.equipment,
-            difficulty_level: (exercise.difficulty as 'beginner' | 'intermediate' | 'advanced') || 'beginner',
-            instructions: exercise.instructions || '',
-            youtube_search_term: exercise.youtube_search_term,
-            sets: exercise.sets,
-            reps: exercise.reps,
-            rest_seconds: exercise.rest_seconds,
-            order_number: exercise.order_number || 1,
-            completed: exercise.completed || false,
-            notes: exercise.notes,
-            actual_sets: exercise.actual_sets,
-            actual_reps: exercise.actual_reps,
-            created_at: exercise.created_at,
-            updated_at: exercise.updated_at
-          },
-          sets: exercise.sets || 3,
-          reps_min: 8,
-          reps_max: 12,
-          rest_seconds: exercise.rest_seconds || 60,
-          order_index: exercise.order_number || 1
+          name: exercise.name,
+          sets: exercise.sets,
+          reps: exercise.reps,
+          actual_sets: exercise.actual_sets,
+          actual_reps: exercise.actual_reps,
+          completed: exercise.completed || false,
+          instructions: exercise.instructions || '',
+          muscle_groups: exercise.muscle_groups || [],
+          equipment: exercise.equipment,
+          difficulty: exercise.difficulty,
+          difficulty_level: exercise.difficulty,
+          youtube_search_term: exercise.youtube_search_term,
+          notes: exercise.notes,
+          rest_seconds: exercise.rest_seconds,
+          order_number: exercise.order_number || 1,
+          daily_workout_id: exercise.daily_workout_id,
+          created_at: exercise.created_at,
+          updated_at: exercise.updated_at
         })),
+        is_rest_day: workout.is_rest_day || false,
         created_at: workout.created_at,
         updated_at: workout.updated_at
       }));
