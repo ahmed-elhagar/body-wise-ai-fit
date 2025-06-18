@@ -2,7 +2,7 @@
 import React, { ReactNode, startTransition } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useProfile } from '@/hooks/useProfile';
+import { useProfile } from '@/features/profile';
 import { useRole } from '@/hooks/useRole';
 import EnhancedPageLoading from '@/components/EnhancedPageLoading';
 

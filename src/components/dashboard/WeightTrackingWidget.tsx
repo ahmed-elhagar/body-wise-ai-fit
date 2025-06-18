@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Scale, TrendingUp, TrendingDown, Target, Plus } from "lucide-react";
 import { useWeightTracking } from "@/hooks/useWeightTracking";
-import { useProfile } from "@/hooks/useProfile";
+import { useProfile } from "@/features/profile";
 import { useNavigate } from "react-router-dom";
 
 const WeightTrackingWidget = () => {

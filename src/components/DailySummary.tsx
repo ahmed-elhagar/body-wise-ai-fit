@@ -1,9 +1,8 @@
-
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Target, TrendingUp, Flame, Clock, Users } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useProfile } from "@/hooks/useProfile";
+import { useProfile } from "@/features/profile";
 
 interface DailySummaryProps {
   totalCalories: number;

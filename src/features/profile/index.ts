@@ -7,3 +7,4 @@ export * from './utils';
 
 // Main entry points
 export { default as ProfilePage } from './components/ProfilePage';
+export { useProfile } from './hooks/useProfile';

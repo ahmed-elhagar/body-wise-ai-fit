@@ -2,7 +2,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Activity, Target, Calendar, TrendingUp, Zap, Award, Users, Heart } from "lucide-react";
-import { useProfile } from "@/hooks/useProfile";
+import { useProfile } from "@/features/profile";
 import { useWeightTracking } from "@/hooks/useWeightTracking";
 import { useLanguage } from "@/contexts/LanguageContext";
 

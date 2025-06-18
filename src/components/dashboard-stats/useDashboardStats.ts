@@ -1,5 +1,5 @@
 
-import { useProfile } from "@/hooks/useProfile";
+import { useProfile } from "@/features/profile";
 import { useWeightTracking } from "@/hooks/useWeightTracking";
 
 export const useDashboardStats = () => {

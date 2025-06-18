@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { useProfile } from "@/hooks/useProfile";
+import { useProfile } from "@/features/profile";
 import { toast } from "sonner";
 
 interface FoodPreferencesState {

@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TrendingUp, Target, Calendar, Zap, Crown, Infinity } from "lucide-react";
-import { useProfile } from "@/hooks/useProfile";
+import { useProfile } from "@/features/profile";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useNavigate } from "react-router-dom";
 import ProMemberBadge from "@/components/ui/pro-member-badge";

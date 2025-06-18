@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { useProfile } from "@/hooks/useProfile";
+import { useProfile } from "@/features/profile";
 import { toast } from "sonner";
 import { Plus, Sparkles } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
