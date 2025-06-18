@@ -2,7 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/features/auth';
-import type { ExerciseFetchResult } from '../types';
+import type { ExerciseFetchResult, WeeklyExerciseProgram, DailyWorkout } from '../types';
 
 export const useExercisePrograms = (weekOffset: number = 0) => {
   const { user } = useAuth();
@@ -26,7 +26,7 @@ export const useExercisePrograms = (weekOffset: number = 0) => {
       const weekStartDate = getWeekStartDate(weekOffset);
 
       // Fetch weekly program
-      const { data: weeklyProgram, error: programError } = await supabase
+      const { data: weeklyProgramData, error: programError } = await supabase
         .from('weekly_exercise_programs')
         .select('*')
         .eq('user_id', user.id)
@@ -38,22 +38,38 @@ export const useExercisePrograms = (weekOffset: number = 0) => {
         throw programError;
       }
 
-      if (!weeklyProgram) {
+      if (!weeklyProgramData) {
         return {
           weeklyProgram: null,
           dailyWorkouts: []
         };
       }
 
+      // Transform the data to match our types
+      const weeklyProgram: WeeklyExerciseProgram = {
+        id: weeklyProgramData.id,
+        user_id: weeklyProgramData.user_id,
+        week_start_date: weeklyProgramData.week_start_date,
+        program_name: weeklyProgramData.program_name,
+        program_type: 'mixed', // Default value since it's not in DB
+        total_workouts: 7, // Default value
+        estimated_weekly_hours: 5, // Default value
+        difficulty_level: weeklyProgramData.difficulty_level,
+        target_muscle_groups: ['full_body'], // Default value
+        workout_type: weeklyProgramData.workout_type || 'home',
+        current_week: weeklyProgramData.current_week || 1,
+        status: weeklyProgramData.status || 'active',
+        daily_workouts: [],
+        created_at: weeklyProgramData.created_at,
+        updated_at: weeklyProgramData.updated_at
+      };
+
       // Fetch daily workouts with exercises
-      const { data: dailyWorkouts, error: workoutsError } = await supabase
+      const { data: dailyWorkoutsData, error: workoutsError } = await supabase
         .from('daily_workouts')
         .select(`
           *,
-          exercises:workout_exercises(
-            *,
-            exercise:exercises(*)
-          )
+          exercises:exercises(*)
         `)
         .eq('weekly_program_id', weeklyProgram.id)
         .order('day_number');
@@ -63,9 +79,55 @@ export const useExercisePrograms = (weekOffset: number = 0) => {
         throw workoutsError;
       }
 
+      // Transform daily workouts data
+      const dailyWorkouts: DailyWorkout[] = (dailyWorkoutsData || []).map(workout => ({
+        id: workout.id,
+        weekly_program_id: workout.weekly_program_id,
+        day_number: workout.day_number,
+        workout_name: workout.workout_name,
+        target_muscle_groups: workout.muscle_groups || [],
+        estimated_duration: workout.estimated_duration || 45,
+        estimated_calories: workout.estimated_calories,
+        difficulty_level: 'beginner', // Default value
+        completed: workout.completed || false,
+        exercises: (workout.exercises || []).map((exercise: any) => ({
+          id: exercise.id,
+          exercise_id: exercise.id,
+          exercise: {
+            id: exercise.id,
+            daily_workout_id: exercise.daily_workout_id,
+            name: exercise.name,
+            muscle_groups: exercise.muscle_groups || [],
+            equipment: exercise.equipment,
+            difficulty_level: exercise.difficulty || 'beginner',
+            instructions: exercise.instructions ? [exercise.instructions] : [],
+            youtube_search_term: exercise.youtube_search_term,
+            sets: exercise.sets,
+            reps: exercise.reps,
+            rest_seconds: exercise.rest_seconds,
+            order_number: exercise.order_number || 1,
+            completed: exercise.completed || false,
+            notes: exercise.notes,
+            actual_sets: exercise.actual_sets,
+            actual_reps: exercise.actual_reps,
+            created_at: exercise.created_at,
+            updated_at: exercise.updated_at
+          },
+          sets: exercise.sets || 3,
+          reps_min: 8,
+          reps_max: 12,
+          rest_seconds: exercise.rest_seconds || 60,
+          order_index: exercise.order_number || 1
+        })),
+        created_at: workout.created_at,
+        updated_at: workout.updated_at
+      }));
+
+      weeklyProgram.daily_workouts = dailyWorkouts;
+
       return {
         weeklyProgram,
-        dailyWorkouts: dailyWorkouts || []
+        dailyWorkouts
       };
     },
     enabled: !!user?.id,

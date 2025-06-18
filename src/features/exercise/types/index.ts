@@ -2,6 +2,7 @@
 // Exercise feature types
 export interface Exercise {
   id: string;
+  daily_workout_id: string;
   name: string;
   description?: string;
   muscle_groups: string[];
@@ -10,6 +11,14 @@ export interface Exercise {
   instructions: string[];
   youtube_search_term?: string;
   image_url?: string;
+  sets?: number;
+  reps?: string;
+  rest_seconds?: number;
+  order_number?: number;
+  completed: boolean;
+  notes?: string;
+  actual_sets?: number;
+  actual_reps?: string;
   created_at: string;
   updated_at: string;
 }
@@ -21,8 +30,11 @@ export interface DailyWorkout {
   workout_name: string;
   target_muscle_groups: string[];
   estimated_duration: number;
+  estimated_calories?: number;
   difficulty_level: 'beginner' | 'intermediate' | 'advanced';
+  completed: boolean;
   exercises: WorkoutExercise[];
+  is_rest_day?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -50,6 +62,9 @@ export interface WeeklyExerciseProgram {
   estimated_weekly_hours: number;
   difficulty_level: 'beginner' | 'intermediate' | 'advanced';
   target_muscle_groups: string[];
+  workout_type: 'home' | 'gym';
+  current_week: number;
+  status: string;
   daily_workouts: DailyWorkout[];
   created_at: string;
   updated_at: string;
@@ -68,4 +83,18 @@ export interface ExercisePreferences {
 export interface ExerciseFetchResult {
   weeklyProgram: WeeklyExerciseProgram | null;
   dailyWorkouts: DailyWorkout[];
+}
+
+export interface ExerciseProgram {
+  id: string;
+  program_name: string;
+  difficulty_level: string;
+  workout_type: "home" | "gym";
+  current_week: number;
+  week_start_date: string;
+  created_at: string;
+  daily_workouts_count: number;
+  total_estimated_calories?: number;
+  generation_prompt?: any;
+  daily_workouts?: DailyWorkout[];
 }

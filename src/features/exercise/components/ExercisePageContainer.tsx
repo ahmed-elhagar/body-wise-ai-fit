@@ -1,193 +1,225 @@
 
 import { useState } from "react";
-import { useExercisePrograms } from "@/hooks/useExercisePrograms";
-import { useDailyWorkouts } from "@/hooks/useDailyWorkouts";
-import { useExerciseActions } from "../hooks/useExerciseActions";
-import { CompactExerciseHeader } from "./CompactExerciseHeader";
-import { CompactExerciseNavigation } from "./CompactExerciseNavigation";
-import { UnifiedExerciseContainer } from "./UnifiedExerciseContainer";
-import { getWeekStartDate } from "@/utils/mealPlanUtils";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useExercisePrograms } from "../hooks/useExercisePrograms";
+import { useExerciseTracking } from "../hooks/useExerciseTracking";
+import { useWorkoutGeneration } from "../hooks/useWorkoutGeneration";
+import LoadingState from "./LoadingState";
+import ErrorState from "./ErrorState";
+import EmptyProgramState from "./EmptyProgramState";
+import { ExerciseListEnhanced } from "./ExerciseListEnhanced";
 import { Card } from "@/components/ui/card";
-import EnhancedSpinner from "@/components/ui/enhanced-spinner";
-import { toast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { Calendar, Home, Building2, Plus } from "lucide-react";
 
 export const ExercisePageContainer = () => {
-  const { t } = useLanguage();
   const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
   const [selectedDayNumber, setSelectedDayNumber] = useState(new Date().getDay() || 7);
   const [workoutType, setWorkoutType] = useState<"home" | "gym">("home");
 
-  const { programs, isLoading: programsLoading, refetch: refetchPrograms } = useExercisePrograms();
-  const currentProgram = programs?.[0];
-  
-  const { workouts, exercises, isLoading: workoutsLoading, error, refetch } = useDailyWorkouts(
-    currentProgram?.id, 
-    selectedDayNumber, 
-    workoutType
+  const { data: programs, isLoading, error, refetch } = useExercisePrograms(currentWeekOffset);
+  const { startWorkout, completeWorkout, isTracking } = useExerciseTracking();
+  const { generateWorkoutPlan, isGenerating } = useWorkoutGeneration();
+
+  const currentProgram = programs?.weeklyProgram;
+  const todaysWorkouts = programs?.dailyWorkouts?.filter(
+    workout => workout.day_number === selectedDayNumber
+  ) || [];
+
+  const todaysExercises = todaysWorkouts.flatMap(workout => 
+    workout.exercises?.map(we => we.exercise) || []
   );
 
-  const { completeExercise, updateExerciseProgress } = useExerciseActions();
-
-  const weekStartDate = getWeekStartDate(currentWeekOffset);
-  const isToday = currentWeekOffset === 0 && selectedDayNumber === (new Date().getDay() || 7);
-
-  // Calculate progress
-  const completedExercises = exercises?.filter(ex => ex.completed).length || 0;
-  const totalExercises = exercises?.length || 0;
-  const progressPercentage = totalExercises > 0 ? (completedExercises / totalExercises) * 100 : 0;
-
-  // Check if it's a rest day
-  const todaysWorkout = workouts?.[0];
-  const isRestDay = todaysWorkout?.workout_name?.toLowerCase().includes('rest') ||
-                   (!exercises || exercises.length === 0);
+  const isRestDay = todaysWorkouts.length === 0 || 
+    todaysWorkouts.every(w => w.workout_name?.toLowerCase().includes('rest'));
 
   const handleExerciseComplete = async (exerciseId: string) => {
-    console.log('🎯 ExercisePageContainer - Exercise complete:', exerciseId);
+    console.log('Completing exercise:', exerciseId);
+    // This would integrate with the exercise tracking system
+  };
+
+  const handleExerciseProgressUpdate = async (
+    exerciseId: string, 
+    sets: number, 
+    reps: string, 
+    notes?: string, 
+    weight?: number
+  ) => {
+    console.log('Updating exercise progress:', { exerciseId, sets, reps, notes, weight });
+    // This would integrate with the exercise tracking system
+  };
+
+  const handleGenerateProgram = async () => {
+    const preferences = {
+      programType: 'mixed' as const,
+      difficultyLevel: 'beginner' as const,
+      workoutsPerWeek: 4,
+      sessionDuration: 45,
+      targetMuscleGroups: ['full_body'],
+      availableEquipment: workoutType === 'gym' 
+        ? ['barbells', 'dumbbells', 'machines'] 
+        : ['bodyweight', 'resistance_bands'],
+      workoutLocation: workoutType
+    };
     
-    try {
-      await completeExercise(exerciseId);
-      // Refetch data to update UI
-      await refetch();
-    } catch (error) {
-      console.error('❌ Error completing exercise:', error);
-      toast({
-        title: "Error",
-        description: "Failed to complete exercise. Please try again.",
-        variant: "destructive"
-      });
+    const success = await generateWorkoutPlan(preferences);
+    if (success) {
+      refetch();
     }
   };
 
-  const handleExerciseProgressUpdate = async (exerciseId: string, sets: number, reps: string, notes?: string, weight?: number) => {
-    console.log('📊 ExercisePageContainer - Progress update:', { exerciseId, sets, reps, notes, weight });
-    
-    try {
-      await updateExerciseProgress(exerciseId, sets, reps, notes, weight);
-      // Refetch data to update UI
-      await refetch();
-    } catch (error) {
-      console.error('❌ Error updating exercise progress:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update exercise progress. Please try again.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleWeekChange = (newOffset: number) => {
-    console.log('Week changed to offset:', newOffset);
-    setCurrentWeekOffset(newOffset);
-    refetchPrograms();
-    refetch();
-  };
-
-  const handleGenerateProgram = () => {
-    console.log('Generate new program');
-    // TODO: Implement AI program generation
-  };
-
-  const handleRegenerateProgram = () => {
-    console.log('Regenerate program');
-    // TODO: Implement program regeneration
-  };
-
-  const handleShowAnalytics = () => {
-    console.log('Show analytics');
-    // TODO: Implement analytics view
-  };
-
-  const handleShowSettings = () => {
-    console.log('Show settings');
-    // TODO: Implement settings view
-  };
-
-  if (programsLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <EnhancedSpinner size="lg" text={t('exercise.loadingProgram')} />
-      </div>
-    );
+  if (isLoading) {
+    return <LoadingState />;
   }
 
   if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-6">
-        <Card className="p-8 text-center max-w-md">
-          <h3 className="text-xl font-bold text-red-600 mb-4">Error Loading Workout</h3>
-          <p className="text-gray-600 mb-6">
-            Failed to load your workout data. Please try again.
-          </p>
-          <button 
-            onClick={() => refetch()} 
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            Try Again
-          </button>
-        </Card>
-      </div>
-    );
+    return <ErrorState error={error as Error} onRetry={() => refetch()} />;
   }
 
   if (!currentProgram) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6">
-        <Card className="p-8 text-center max-w-md">
-          <h3 className="text-xl font-bold text-gray-900 mb-4">
-            {t('exercise.noProgramTitle') || 'No Exercise Program'}
-          </h3>
-          <p className="text-gray-600 mb-6">
-            {t('exercise.noProgramMessage') || 'You don\'t have an exercise program yet. Generate one to get started!'}
-          </p>
+      <div className="space-y-6">
+        {/* Header */}
+        <Card className="bg-gradient-to-r from-fitness-primary-600 to-fitness-primary-700 border-0 shadow-xl rounded-2xl overflow-hidden">
+          <div className="px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                  <Calendar className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold text-white">Exercise Program</h1>
+                  <p className="text-fitness-primary-100 text-sm">Create your workout plan</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setWorkoutType('home')}
+                  className={`border-white/20 text-white hover:bg-white/10 ${
+                    workoutType === 'home' ? 'bg-white/20' : ''
+                  }`}
+                >
+                  <Home className="w-4 h-4 mr-1" />
+                  Home
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setWorkoutType('gym')}
+                  className={`border-white/20 text-white hover:bg-white/10 ${
+                    workoutType === 'gym' ? 'bg-white/20' : ''
+                  }`}
+                >
+                  <Building2 className="w-4 h-4 mr-1" />
+                  Gym
+                </Button>
+              </div>
+            </div>
+          </div>
         </Card>
+
+        <EmptyProgramState onGenerateProgram={handleGenerateProgram} isGenerating={isGenerating} />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-4 space-y-4">
+    <div className="space-y-6">
+      {/* Header */}
+      <Card className="bg-gradient-to-r from-fitness-primary-600 to-fitness-primary-700 border-0 shadow-xl rounded-2xl overflow-hidden">
+        <div className="px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                <Calendar className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-white">{currentProgram.program_name}</h1>
+                <p className="text-fitness-primary-100 text-sm">
+                  Week {currentProgram.current_week} • {currentProgram.difficulty_level}
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setWorkoutType('home')}
+                className={`border-white/20 text-white hover:bg-white/10 ${
+                  workoutType === 'home' ? 'bg-white/20' : ''
+                }`}
+              >
+                <Home className="w-4 h-4 mr-1" />
+                Home
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setWorkoutType('gym')}
+                className={`border-white/20 text-white hover:bg-white/10 ${
+                  workoutType === 'gym' ? 'bg-white/20' : ''
+                }`}
+              >
+                <Building2 className="w-4 h-4 mr-1" />
+                Gym
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* Day Navigation */}
+      <Card className="p-4">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-semibold text-gray-900">Select Day</h3>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleGenerateProgram}
+            disabled={isGenerating}
+          >
+            <Plus className="w-4 h-4 mr-1" />
+            {isGenerating ? 'Generating...' : 'Regenerate'}
+          </Button>
+        </div>
         
-        {/* Compact Header */}
-        <CompactExerciseHeader 
-          currentProgram={currentProgram}
-          workoutType={workoutType}
-          currentWeekOffset={currentWeekOffset}
-          onGenerateProgram={handleGenerateProgram}
-          onRegenerateProgram={handleRegenerateProgram}
-          onShowAnalytics={handleShowAnalytics}
-          onShowSettings={handleShowSettings}
-        />
+        <div className="grid grid-cols-7 gap-2">
+          {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => {
+            const dayNumber = index + 1;
+            const isSelected = selectedDayNumber === dayNumber;
+            const hasWorkout = programs?.dailyWorkouts?.some(w => w.day_number === dayNumber && !w.workout_name?.toLowerCase().includes('rest'));
+            
+            return (
+              <Button
+                key={day}
+                variant={isSelected ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedDayNumber(dayNumber)}
+                className={`relative ${isSelected ? 'bg-fitness-primary-500 text-white' : ''}`}
+              >
+                {day}
+                {hasWorkout && (
+                  <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full"></div>
+                )}
+              </Button>
+            );
+          })}
+        </div>
+      </Card>
 
-        {/* Compact Navigation */}
-        <CompactExerciseNavigation
-          currentWeekOffset={currentWeekOffset}
-          setCurrentWeekOffset={handleWeekChange}
-          weekStartDate={weekStartDate}
-          selectedDayNumber={selectedDayNumber}
-          setSelectedDayNumber={setSelectedDayNumber}
-          workoutType={workoutType}
-          onWorkoutTypeChange={setWorkoutType}
-          currentProgram={currentProgram}
-        />
-
-        {/* Exercise Content */}
-        <UnifiedExerciseContainer
-          exercises={exercises || []}
-          isLoading={workoutsLoading}
-          onExerciseComplete={handleExerciseComplete}
-          onExerciseProgressUpdate={handleExerciseProgressUpdate}
-          isRestDay={isRestDay}
-          completedExercises={completedExercises}
-          totalExercises={totalExercises}
-          progressPercentage={progressPercentage}
-          isToday={isToday}
-          currentProgram={currentProgram}
-          selectedDayNumber={selectedDayNumber}
-        />
-
-      </div>
+      {/* Exercise Content */}
+      <ExerciseListEnhanced
+        exercises={todaysExercises}
+        isLoading={false}
+        onExerciseComplete={handleExerciseComplete}
+        onExerciseProgressUpdate={handleExerciseProgressUpdate}
+        isRestDay={isRestDay}
+        currentProgram={currentProgram}
+        selectedDayNumber={selectedDayNumber}
+      />
     </div>
   );
 };

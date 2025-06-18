@@ -18,12 +18,15 @@ export const generateWeeklyWorkouts = (existingWorkouts: DailyWorkout[], workout
       weekly_program_id: 'temp',
       day_number: dayNumber,
       workout_name: `Rest Day - ${dayNames[dayNumber - 1]}`,
+      target_muscle_groups: [],
       estimated_duration: 0,
       estimated_calories: 0,
-      muscle_groups: [],
+      difficulty_level: 'beginner' as const,
       completed: false,
       exercises: [],
-      is_rest_day: true
+      is_rest_day: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     };
   });
 };
