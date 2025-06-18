@@ -308,9 +308,9 @@ class AIResponseProcessor {
 
 ## 📱 Frontend Architecture
 
-### Component Architecture
+### Feature-Based Component Structure
 ```typescript
-// Feature-Based Component Structure
+// Feature-Based Component Organization
 src/features/meal-plan/
 ├── components/
 │   ├── MealPlanHeader.tsx
@@ -334,235 +334,241 @@ src/features/meal-plan/
 
 // Component Design Principles
 const ComponentGuidelines = {
-  maxLines: 300,
+  maxLines: 200,
   singleResponsibility: true,
-  propsInterface: 'required',
-  errorBoundaries: 'implemented',
-  accessibility: 'WCAG_2.1_AA',
-  performance: 'React.memo_when_needed'
+  propsInterface: 'TypeScript strict',
+  stateManagement: 'React Query + Local State',
+  styling: 'Tailwind CSS + shadcn/ui'
 };
 ```
 
-### State Management Architecture
+### State Management Strategy
 ```typescript
-// Zustand Store Structure
-interface AppState {
-  // User data
-  user: User | null;
-  profile: UserProfile | null;
-  
-  // Feature states
-  mealPlan: MealPlanState;
-  exercise: ExerciseState;
-  tracking: TrackingState;
-  
-  // UI states
-  ui: UIState;
-  
-  // Actions
-  actions: {
-    auth: AuthActions;
-    mealPlan: MealPlanActions;
-    exercise: ExerciseActions;
-    tracking: TrackingActions;
-  };
+// State Management Architecture
+interface StateManagement {
+  serverState: 'React Query'; // API data, caching, synchronization
+  clientState: 'React Hooks'; // UI state, form data
+  globalState: 'Context API'; // User auth, language, theme
+  persistentState: 'AsyncStorage'; // Offline data, user preferences
 }
 
-// React Query Integration
+// React Query Configuration
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 5 * 60 * 1000, // 5 minutes
-      retry: (failureCount, error) => {
-        if (error.status === 404) return false;
-        return failureCount < 3;
-      },
+      cacheTime: 10 * 60 * 1000, // 10 minutes
+      retry: 3,
       refetchOnWindowFocus: false
     },
     mutations: {
-      retry: 1,
-      onError: (error) => {
-        console.error('Mutation error:', error);
-        // Handle global errors
-      }
+      retry: 1
     }
   }
 });
 ```
 
-### Performance Optimization Strategy
-```typescript
-// Code Splitting Strategy
-const LazyComponents = {
-  // Route-level splitting
-  MealPlanPage: lazy(() => import('../features/meal-plan/pages/MealPlanPage')),
-  ExercisePage: lazy(() => import('../features/exercise/pages/ExercisePage')),
-  ProfilePage: lazy(() => import('../features/profile/pages/ProfilePage')),
-  
-  // Feature-level splitting
-  AIAssistant: lazy(() => import('../features/ai-assistant/AIAssistant')),
-  ChartComponents: lazy(() => import('../shared/components/Charts')),
-  
-  // Heavy components
-  RichTextEditor: lazy(() => import('../shared/components/RichTextEditor')),
-  VideoPlayer: lazy(() => import('../shared/components/VideoPlayer'))
-};
-
-// Virtualization for Lists
-const VirtualizedList = {
-  mealHistory: 'react-window',
-  exerciseLibrary: 'react-virtualized',
-  foodDatabase: 'react-window + infinite-loader'
-};
-
-// Image Optimization
-const ImageStrategy = {
-  format: 'WebP with JPEG fallback',
-  sizes: ['thumb_150', 'medium_500', 'large_1200'],
-  loading: 'lazy',
-  placeholder: 'blur_hash'
-};
-```
-
 ## 🔒 Security Architecture
 
-### Authentication & Authorization
+### Authentication Flow
+```
+Login → Supabase Auth → JWT Token → Session Management → Protected Routes
+```
+
+### Row Level Security (RLS) Implementation
+```sql
+-- Example RLS Policy
+CREATE POLICY "Users can only access their own data" 
+ON public.profiles 
+FOR ALL 
+USING (auth.uid() = id);
+
+-- Meal Plan Access
+CREATE POLICY "Users can access their meal plans" 
+ON public.weekly_meal_plans 
+FOR ALL 
+USING (auth.uid() = user_id);
+
+-- Admin Access Override
+CREATE POLICY "Admins can access all data" 
+ON public.profiles 
+FOR ALL 
+USING (
+  EXISTS (
+    SELECT 1 FROM public.profiles 
+    WHERE id = auth.uid() 
+    AND role = 'admin'
+  )
+);
+```
+
+### API Security Layers
 ```typescript
-// Multi-Layer Security Model
-const SecurityLayers = {
-  authentication: {
-    method: 'JWT with refresh tokens',
-    provider: 'Supabase Auth',
-    mfa: 'Optional TOTP',
-    socialAuth: ['Google', 'Apple', 'Facebook']
+// Security Validation Chain
+const securityChain = [
+  'CORS Headers',
+  'JWT Token Validation',
+  'Rate Limiting',
+  'Input Sanitization',
+  'RLS Policy Check',
+  'Business Logic Validation',
+  'Response Sanitization'
+];
+```
+
+## ⚡ Performance Architecture
+
+### Frontend Optimization
+```typescript
+// Performance Optimization Strategies
+const performanceStrategies = {
+  codesplitting: {
+    implementation: 'React.lazy() + Suspense',
+    routes: 'Route-based splitting',
+    components: 'Heavy component lazy loading'
   },
-  authorization: {
-    model: 'Role-Based Access Control (RBAC)',
-    levels: ['normal', 'coach', 'admin'],
-    policies: 'Row-Level Security (RLS)',
-    apiKeys: 'Environment-based secrets'
+  bundleOptimization: {
+    vendorSplitting: 'Separate vendor bundles',
+    treeShaking: 'Unused code elimination',
+    compression: 'Gzip + Brotli'
   },
-  dataProtection: {
-    encryption: 'TLS 1.3 in transit',
-    storage: 'AES-256 at rest',
-    pii: 'Hashed sensitive fields',
-    gdpr: 'Data anonymization support'
+  caching: {
+    reactQuery: 'Server state caching',
+    browserCache: 'Static asset caching',
+    serviceWorker: 'Offline functionality'
+  },
+  rendering: {
+    memoization: 'React.memo for expensive components',
+    virtualization: 'Large list optimization',
+    imageOptimization: 'WebP format + lazy loading'
   }
 };
-
-// RLS Policy Pattern
-const RLSPolicyExample = `
-  CREATE POLICY "Users can only access their own data" ON weekly_meal_plans
-    FOR ALL USING (auth.uid() = user_id);
-    
-  CREATE POLICY "Coaches can access trainee data" ON weekly_meal_plans
-    FOR SELECT USING (
-      auth.uid() = user_id OR 
-      EXISTS (
-        SELECT 1 FROM coach_trainees 
-        WHERE coach_id = auth.uid() AND trainee_id = user_id
-      )
-    );
-`;
 ```
 
-## 📊 Monitoring & Observability
+### Database Performance
+```sql
+-- Query Optimization Strategies
+-- 1. Proper indexing
+CREATE INDEX CONCURRENTLY idx_performance_critical 
+ON table_name(frequently_queried_columns);
 
-### Performance Monitoring
-```typescript
-// Key Performance Indicators
-const PerformanceMetrics = {
-  frontend: {
-    firstContentfulPaint: '<1.5s',
-    largestContentfulPaint: '<2.5s',
-    cumulativeLayoutShift: '<0.1',
-    firstInputDelay: '<100ms',
-    timeToInteractive: '<3s'
-  },
-  backend: {
-    apiResponseTime: '<500ms',
-    databaseQueryTime: '<100ms',
-    aiGenerationTime: '<10s',
-    edgeFunctionColdStart: '<200ms',
-    uptime: '>99.9%'
-  },
-  business: {
-    userEngagement: '>60% DAU/MAU',
-    aiGenerationSuccess: '>95%',
-    userRetention: '>70% week 1',
-    errorRate: '<0.1%',
-    conversionRate: '>15% free to paid'
-  }
-};
+-- 2. Query optimization
+-- Use EXPLAIN ANALYZE to identify bottlenecks
+EXPLAIN ANALYZE SELECT * FROM complex_query;
 
-// Monitoring Stack
-const MonitoringTools = {
-  errorTracking: 'Sentry',
-  performanceAPM: 'Vercel Analytics',
-  userBehavior: 'PostHog',
-  logs: 'Supabase Logs',
-  uptime: 'Better Stack',
-  alerts: 'PagerDuty integration'
-};
+-- 3. Connection pooling
+-- Managed automatically by Supabase
+
+-- 4. Read replicas (future scaling)
+-- Available in Supabase Pro tier
 ```
 
-## 🚀 Scalability Architecture
+## 🚀 Deployment Architecture
 
-### Horizontal Scaling Strategy
-```typescript
-// Database Scaling
-const DatabaseScaling = {
-  readReplicas: 'Supabase Read Replicas',
-  connectionPooling: 'PgBouncer',
-  caching: 'Redis for session data',
-  partitioning: 'Time-based for logs and analytics',
-  archival: 'Cold storage for old data'
-};
-
-// Application Scaling
-const ApplicationScaling = {
-  frontend: 'CDN + Edge deployment',
-  api: 'Serverless auto-scaling',
-  storage: 'Supabase Storage with CDN',
-  search: 'PostgreSQL full-text search',
-  queue: 'Supabase Edge Functions'
-};
-
-// AI Scaling
-const AIScaling = {
-  loadBalancing: 'Multiple AI provider fallback',
-  caching: 'Response caching for common requests',
-  batching: 'Batch processing for bulk operations',
-  optimization: 'Model selection based on load',
-  monitoring: 'Token usage and cost tracking'
-};
+### Current Deployment (Lovable Platform)
+```
+Code Changes → Git Repository → Automatic Build → CDN Deployment → Live Application
 ```
 
-## 🔧 Development Workflow
+### Future Production Architecture
+```
+Development → Staging → Production
+     │           │          │
+     ├── Testing ├── QA     ├── Monitoring
+     ├── Linting ├── E2E    ├── Analytics
+     └── Building└── Load   └── Alerts
+```
 
-### CI/CD Pipeline
+### Environment Management
 ```typescript
-// Deployment Strategy
-const DeploymentPipeline = {
+// Environment Configuration
+const environments = {
   development: {
-    environment: 'Local Supabase',
-    testing: 'Unit + Integration tests',
-    linting: 'ESLint + Prettier',
-    typeCheck: 'TypeScript strict mode'
+    supabaseUrl: 'dev-project-url',
+    logLevel: 'debug',
+    features: 'all-enabled'
   },
   staging: {
-    environment: 'Staging Supabase project',
-    testing: 'E2E tests with Playwright',
-    performance: 'Lighthouse CI',
-    security: 'OWASP security scan'
+    supabaseUrl: 'staging-project-url',
+    logLevel: 'info',
+    features: 'production-like'
   },
   production: {
-    environment: 'Production Supabase',
-    deployment: 'Blue-green deployment',
-    monitoring: 'Real-time health checks',
-    rollback: 'Automated rollback on errors'
+    supabaseUrl: 'prod-project-url',
+    logLevel: 'error',
+    features: 'stable-only'
   }
 };
 ```
 
-This technical architecture provides a comprehensive foundation for building, scaling, and maintaining the FitFatta platform while ensuring security, performance, and reliability at scale.
+## 🌍 Internationalization Architecture
+
+### Multi-Language Support
+```typescript
+// i18n Implementation Strategy
+const i18nArchitecture = {
+  framework: 'react-i18next',
+  languages: ['en', 'ar'],
+  rtlSupport: 'CSS logical properties',
+  contentManagement: 'JSON files per feature',
+  dynamicLoading: 'Lazy load language packs',
+  fallbacks: 'English as default'
+};
+
+// RTL Layout Handling
+const rtlOptimization = {
+  cssProperties: 'margin-inline-start/end',
+  flexDirection: 'Conditional row-reverse',
+  textAlign: 'Dynamic based on language',
+  imageFlipping: 'CSS transform for UI elements'
+};
+```
+
+## 📊 Monitoring Architecture
+
+### Application Monitoring
+```typescript
+// Monitoring Stack
+const monitoringStack = {
+  performance: {
+    webVitals: 'Core Web Vitals tracking',
+    bundleAnalysis: 'Webpack Bundle Analyzer',
+    queryPerformance: 'React Query DevTools'
+  },
+  errors: {
+    errorBoundaries: 'React Error Boundaries',
+    logging: 'Structured logging system',
+    alerting: 'Critical error notifications'
+  },
+  analytics: {
+    userBehavior: 'Feature usage tracking',
+    conversionFunnels: 'User journey analysis',
+    performanceMetrics: 'Page load times'
+  }
+};
+```
+
+### Database Monitoring
+```sql
+-- Performance Monitoring Queries
+-- 1. Slow query identification
+SELECT query, mean_exec_time, calls 
+FROM pg_stat_statements 
+ORDER BY mean_exec_time DESC;
+
+-- 2. Index usage analysis
+SELECT schemaname, tablename, indexname, idx_scan, idx_tup_read
+FROM pg_stat_user_indexes 
+ORDER BY idx_scan ASC;
+
+-- 3. Table size monitoring
+SELECT 
+  schemaname,
+  tablename,
+  pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) as size
+FROM pg_tables 
+WHERE schemaname = 'public'
+ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;
+```
+
+This comprehensive technical architecture provides a solid foundation for scaling FitFatta from a web application to a full-featured React Native mobile application while maintaining performance, security, and reliability standards.
