@@ -2,8 +2,10 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, Target } from "lucide-react";
+import { WeightEntry } from "@/hooks/useWeightTracking";
 
 interface WeightStatsCardsProps {
+  weightEntries: WeightEntry[];
   currentWeight?: number;
   targetWeight?: number;
   weightChange?: number;
@@ -11,13 +13,21 @@ interface WeightStatsCardsProps {
 }
 
 export const WeightStatsCards = ({ 
+  weightEntries,
   currentWeight, 
   targetWeight, 
   weightChange,
   timeframe = "30 days"
 }: WeightStatsCardsProps) => {
-  const isPositiveChange = (weightChange || 0) > 0;
-  const isNegativeChange = (weightChange || 0) < 0;
+  // Calculate stats from entries if not provided
+  const calculatedCurrentWeight = currentWeight || (weightEntries?.[0]?.weight || 0);
+  const calculatedWeightChange = weightChange || (
+    weightEntries?.length >= 2 ? 
+    weightEntries[0].weight - weightEntries[1].weight : 0
+  );
+
+  const isPositiveChange = calculatedWeightChange > 0;
+  const isNegativeChange = calculatedWeightChange < 0;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -25,7 +35,7 @@ export const WeightStatsCards = ({
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-gray-600">Current Weight</p>
-            <p className="text-2xl font-bold">{currentWeight || '--'} kg</p>
+            <p className="text-2xl font-bold">{calculatedCurrentWeight || '--'} kg</p>
           </div>
         </div>
       </Card>
@@ -46,7 +56,7 @@ export const WeightStatsCards = ({
             <p className="text-sm text-gray-600">Change ({timeframe})</p>
             <div className="flex items-center gap-2">
               <p className="text-2xl font-bold">
-                {weightChange ? `${weightChange > 0 ? '+' : ''}${weightChange.toFixed(1)}` : '--'} kg
+                {calculatedWeightChange ? `${calculatedWeightChange > 0 ? '+' : ''}${calculatedWeightChange.toFixed(1)}` : '--'} kg
               </p>
               {isPositiveChange && (
                 <Badge variant="secondary" className="bg-red-100 text-red-700">

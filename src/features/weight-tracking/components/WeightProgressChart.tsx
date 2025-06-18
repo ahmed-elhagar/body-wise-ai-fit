@@ -1,17 +1,25 @@
 
 import { Card } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { WeightEntry } from "@/hooks/useWeightTracking";
 
 interface WeightProgressChartProps {
-  data: Array<{
+  weightEntries: WeightEntry[];
+  data?: Array<{
     date: string;
     weight: number;
   }>;
   targetWeight?: number;
 }
 
-export const WeightProgressChart = ({ data, targetWeight }: WeightProgressChartProps) => {
-  if (!data || data.length === 0) {
+export const WeightProgressChart = ({ weightEntries, data, targetWeight }: WeightProgressChartProps) => {
+  // Use provided data or convert weightEntries to chart data
+  const chartData = data || weightEntries?.map(entry => ({
+    date: new Date(entry.recorded_at).toLocaleDateString(),
+    weight: entry.weight
+  })).reverse() || [];
+
+  if (chartData.length === 0) {
     return (
       <Card className="p-6">
         <div className="text-center py-8">
@@ -25,7 +33,7 @@ export const WeightProgressChart = ({ data, targetWeight }: WeightProgressChartP
     <Card className="p-6">
       <h3 className="text-lg font-semibold mb-4">Weight Progress Over Time</h3>
       <ResponsiveContainer width="100%" height={400}>
-        <LineChart data={data}>
+        <LineChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="date" />
           <YAxis />

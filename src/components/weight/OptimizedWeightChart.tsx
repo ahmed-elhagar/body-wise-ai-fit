@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { useOptimizedWeightChart } from "@/hooks/useOptimizedWeightChart";
 import TimeRangeSelector from "./TimeRangeSelector";
 import EmptyWeightChart from "./EmptyWeightChart";
-import WeightChart from "./WeightChart";
+import { WeightChart } from "@/features/weight-tracking/components/WeightChart";
 
 interface OptimizedWeightChartProps {
   weightEntries: WeightEntry[];
@@ -44,6 +44,12 @@ const OptimizedWeightChart = React.memo<OptimizedWeightChartProps>(({ weightEntr
         return "text-gray-600";
     }
   };
+
+  // Convert chartData to format expected by WeightChart
+  const weightChartData = chartData.map(point => ({
+    date: point.date,
+    weight: point.weight
+  }));
 
   return (
     <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
@@ -80,7 +86,7 @@ const OptimizedWeightChart = React.memo<OptimizedWeightChartProps>(({ weightEntr
 
       {hasData ? (
         <>
-          <WeightChart />
+          <WeightChart data={weightChartData} />
           
           {/* Statistics Summary */}
           <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">

@@ -4,23 +4,37 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useWeightTracking } from "@/hooks/useWeightTracking";
 
 interface WeightEntryFormProps {
-  onSubmit: (weight: number) => void;
+  onSubmit?: (weight: number) => void;
+  onSuccess?: () => void;
   isLoading?: boolean;
 }
 
-export const WeightEntryForm = ({ onSubmit, isLoading }: WeightEntryFormProps) => {
+export const WeightEntryForm = ({ onSubmit, onSuccess, isLoading }: WeightEntryFormProps) => {
   const [weight, setWeight] = useState('');
+  const { addWeightEntry, isAdding } = useWeightTracking();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const weightValue = parseFloat(weight);
     if (weightValue && weightValue > 0) {
-      onSubmit(weightValue);
+      if (onSubmit) {
+        onSubmit(weightValue);
+      } else {
+        // Use the hook's addWeightEntry if no custom onSubmit
+        addWeightEntry({
+          weight: weightValue,
+          recorded_at: new Date().toISOString(),
+        });
+        onSuccess?.();
+      }
       setWeight('');
     }
   };
+
+  const loading = isLoading || isAdding;
 
   return (
     <Card className="p-6">
@@ -38,8 +52,8 @@ export const WeightEntryForm = ({ onSubmit, isLoading }: WeightEntryFormProps) =
             required
           />
         </div>
-        <Button type="submit" disabled={isLoading} className="w-full">
-          {isLoading ? 'Adding...' : 'Add Entry'}
+        <Button type="submit" disabled={loading} className="w-full">
+          {loading ? 'Adding...' : 'Add Entry'}
         </Button>
       </form>
     </Card>
