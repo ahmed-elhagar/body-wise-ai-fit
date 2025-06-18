@@ -152,9 +152,9 @@ export const ExerciseListEnhanced = ({
             </div>
           </div>
 
-          {exercise.instructions && exercise.instructions.length > 0 && (
+          {exercise.instructions && (
             <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-700">{exercise.instructions[0]}</p>
+              <p className="text-sm text-gray-700">{exercise.instructions}</p>
             </div>
           )}
         </Card>

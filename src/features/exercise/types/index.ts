@@ -1,5 +1,5 @@
 
-// Exercise feature types
+// Exercise feature types - Updated to match database schema
 export interface Exercise {
   id: string;
   daily_workout_id: string;
@@ -8,7 +8,7 @@ export interface Exercise {
   muscle_groups: string[];
   equipment?: string;
   difficulty_level: 'beginner' | 'intermediate' | 'advanced';
-  instructions: string[];
+  instructions: string; // Changed from string[] to string to match database
   youtube_search_term?: string;
   image_url?: string;
   sets?: number;

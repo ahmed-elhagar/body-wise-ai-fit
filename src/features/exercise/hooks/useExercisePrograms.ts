@@ -45,7 +45,7 @@ export const useExercisePrograms = (weekOffset: number = 0) => {
         };
       }
 
-      // Transform the data to match our types
+      // Transform the data to match our types with proper type casting
       const weeklyProgram: WeeklyExerciseProgram = {
         id: weeklyProgramData.id,
         user_id: weeklyProgramData.user_id,
@@ -54,9 +54,9 @@ export const useExercisePrograms = (weekOffset: number = 0) => {
         program_type: 'mixed', // Default value since it's not in DB
         total_workouts: 7, // Default value
         estimated_weekly_hours: 5, // Default value
-        difficulty_level: weeklyProgramData.difficulty_level,
+        difficulty_level: (weeklyProgramData.difficulty_level as 'beginner' | 'intermediate' | 'advanced') || 'beginner',
         target_muscle_groups: ['full_body'], // Default value
-        workout_type: weeklyProgramData.workout_type || 'home',
+        workout_type: (weeklyProgramData.workout_type as 'home' | 'gym') || 'home',
         current_week: weeklyProgramData.current_week || 1,
         status: weeklyProgramData.status || 'active',
         daily_workouts: [],
@@ -88,7 +88,7 @@ export const useExercisePrograms = (weekOffset: number = 0) => {
         target_muscle_groups: workout.muscle_groups || [],
         estimated_duration: workout.estimated_duration || 45,
         estimated_calories: workout.estimated_calories,
-        difficulty_level: 'beginner', // Default value
+        difficulty_level: 'beginner' as const, // Default value
         completed: workout.completed || false,
         exercises: (workout.exercises || []).map((exercise: any) => ({
           id: exercise.id,
@@ -99,8 +99,8 @@ export const useExercisePrograms = (weekOffset: number = 0) => {
             name: exercise.name,
             muscle_groups: exercise.muscle_groups || [],
             equipment: exercise.equipment,
-            difficulty_level: exercise.difficulty || 'beginner',
-            instructions: exercise.instructions ? [exercise.instructions] : [],
+            difficulty_level: (exercise.difficulty as 'beginner' | 'intermediate' | 'advanced') || 'beginner',
+            instructions: exercise.instructions || '',
             youtube_search_term: exercise.youtube_search_term,
             sets: exercise.sets,
             reps: exercise.reps,
