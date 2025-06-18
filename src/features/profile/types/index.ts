@@ -1,23 +1,18 @@
 
-// Profile feature types
-export interface UserProfile {
-  id: string;
-  full_name: string;
-  email: string;
-  age: number;
-  gender: string;
-  height: number;
-  weight: number;
-  goal_weight?: number;
-  activity_level: string;
-  fitness_goal: string;
-  dietary_restrictions: string[];
-  health_conditions: string[];
-  life_phase?: 'pregnancy' | 'breastfeeding' | 'fasting';
-}
-
-export interface ProfileCompletionScore {
-  score: number;
-  maxScore: number;
-  missingFields: string[];
+export interface ProfileFormData {
+  first_name?: string;
+  last_name?: string;
+  age?: string;
+  gender?: string;
+  height?: string;
+  weight?: string;
+  nationality?: string;
+  body_shape?: string;
+  body_fat_percentage?: string;
+  fitness_goal?: string;
+  activity_level?: string;
+  health_conditions?: string[];
+  allergies?: string[];
+  dietary_restrictions?: string[];
+  preferred_foods?: string[];
 }

@@ -1,5 +1,4 @@
-
-import type { ProfileFormData } from '@/hooks/profile/types';
+import type { ProfileFormData } from '../types';
 
 export const validateBasicInfo = (formData: ProfileFormData) => {
   const errors: Record<string, string> = {};
