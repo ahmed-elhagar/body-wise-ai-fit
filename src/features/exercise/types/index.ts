@@ -1,17 +1,17 @@
 
-// Exercise feature type definitions
-export interface ExerciseProgram {
+// Exercise feature types
+export interface Exercise {
   id: string;
-  program_name: string;
-  difficulty_level: string;
-  workout_type: "home" | "gym";
-  current_week: number;
-  week_start_date: string;
+  name: string;
+  description?: string;
+  muscle_groups: string[];
+  equipment?: string;
+  difficulty_level: 'beginner' | 'intermediate' | 'advanced';
+  instructions: string[];
+  youtube_search_term?: string;
+  image_url?: string;
   created_at: string;
-  daily_workouts_count: number;
-  total_estimated_calories?: number;
-  generation_prompt?: any;
-  daily_workouts?: DailyWorkout[];
+  updated_at: string;
 }
 
 export interface DailyWorkout {
@@ -19,53 +19,53 @@ export interface DailyWorkout {
   weekly_program_id: string;
   day_number: number;
   workout_name: string;
-  estimated_duration?: number;
-  estimated_calories?: number;
-  muscle_groups?: string[];
-  completed: boolean;
-  exercises?: Exercise[];
-  is_rest_day?: boolean;
+  target_muscle_groups: string[];
+  estimated_duration: number;
+  difficulty_level: 'beginner' | 'intermediate' | 'advanced';
+  exercises: WorkoutExercise[];
+  created_at: string;
+  updated_at: string;
 }
 
-export interface Exercise {
+export interface WorkoutExercise {
   id: string;
-  daily_workout_id: string;
-  name: string;
-  sets?: number;
-  reps?: string;
-  rest_seconds?: number;
-  muscle_groups?: string[];
-  instructions?: string;
-  youtube_search_term?: string;
-  equipment?: string;
-  difficulty?: string;
-  order_number?: number;
-  completed: boolean;
+  exercise_id: string;
+  exercise: Exercise;
+  sets: number;
+  reps_min: number;
+  reps_max?: number;
+  rest_seconds: number;
+  weight_kg?: number;
   notes?: string;
-  actual_sets?: number;
-  actual_reps?: string;
+  order_index: number;
+}
+
+export interface WeeklyExerciseProgram {
+  id: string;
+  user_id: string;
+  week_start_date: string;
+  program_name: string;
+  program_type: 'strength' | 'cardio' | 'mixed' | 'flexibility';
+  total_workouts: number;
+  estimated_weekly_hours: number;
+  difficulty_level: 'beginner' | 'intermediate' | 'advanced';
+  target_muscle_groups: string[];
+  daily_workouts: DailyWorkout[];
+  created_at: string;
+  updated_at: string;
 }
 
 export interface ExercisePreferences {
-  workoutType: "home" | "gym";
-  goalType: string;
-  fitnessLevel: string;
-  availableTime: string;
-  preferredWorkouts: string[];
+  programType: 'strength' | 'cardio' | 'mixed' | 'flexibility';
+  difficultyLevel: 'beginner' | 'intermediate' | 'advanced';
+  workoutsPerWeek: number;
+  sessionDuration: number;
   targetMuscleGroups: string[];
-  equipment: string[];
-  duration: string;
-  workoutDays: string;
-  difficulty: string;
+  availableEquipment: string[];
+  workoutLocation: 'home' | 'gym' | 'outdoor';
 }
 
-// Helper function to create mock exercises with required properties
-export const createMockExercise = (overrides: Partial<Exercise> = {}): Exercise => ({
-  id: Math.random().toString(),
-  daily_workout_id: 'mock-workout-id',
-  name: 'Mock Exercise',
-  sets: 3,
-  reps: '10',
-  completed: false,
-  ...overrides
-});
+export interface ExerciseFetchResult {
+  weeklyProgram: WeeklyExerciseProgram | null;
+  dailyWorkouts: DailyWorkout[];
+}
