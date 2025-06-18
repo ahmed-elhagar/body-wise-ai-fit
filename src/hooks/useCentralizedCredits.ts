@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from './useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export const useCentralizedCredits = () => {
   const { user } = useAuth();
@@ -74,11 +75,88 @@ export const useCentralizedCredits = () => {
     }
   };
 
+  const checkAndUseCredit = async (featureType: string) => {
+    if (!user?.id) {
+      console.error('No user ID available for credit check');
+      return { success: false, logId: undefined };
+    }
+
+    // Pro users don't need to consume credits
+    if (isPro) {
+      console.log('✅ Pro user - no credit needed');
+      return { success: true, logId: undefined };
+    }
+
+    // Check if user has credits
+    if (remaining <= 0) {
+      console.error('❌ No credits remaining');
+      return { success: false, logId: undefined };
+    }
+
+    try {
+      // Create AI generation log entry
+      const { data: logData, error: logError } = await supabase
+        .from('ai_generation_logs')
+        .insert({
+          user_id: user.id,
+          feature_type: featureType,
+          status: 'pending',
+          credits_used: 1
+        })
+        .select()
+        .single();
+
+      if (logError) {
+        console.error('❌ Failed to create generation log:', logError);
+        throw logError;
+      }
+
+      // Consume the credit
+      const success = await consumeCredit();
+      if (!success) {
+        // Update log as failed if credit consumption failed
+        await supabase
+          .from('ai_generation_logs')
+          .update({ status: 'failed', error_message: 'Credit consumption failed' })
+          .eq('id', logData.id);
+        
+        return { success: false, logId: logData.id };
+      }
+
+      console.log('✅ Credit consumed successfully');
+      return { success: true, logId: logData.id };
+    } catch (error) {
+      console.error('❌ Credit check and use failed:', error);
+      return { success: false, logId: undefined };
+    }
+  };
+
+  const completeGeneration = async (logId: string, success: boolean, responseData?: any) => {
+    if (!logId) return;
+
+    try {
+      await supabase
+        .from('ai_generation_logs')
+        .update({
+          status: success ? 'completed' : 'failed',
+          response_data: responseData,
+          completed_at: new Date().toISOString()
+        })
+        .eq('id', logId);
+
+      console.log(`✅ Generation log ${logId} marked as ${success ? 'completed' : 'failed'}`);
+    } catch (error) {
+      console.error('❌ Failed to complete generation log:', error);
+    }
+  };
+
   return {
     remaining,
     isPro,
     hasCredits,
     isLoading,
-    consumeCredit
+    consumeCredit,
+    checkAndUseCredit,
+    completeGeneration
   };
 };
