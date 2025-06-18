@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,7 +14,7 @@ import {
   Trophy
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Exercise } from '@/types/exercise';
+import { Exercise } from '@/features/exercise/types';
 
 interface WorkoutSessionManagerProps {
   exercises: Exercise[];

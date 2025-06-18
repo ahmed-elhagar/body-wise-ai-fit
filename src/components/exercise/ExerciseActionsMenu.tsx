@@ -1,4 +1,3 @@
-
 import { Button } from '@/components/ui/button';
 import { 
   Youtube, 
@@ -7,7 +6,7 @@ import {
   Share
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Exercise } from '@/types/exercise';
+import { Exercise } from '@/features/exercise/types';
 
 interface ExerciseActionsMenuProps {
   exercise: Exercise;

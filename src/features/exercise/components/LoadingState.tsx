@@ -1,31 +1,14 @@
 
-import { Card } from '@/components/ui/card';
-import { Loader2, Dumbbell } from 'lucide-react';
+import { Card } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
 
 const LoadingState = () => {
   return (
-    <div className="space-y-6">
-      <Card className="bg-gradient-to-r from-fitness-primary-600 to-fitness-primary-700 border-0 shadow-xl rounded-2xl overflow-hidden">
-        <div className="px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-              <Dumbbell className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-white">Exercise Program</h1>
-              <p className="text-fitness-primary-100 text-sm">Loading your workout plan...</p>
-            </div>
-          </div>
-        </div>
-      </Card>
-
-      <Card className="p-8">
-        <div className="flex flex-col items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-fitness-primary-500 mb-4" />
-          <p className="text-gray-600 text-center">Loading your exercise program...</p>
-        </div>
-      </Card>
-    </div>
+    <Card className="p-8 text-center">
+      <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-fitness-primary-500" />
+      <h3 className="text-lg font-semibold text-gray-900 mb-2">Loading Exercise Program</h3>
+      <p className="text-gray-600">Please wait while we fetch your workout data...</p>
+    </Card>
   );
 };
 

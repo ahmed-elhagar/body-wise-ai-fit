@@ -1,9 +1,8 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Youtube, ExternalLink } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Exercise } from '@/types/exercise';
+import { Exercise } from '@/features/exercise/types';
 
 interface ExerciseVideoDialogProps {
   exercise: Exercise;

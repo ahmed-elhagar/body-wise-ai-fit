@@ -1,4 +1,3 @@
-
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,9 +8,9 @@ import { useProfile } from "@/hooks/useProfile";
 import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import WeightEntryForm from "@/components/weight/WeightEntryForm";
-import WeightProgressChart from "@/components/weight/WeightProgressChart";
-import WeightStatsCards from "@/components/weight/WeightStatsCards";
+import { WeightEntryForm } from "@/features/weight-tracking/components/WeightEntryForm";
+import { WeightProgressChart } from "@/features/weight-tracking/components/WeightProgressChart";
+import { WeightStatsCards } from "@/features/weight-tracking/components/WeightStatsCards";
 
 const WeightTracking = () => {
   const navigate = useNavigate();

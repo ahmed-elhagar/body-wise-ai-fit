@@ -1,18 +1,21 @@
-
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { 
-  Plus, 
-  Minus, 
-  CheckCircle,
-  Timer,
-  Target
+  Play, 
+  Pause, 
+  CheckCircle, 
+  Timer, 
+  Target,
+  Plus,
+  Minus
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Exercise } from '@/types/exercise';
+import { Exercise } from '@/features/exercise/types';
 
 interface SetProgress {
   completed: boolean;
@@ -293,7 +296,7 @@ export const ActiveExerciseTracker = ({
 
       {/* Notes */}
       <div className="mb-4">
-        <Input
+        <Textarea
           placeholder={t('Add notes about this exercise...')}
           value={notes}
           onChange={(e) => setNotes(e.target.value)}

@@ -1,140 +1,176 @@
+import { useState } from "react";
+import { useExercisePrograms } from "../hooks/useExercisePrograms";
+import { useWorkoutGeneration } from "../hooks/useWorkoutGeneration";
+import { ExercisePreferences } from "../types";
 
-import React, { useState } from 'react';
-import { useExercisePrograms } from '../hooks/useExercisePrograms';
-import { useWorkoutGeneration } from '../hooks/useWorkoutGeneration';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Dumbbell, Plus, Calendar } from 'lucide-react';
-import LoadingState from './LoadingState';
-import ErrorState from './ErrorState';
-import EmptyProgramState from './EmptyProgramState';
+interface ExerciseContainerProps {
+  // Component props
+}
 
-const ExerciseContainer = () => {
+export const ExerciseContainer = () => {
   const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
-  const { data: exerciseData, isLoading, error, refetch } = useExercisePrograms(currentWeekOffset);
+  const [workoutType, setWorkoutType] = useState<"home" | "gym">("home");
+
+  const { data: programs, isLoading, error, refetch } = useExercisePrograms(currentWeekOffset);
   const { generateWorkoutPlan, isGenerating } = useWorkoutGeneration();
 
   const handleGenerateProgram = async () => {
-    const defaultPreferences = {
-      programType: 'mixed' as const,
-      difficultyLevel: 'intermediate' as const,
-      workoutsPerWeek: 4,
-      sessionDuration: 45,
-      targetMuscleGroups: ['chest', 'back', 'legs', 'shoulders'],
-      availableEquipment: ['dumbbells', 'bodyweight'],
-      workoutLocation: 'gym' as const
+    const preferences: ExercisePreferences = {
+      workoutType: workoutType,
+      difficultyLevel: 'intermediate',
+      targetMuscleGroups: ['full_body'],
+      workoutDuration: 45,
+      fitnessGoals: ['general_fitness']
     };
-
-    const success = await generateWorkoutPlan(defaultPreferences);
+    
+    const success = await generateWorkoutPlan(preferences);
     if (success) {
       refetch();
     }
   };
 
+  const currentProgram = programs?.weeklyProgram;
+  const todaysWorkouts = programs?.dailyWorkouts?.filter(
+    workout => workout.day_number === 1 // Default to Monday
+  ) || [];
+
+  const todaysExercises = todaysWorkouts.flatMap(workout => 
+    workout.exercises?.map(ex => ex.exercise) || []
+  );
+
+  const isRestDay = todaysWorkouts.length === 0 || 
+    todaysWorkouts.every(w => w.workout_name?.toLowerCase().includes('rest'));
+
+  const handleExerciseComplete = async (exerciseId: string) => {
+    console.log('Completing exercise:', exerciseId);
+    // This would integrate with the exercise tracking system
+  };
+
+  const handleExerciseProgressUpdate = async (
+    exerciseId: string, 
+    sets: number, 
+    reps: string, 
+    notes?: string, 
+    weight?: number
+  ) => {
+    console.log('Updating exercise progress:', { exerciseId, sets, reps, notes, weight });
+    // This would integrate with the exercise tracking system
+  };
+
   if (isLoading) {
-    return <LoadingState />;
+    return <div>Loading exercise program...</div>;
   }
 
   if (error) {
-    return <ErrorState error={error} onRetry={refetch} />;
+    return <div>Error loading exercise program: {(error as Error).message}</div>;
   }
 
-  if (!exerciseData?.weeklyProgram) {
+  if (!currentProgram) {
     return (
-      <EmptyProgramState 
-        onGenerateProgram={handleGenerateProgram}
-        isGenerating={isGenerating}
-      />
+      <div className="text-center p-8">
+        <h2 className="text-xl font-bold mb-4">No Exercise Program Found</h2>
+        <button 
+          onClick={handleGenerateProgram}
+          disabled={isGenerating}
+          className="px-4 py-2 bg-blue-600 text-white rounded-md"
+        >
+          {isGenerating ? 'Generating...' : 'Generate AI Workout Plan'}
+        </button>
+      </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <Card className="bg-gradient-to-r from-fitness-primary-600 via-fitness-primary-700 to-fitness-accent-600 border-0 shadow-xl rounded-2xl overflow-hidden">
-        <div className="px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/30">
-                <Dumbbell className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-white mb-0.5 tracking-tight">
-                  Exercise Program
-                </h1>
-                <p className="text-fitness-primary-100 text-sm font-medium">
-                  {exerciseData.weeklyProgram.program_name}
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <Button
-                onClick={handleGenerateProgram}
-                disabled={isGenerating}
-                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold px-4 py-2 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 h-10 border-0"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                New Program
-              </Button>
-            </div>
+      <div className="bg-white p-4 rounded-lg shadow">
+        <h2 className="text-xl font-bold mb-2">{currentProgram.program_name}</h2>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-gray-600">Week {currentProgram.current_week}</p>
+            <p className="text-gray-600">Type: {workoutType}</p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setWorkoutType('home')}
+              className={`px-3 py-1 rounded ${workoutType === 'home' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+            >
+              Home
+            </button>
+            <button
+              onClick={() => setWorkoutType('gym')}
+              className={`px-3 py-1 rounded ${workoutType === 'gym' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+            >
+              Gym
+            </button>
           </div>
         </div>
-      </Card>
+      </div>
 
-      {/* Program Overview */}
-      <Card className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="text-center p-4 bg-fitness-primary-50 rounded-lg">
-            <div className="text-2xl font-bold text-fitness-primary-600">
-              {exerciseData.weeklyProgram.total_workouts}
-            </div>
-            <div className="text-sm text-fitness-primary-600">Workouts/Week</div>
+      <div className="bg-white p-4 rounded-lg shadow">
+        <h3 className="text-lg font-semibold mb-4">Today's Workout</h3>
+        
+        {isRestDay ? (
+          <div className="text-center p-6 bg-gray-50 rounded-lg">
+            <p className="text-xl font-medium text-gray-600">Rest Day</p>
+            <p className="text-gray-500 mt-2">Take time to recover and prepare for your next workout.</p>
           </div>
-          <div className="text-center p-4 bg-blue-50 rounded-lg">
-            <div className="text-2xl font-bold text-blue-600">
-              {exerciseData.weeklyProgram.estimated_weekly_hours}h
-            </div>
-            <div className="text-sm text-blue-600">Weekly Hours</div>
+        ) : todaysExercises.length === 0 ? (
+          <div className="text-center p-6 bg-gray-50 rounded-lg">
+            <p className="text-gray-600">No exercises planned for today.</p>
+            <button 
+              onClick={handleGenerateProgram}
+              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md"
+            >
+              Generate Workout
+            </button>
           </div>
-          <div className="text-center p-4 bg-purple-50 rounded-lg">
-            <div className="text-2xl font-bold text-purple-600 capitalize">
-              {exerciseData.weeklyProgram.difficulty_level}
-            </div>
-            <div className="text-sm text-purple-600">Difficulty</div>
-          </div>
-        </div>
-
-        {/* Daily Workouts */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-            <Calendar className="w-5 h-5" />
-            Weekly Schedule
-          </h3>
-          
-          <div className="grid grid-cols-1 gap-4">
-            {exerciseData.dailyWorkouts.map((workout) => (
-              <Card key={workout.id} className="p-4 border border-gray-200 hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between">
+        ) : (
+          <div className="space-y-4">
+            {todaysExercises.map(exercise => (
+              <div key={exercise.id} className="p-4 border rounded-lg">
+                <div className="flex justify-between items-center">
                   <div>
-                    <h4 className="font-medium text-gray-900">
-                      Day {workout.day_number}: {workout.workout_name}
-                    </h4>
+                    <h4 className="font-medium">{exercise.name}</h4>
                     <p className="text-sm text-gray-600">
-                      {workout.target_muscle_groups.join(', ')} • {workout.estimated_duration} min
+                      {exercise.sets} sets × {exercise.reps} reps
                     </p>
                   </div>
-                  <Button size="sm" variant="outline">
-                    Start Workout
-                  </Button>
+                  <button
+                    onClick={() => handleExerciseComplete(exercise.id)}
+                    className={`px-3 py-1 rounded ${
+                      exercise.completed ? 'bg-green-600 text-white' : 'bg-gray-200'
+                    }`}
+                  >
+                    {exercise.completed ? 'Completed' : 'Mark Complete'}
+                  </button>
                 </div>
-              </Card>
+              </div>
             ))}
           </div>
-        </div>
-      </Card>
+        )}
+      </div>
+
+      <div className="flex justify-between">
+        <button
+          onClick={() => setCurrentWeekOffset(currentWeekOffset - 1)}
+          className="px-4 py-2 bg-gray-200 rounded-md"
+        >
+          Previous Week
+        </button>
+        <button
+          onClick={() => setCurrentWeekOffset(0)}
+          className="px-4 py-2 bg-blue-600 text-white rounded-md"
+          disabled={currentWeekOffset === 0}
+        >
+          Current Week
+        </button>
+        <button
+          onClick={() => setCurrentWeekOffset(currentWeekOffset + 1)}
+          className="px-4 py-2 bg-gray-200 rounded-md"
+        >
+          Next Week
+        </button>
+      </div>
     </div>
   );
 };
-
-export default ExerciseContainer;

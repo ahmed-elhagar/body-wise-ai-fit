@@ -1,5 +1,4 @@
-
-import { DailyWorkout } from '@/types/exercise';
+import { DailyWorkout } from '@/features/exercise/types';
 
 export const generateWeeklyWorkouts = (workouts: any[], type: "home" | "gym"): DailyWorkout[] => {
   const weekDays = [1, 2, 3, 4, 5, 6, 7]; // Monday to Sunday

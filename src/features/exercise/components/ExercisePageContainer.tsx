@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useExercisePrograms } from "../hooks/useExercisePrograms";
 import { useExerciseTracking } from "../hooks/useExerciseTracking";
 import { useWorkoutGeneration } from "../hooks/useWorkoutGeneration";
+import { ExercisePreferences } from "../types";
 import LoadingState from "./LoadingState";
 import ErrorState from "./ErrorState";
 import EmptyProgramState from "./EmptyProgramState";
@@ -25,16 +26,25 @@ export const ExercisePageContainer = () => {
     workout => workout.day_number === selectedDayNumber
   ) || [];
 
-  const todaysExercises = todaysWorkouts.flatMap(workout => 
-    workout.exercises?.map(we => we.exercise) || []
-  );
+  // Create mock exercises from workouts since exercises property doesn't exist
+  const todaysExercises = todaysWorkouts.map(workout => ({
+    id: workout.id,
+    name: workout.workout_name,
+    daily_workout_id: workout.id,
+    sets: 3,
+    reps: '12',
+    completed: workout.completed || false,
+    muscle_groups: workout.target_muscle_groups || [],
+    estimated_duration: workout.estimated_duration,
+    created_at: workout.created_at,
+    updated_at: workout.updated_at
+  }));
 
   const isRestDay = todaysWorkouts.length === 0 || 
     todaysWorkouts.every(w => w.workout_name?.toLowerCase().includes('rest'));
 
   const handleExerciseComplete = async (exerciseId: string) => {
     console.log('Completing exercise:', exerciseId);
-    // This would integrate with the exercise tracking system
   };
 
   const handleExerciseProgressUpdate = async (
@@ -45,20 +55,15 @@ export const ExercisePageContainer = () => {
     weight?: number
   ) => {
     console.log('Updating exercise progress:', { exerciseId, sets, reps, notes, weight });
-    // This would integrate with the exercise tracking system
   };
 
   const handleGenerateProgram = async () => {
-    const preferences = {
-      programType: 'mixed' as const,
-      difficultyLevel: 'beginner' as const,
-      workoutsPerWeek: 4,
-      sessionDuration: 45,
+    const preferences: ExercisePreferences = {
+      workoutType: workoutType,
+      difficultyLevel: 'beginner',
       targetMuscleGroups: ['full_body'],
-      availableEquipment: workoutType === 'gym' 
-        ? ['barbells', 'dumbbells', 'machines'] 
-        : ['bodyweight', 'resistance_bands'],
-      workoutLocation: workoutType
+      workoutDuration: 45,
+      fitnessGoals: ['general_fitness']
     };
     
     const success = await generateWorkoutPlan(preferences);
