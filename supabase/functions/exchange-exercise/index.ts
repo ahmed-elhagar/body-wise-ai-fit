@@ -1,4 +1,3 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
@@ -52,44 +51,20 @@ serve(async (req) => {
 
     console.log('✅ Found original exercise:', originalExercise.name);
 
-    // Generate exchange prompt with comprehensive instructions
-    const exchangePrompt = `
-You are a fitness expert AI. The user wants to exchange the following exercise:
+    // Use centralized prompt service
+    console.log('🎯 Using centralized prompt service for exercise exchange');
+    
+    // Import the service dynamically
+    const { AIPromptService } = await import('../../../src/services/aiPromptService.ts');
+    
+    const promptConfig = AIPromptService.getExerciseExchangePrompt(
+      originalExercise,
+      reason,
+      preferences,
+      userLanguage
+    );
 
-**Current Exercise:** ${originalExercise.name}
-**Sets:** ${originalExercise.sets || 3}
-**Reps:** ${originalExercise.reps || '12'}
-**Equipment:** ${originalExercise.equipment || 'bodyweight'}
-**Muscle Groups:** ${originalExercise.muscle_groups?.join(', ') || 'full body'}
-**Instructions:** ${originalExercise.instructions || 'No instructions provided'}
-
-**Reason for Exchange:** ${reason}
-
-**User Equipment Preferences:**
-${preferences?.equipment ? `- Available Equipment: ${preferences.equipment.join(', ')}` : '- Use any suitable equipment'}
-
-Please provide a suitable alternative exercise that:
-1. Targets the SAME muscle groups as the original exercise
-2. Matches the user's available equipment (if specified)
-3. Has similar intensity/difficulty level
-4. Addresses the user's reason for exchange
-5. Maintains the same workout structure (sets/reps pattern)
-
-Respond with a JSON object in this exact format:
-{
-  "name": "Exercise name in ${userLanguage}",
-  "sets": ${originalExercise.sets || 3},
-  "reps": "${originalExercise.reps || '12'}",
-  "rest_seconds": ${originalExercise.rest_seconds || 60},
-  "muscle_groups": ${JSON.stringify(originalExercise.muscle_groups || ['full_body'])},
-  "equipment": "required equipment",
-  "difficulty": "${originalExercise.difficulty || 'intermediate'}",
-  "instructions": "Detailed instructions in ${userLanguage}",
-  "youtube_search_term": "Search term for YouTube tutorial"
-}
-
-IMPORTANT: Respond with ONLY valid JSON, no additional text or markdown formatting.
-`;
+    console.log('✅ Generated English-only exercise exchange prompt with language formatting');
 
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     const anthropicApiKey = Deno.env.get('ANTHROPIC_API_KEY');
@@ -104,31 +79,14 @@ IMPORTANT: Respond with ONLY valid JSON, no additional text or markdown formatti
     // Use the AI service with timeout handling
     const aiService = new AIService(openAIApiKey, anthropicApiKey, googleApiKey);
     
-    let response;
-    try {
-      response = await Promise.race([
-        aiService.generate('exercise_exchange', {
-          messages: [
-            {
-              role: 'system',
-              content: 'You are a professional fitness trainer AI that provides exercise alternatives. Always respond with valid JSON only, no markdown or additional formatting.'
-            },
-            {
-              role: 'user',
-              content: exchangePrompt
-            }
-          ],
-          temperature: 0.7,
-          maxTokens: 1000,
-        }),
-        new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('AI request timeout')), 25000)
-        )
-      ]);
-    } catch (aiError) {
-      console.error('❌ AI service error:', aiError);
-      throw new Error(`AI service failed: ${aiError.message}`);
-    }
+    const response = await aiService.generate('exercise_exchange', {
+      messages: [
+        { role: 'system', content: promptConfig.systemMessage },
+        { role: 'user', content: promptConfig.userPrompt + '\n\nResponse format:\n' + promptConfig.responseFormat }
+      ],
+      temperature: promptConfig.temperature || 0.7,
+      maxTokens: promptConfig.maxTokens || 1000,
+    });
 
     const aiContent = response.content;
 

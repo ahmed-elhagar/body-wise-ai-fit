@@ -1,4 +1,3 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -26,6 +25,7 @@ import {
 import { workoutCaching } from './workoutCaching.ts';
 import { enhancedValidation } from './enhancedValidation.ts';
 import { progressAnalytics } from './progressAnalytics.ts';
+import { AIService } from "../_shared/aiService.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -98,6 +98,8 @@ serve(async (req) => {
     console.log('=== EXERCISE PROGRAM GENERATION START ===');
     
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+    const anthropicApiKey = Deno.env.get('ANTHROPIC_API_KEY');
+    const googleApiKey = Deno.env.get('GOOGLE_API_KEY');
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
@@ -193,19 +195,39 @@ serve(async (req) => {
     const systemMessage = createSystemMessage(workoutType, finalUserLanguage);
     
     try {
-      console.log('🤖 Sending request to OpenAI...');
-      const aiResponse = await callOpenAI(openAIApiKey, selectedPrompt, systemMessage);
-      const generatedProgram = parseAIResponse(aiResponse);
+      console.log('🎯 Using centralized prompt service for exercise generation');
       
+      // Import the service dynamically to avoid edge function issues
+      const { AIPromptService } = await import('../../../src/services/aiPromptService.ts');
+      
+      const promptConfig = AIPromptService.getExerciseProgramPrompt(
+        userData,
+        preferences,
+        workoutType
+      );
+
+      console.log('✅ Generated English-only prompts with language-specific formatting');
+
+      const aiService = new AIService(openAIApiKey, anthropicApiKey, googleApiKey);
+      
+      const response = await aiService.generate('exercise_program', {
+        messages: [
+          { role: 'system', content: promptConfig.systemMessage },
+          { role: 'user', content: promptConfig.userPrompt + '\n\nResponse format:\n' + promptConfig.responseFormat }
+        ],
+        temperature: promptConfig.temperature || 0.3,
+        maxTokens: promptConfig.maxTokens || 4000,
+      });
+
       console.log('✅ Exercise program parsed successfully');
       
       // Enhanced validation
-      enhancedValidation.validateWorkoutProgram(generatedProgram);
-      enhancedValidation.validateWorkoutSafety(generatedProgram, userData);
+      enhancedValidation.validateWorkoutProgram(response);
+      enhancedValidation.validateWorkoutSafety(response, userData);
       
       console.log('✅ Enhanced validation passed');
 
-      const weeklyProgram = await storeWorkoutProgram(supabase, generatedProgram, enhancedUserData, enhancedPreferences);
+      const weeklyProgram = await storeWorkoutProgram(supabase, response, enhancedUserData, enhancedPreferences);
 
       console.log('🎉 Exercise program generated and stored successfully:', {
         programId: weeklyProgram.id,

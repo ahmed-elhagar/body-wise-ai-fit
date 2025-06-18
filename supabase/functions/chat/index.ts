@@ -1,4 +1,3 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { AIService } from "../_shared/aiService.ts";
@@ -36,12 +35,29 @@ serve(async (req) => {
       google: !!googleApiKey 
     });
 
-    // Use the enhanced AI service with multiple providers for 'chat' feature
+    // Use centralized prompt service
+    console.log('🎯 Using centralized prompt service for general chat');
+    
+    // Import the service dynamically
+    const { AIPromptService } = await import('../../../src/services/aiPromptService.ts');
+    
+    // Detect language from messages or use default
+    const userLanguage = messages.find(m => m.language)?.language || 'en';
+    const promptConfig = AIPromptService.getGeneralChatPrompt(userLanguage);
+
+    // Enhance messages with proper system prompt
+    const enhancedMessages = [
+      { role: 'system', content: promptConfig.systemMessage },
+      ...messages
+    ];
+
+    console.log('🤖 Using multi-provider AI service for general chat with English-only prompts...');
+
     const aiService = new AIService(openAIApiKey, anthropicApiKey, googleApiKey);
     const response = await aiService.generate('chat', {
-      messages: messages,
-      temperature: 0.7,
-      maxTokens: 1000,
+      messages: enhancedMessages,
+      temperature: promptConfig.temperature || 0.7,
+      maxTokens: promptConfig.maxTokens || 1000,
     });
 
     console.log('✅ General AI Chat response generated successfully');

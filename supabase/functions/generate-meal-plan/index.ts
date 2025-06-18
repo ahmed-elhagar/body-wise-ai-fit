@@ -281,7 +281,11 @@ const generateAIMealPlanWithRetry = async (
     : 'You are a professional nutritionist AI specialized in life-phase nutrition with advanced health condition awareness.';
 
   // Use enhanced prompt generator
-  const basePrompt = generateEnhancedMealPlanPrompt(userProfile, preferences, adjustedDailyCalories, includeSnacks);
+  const basePrompt = generateEnhancedMealPlanPrompt(
+    userProfile,
+    { ...preferences, language },
+    adjustedDailyCalories
+  );
   const enhancedPrompt = enhancePromptWithLifePhase(basePrompt, nutritionContext, language);
 
   // Enhanced JSON format instruction with STRICT requirements for COMPLETE 7-day plan
@@ -515,13 +519,17 @@ serve(async (req) => {
       );
     }
 
-    console.log('🌐 Enhanced Language Configuration:', { 
+    console.log('🎯 Enhanced Language Configuration:', {
       language,
-      includeSnacks: preferences?.includeSnacks,
-      mealsPerDay: preferences?.includeSnacks ? 5 : 3,
-      primaryModel: modelConfigs.primary,
-      fallbackModel: modelConfigs.fallback,
-      defaultModel: modelConfigs.default
+      includeSnacks,
+      mealsPerDay,
+      primaryModel: primaryModel ? { modelId: primaryModel.model_id, provider: primaryModel.provider, isActive: primaryModel.is_active } : null,
+      fallbackModel: fallbackModel ? { modelId: fallbackModel.model_id, provider: fallbackModel.provider, isActive: fallbackModel.is_active } : null,
+      defaultModel: {
+        modelId: defaultModel.model_id,
+        provider: defaultModel.provider,
+        isActive: defaultModel.is_active
+      }
     });
 
     // Enhanced rate limiting check
