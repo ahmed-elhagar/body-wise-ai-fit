@@ -1636,16 +1636,7 @@ export type Database = {
       }
       get_current_exercise_program: {
         Args: { user_id_param: string }
-        Returns: {
-          id: string
-          program_name: string
-          difficulty_level: string
-          workout_type: string
-          current_week: number
-          week_start_date: string
-          created_at: string
-          daily_workouts_count: number
-        }[]
+        Returns: Json
       }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
