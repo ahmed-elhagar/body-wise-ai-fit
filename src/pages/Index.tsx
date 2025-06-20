@@ -1,84 +1,72 @@
 
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
-import { Card } from "@/components/ui/card";
-import { AlertTriangle, RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import React from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Navigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 const Index = () => {
-  const navigate = useNavigate();
-  const { user, loading: authLoading, error, retryAuth, forceLogout } = useAuth();
-  const [hasNavigated, setHasNavigated] = useState(false);
+  const { user, signOut, error, isLoading } = useAuth();
 
-  // Debug logging
-  useEffect(() => {
-    console.log('Index - State:', { 
-      authLoading, 
-      hasUser: !!user, 
-      hasNavigated,
-      userId: user?.id?.substring(0, 8) + '...' || 'none',
-      error: error?.message || null
-    });
-  }, [authLoading, user, hasNavigated, error]);
-
-  // Navigation logic
-  useEffect(() => {
-    // Don't navigate if still loading, already navigated, or there's an error
-    if (authLoading || hasNavigated || error) {
-      console.log('Index - Not ready to navigate:', { authLoading, hasNavigated, hasError: !!error });
-      return;
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast.success('Signed out successfully');
+    } catch (err) {
+      toast.error('Failed to sign out');
     }
+  };
 
-    // No user - go to landing immediately
-    if (!user) {
-      console.log('Index - No user, redirecting to landing');
-      navigate("/landing", { replace: true });
-      setHasNavigated(true);
-      return;
-    }
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
-    // User exists - go to dashboard (removed profile completion check)
-    console.log('Index - User authenticated, redirecting to dashboard');
-    navigate("/dashboard", { replace: true });
-    setHasNavigated(true);
-  }, [authLoading, hasNavigated, user, navigate, error]);
-
-  // Error state
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-        <Card className="p-6 bg-red-50 border-red-200 max-w-md">
-          <div className="flex items-center gap-3 mb-4">
-            <AlertTriangle className="h-6 w-6 text-red-600" />
-            <h2 className="text-lg font-semibold text-red-800">Authentication Error</h2>
-          </div>
-          <p className="text-red-700 mb-4">
-            {error.message || 'Authentication failed. Please try again.'}
-          </p>
-          <div className="space-y-2">
-            <Button 
-              onClick={retryAuth} 
-              className="w-full bg-red-600 text-white hover:bg-red-700"
-            >
-              <RefreshCw className="w-4 h-4 mr-2" />
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <Card className="max-w-md">
+          <CardHeader>
+            <CardTitle>Error</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-red-600">
+              {typeof error === 'string' ? error : error.message || 'An unexpected error occurred'}
+            </p>
+            <Button className="mt-4" onClick={() => window.location.reload()}>
               Retry
             </Button>
-            <Button 
-              onClick={forceLogout} 
-              variant="outline"
-              className="w-full border-red-600 text-red-600 hover:bg-red-50"
-            >
-              Start Fresh
-            </Button>
-          </div>
+          </CardContent>
         </Card>
       </div>
     );
   }
 
-  // Simple loading without extra text - just redirect immediately
-  return null;
+  if (user) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <Card className="max-w-md">
+        <CardHeader>
+          <CardTitle>Welcome to FitFatta AI</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="mb-4">Your personalized fitness and nutrition companion.</p>
+          <div className="space-y-2">
+            <Button asChild className="w-full">
+              <a href="/auth">Get Started</a>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
 };
 
 export default Index;

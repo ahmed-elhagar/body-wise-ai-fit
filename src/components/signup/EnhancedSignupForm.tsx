@@ -1,192 +1,128 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-import { useSignup } from "@/features/auth/hooks/useSignup";
-import { validateSignupStep, validateProfileCompletion, mapBodyFatToBodyShape } from "@/utils/signupValidation";
-import { useSignupState } from "./hooks/useSignupState";
-import SignupProgress from "./SignupProgress";
-import SignupNavigation from "./SignupNavigation";
-
-// Step components
-import AccountCreationStep from "./steps/AccountCreationStep";
-import PhysicalInfoStep from "./steps/PhysicalInfoStep";
-import BodyCompositionStep from "./steps/BodyCompositionStep";
-import GoalsActivityStep from "./steps/GoalsActivityStep";
-import HealthInfoStep from "./steps/HealthInfoStep";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 const EnhancedSignupForm = () => {
-  const {
-    currentStep,
-    formData,
-    updateField,
-    nextStep,
-    prevStep,
-    setCurrentStep
-  } = useSignupState();
-  
-  const signupMutation = useSignup();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const { signUp } = useAuth();
 
-  const handleNext = () => {
-    console.log(`Attempting to move from step ${currentStep} to ${currentStep + 1}`);
-    
-    if (validateSignupStep(currentStep, formData)) {
-      console.log(`✅ Step ${currentStep} validation passed`);
-      nextStep();
-    } else {
-      console.log(`❌ Step ${currentStep} validation failed`);
-      toast.error("Please fill in all required fields correctly");
-    }
-  };
-
-  const handlePrevious = () => {
-    console.log(`Moving back from step ${currentStep} to ${currentStep - 1}`);
-    prevStep();
-  };
-
-  const handleStepClick = (step: number) => {
-    console.log(`Direct navigation to step ${step} requested`);
-    
-    // Allow navigation to any previous step or the next step if current is valid
-    if (step <= currentStep || (step === currentStep + 1 && validateSignupStep(currentStep, formData))) {
-      console.log(`✅ Navigation to step ${step} allowed`);
-      setCurrentStep(step);
-    } else {
-      console.log(`❌ Navigation to step ${step} blocked - must complete current step first`);
-      toast.error("Please complete the current step first");
-    }
-  };
-
-  const handleSubmit = async () => {
-    console.log('🚀 Starting signup submission process');
-    console.log('Form data before submission:', formData);
-    
-    if (!validateProfileCompletion(formData)) {
-      console.log('❌ Profile validation failed');
-      toast.error("Please complete all required fields");
+  const handleSignUp = async () => {
+    if (password !== confirmPassword) {
+      toast.error('Passwords do not match');
       return;
     }
 
+    if (password.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
+
+    setIsLoading(true);
     try {
-      // Map body fat percentage to body shape
-      const bodyShape = mapBodyFatToBodyShape(
-        parseFloat(formData.bodyFatPercentage?.toString() || '20'), 
-        formData.gender
-      );
-      
-      console.log(`📊 Mapped body shape: ${bodyShape} (from ${formData.bodyFatPercentage}% body fat, ${formData.gender})`);
-
-      // Prepare signup data with proper type conversion
-      const signupData = {
-        email: formData.email,
-        password: formData.password,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        age: parseInt(formData.age),
-        gender: formData.gender,
-        height: parseFloat(formData.height),
-        weight: parseFloat(formData.weight),
-        targetWeight: formData.targetWeight ? parseFloat(formData.targetWeight) : undefined,
-        bodyFatPercentage: parseFloat(formData.bodyFatPercentage?.toString() || '20'),
-        bodyShape,
-        fitnessGoal: formData.fitnessGoal,
-        activityLevel: formData.activityLevel,
-        healthConditions: formData.healthConditions || [],
-        allergies: formData.allergies || [],
-        nationality: formData.nationality || 'US'
-      };
-
-      console.log('📤 Submitting signup data:', signupData);
-      await signupMutation.mutateAsync(signupData);
-      
+      const { error } = await signUp(email, password);
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success('Check your email for verification link');
+      }
     } catch (error) {
-      console.error('❌ Signup submission failed:', error);
-      toast.error("Failed to create account. Please try again.");
+      toast.error('An unexpected error occurred');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleArrayInput = (field: keyof typeof formData, value: string[]) => {
-    updateField(field, value);
-  };
-
-  const renderStep = () => {
-    const bodyCompositionProps = {
-      formData: {
-        height: formData.height,
-        weight: formData.weight,
-        targetWeight: formData.targetWeight || '',
-        bodyShape: formData.bodyShape,
-        bodyFatPercentage: formData.bodyFatPercentage?.toString() || '',
-        muscleMass: formData.muscleMass || '',
-        activityLevel: formData.activityLevel
-      },
-      updateField
-    };
-
-    switch (currentStep) {
-      case 1:
-        return (
-          <AccountCreationStep 
-            formData={formData} 
-            updateField={updateField}
-            onNext={handleNext}
-            isLoading={signupMutation.isPending}
-            accountCreated={false}
-          />
-        );
-      case 2:
-        return <PhysicalInfoStep formData={formData} updateField={updateField} />;
-      case 3:
-        return <BodyCompositionStep {...bodyCompositionProps} />;
-      case 4:
-        return <GoalsActivityStep formData={formData} updateField={updateField} />;
-      case 5:
-        return (
-          <HealthInfoStep 
-            formData={formData} 
-            updateField={updateField}
-            handleArrayInput={handleArrayInput}
-          />
-        );
-      default:
-        return (
-          <AccountCreationStep 
-            formData={formData} 
-            updateField={updateField}
-            onNext={handleNext}
-            isLoading={signupMutation.isPending}
-            accountCreated={false}
-          />
-        );
-    }
+  const handleGoogleSignup = async () => {
+    toast.info('Google signup not implemented yet');
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 py-8">
-      <div className="container mx-auto px-4 max-w-2xl">
-        <SignupProgress 
-          currentStep={currentStep} 
-          setCurrentStep={handleStepClick}
-        />
-        
-        <Card className="mt-8 shadow-xl border-0 bg-white/95 backdrop-blur-sm">
-          <CardContent className="p-8">
-            {renderStep()}
-            
-            <SignupNavigation
-              currentStep={currentStep}
-              totalSteps={5}
-              isStepValid={validateSignupStep(currentStep, formData)}
-              isLoading={signupMutation.isPending}
-              onBack={handlePrevious}
-              onNext={handleNext}
-              onComplete={handleSubmit}
+    <Card className="w-full max-w-md mx-auto">
+      <CardHeader>
+        <CardTitle>Create Account</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="firstName">First Name</Label>
+            <Input
+              id="firstName"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              placeholder="John"
             />
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+          </div>
+          <div>
+            <Label htmlFor="lastName">Last Name</Label>
+            <Input
+              id="lastName"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              placeholder="Doe"
+            />
+          </div>
+        </div>
+        
+        <div>
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="john@example.com"
+          />
+        </div>
+        
+        <div>
+          <Label htmlFor="password">Password</Label>
+          <Input
+            id="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••"
+          />
+        </div>
+        
+        <div>
+          <Label htmlFor="confirmPassword">Confirm Password</Label>
+          <Input
+            id="confirmPassword"
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            placeholder="••••••••"
+          />
+        </div>
+        
+        <Button 
+          onClick={handleSignUp} 
+          disabled={isLoading}
+          className="w-full"
+        >
+          {isLoading ? 'Creating Account...' : 'Sign Up'}
+        </Button>
+        
+        <Button 
+          onClick={handleGoogleSignup}
+          variant="outline"
+          className="w-full"
+        >
+          Sign up with Google
+        </Button>
+      </CardContent>
+    </Card>
   );
 };
 
