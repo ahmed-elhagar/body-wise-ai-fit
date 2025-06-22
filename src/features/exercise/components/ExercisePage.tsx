@@ -7,7 +7,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
-  Activity, 
   Dumbbell,
   Home,
   Building,
@@ -28,7 +27,7 @@ import {
 import { useExerciseProgram } from '../hooks/core/useExerciseProgram';
 import { useWorkoutSession } from '../hooks/core/useWorkoutSession';
 import { EnhancedAIGenerationDialog } from './ai/EnhancedAIGenerationDialog';
-import { ExerciseCard } from './ExerciseCard';
+import { SmartExerciseCard } from './SmartExerciseCard';
 import { format, addDays } from 'date-fns';
 
 export const ExercisePage: React.FC = () => {
@@ -82,19 +81,15 @@ export const ExercisePage: React.FC = () => {
   };
 
   const getDayName = (dayNumber: number) => {
-    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     return days[dayNumber - 1] || 'Day';
-  };
-
-  const handleWorkoutTypeChange = (newType: "home" | "gym") => {
-    setWorkoutType(newType);
   };
 
   if (isLoading) {
     return (
       <div className="container mx-auto p-6">
         <div className="animate-pulse space-y-6">
-          <div className="h-24 bg-gray-200 rounded-xl"></div>
+          <div className="h-20 bg-gray-200 rounded-xl"></div>
           <div className="h-64 bg-gray-200 rounded-xl"></div>
           <div className="h-48 bg-gray-200 rounded-xl"></div>
         </div>
@@ -108,7 +103,7 @@ export const ExercisePage: React.FC = () => {
         <Card className="border-red-200 bg-red-50">
           <CardContent className="p-8 text-center">
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Activity className="w-8 h-8 text-red-600" />
+              <Dumbbell className="w-8 h-8 text-red-600" />
             </div>
             <h3 className="text-xl font-semibold text-red-900 mb-2">
               Error Loading Exercise Program
@@ -132,68 +127,65 @@ export const ExercisePage: React.FC = () => {
     <div className="container mx-auto p-6 space-y-6">
       
       {/* Header Section */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center">
-              <Dumbbell className="w-5 h-5 text-white" />
-            </div>
-            Exercise Programs
-          </h1>
-          <p className="text-gray-600 mt-1">AI-powered personalized workout plans</p>
-        </div>
+      <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl p-6 text-white">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Exercise Programs</h1>
+            <p className="text-indigo-100 text-lg">AI-powered personalized workouts</p>
+          </div>
 
-        {/* Credits & Actions */}
-        <div className="flex items-center gap-4">
-          {isPro ? (
-            <Badge className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white px-4 py-2">
-              <Crown className="w-4 h-4 mr-2" />
-              Pro Member
-            </Badge>
-          ) : (
-            <Badge variant="outline" className="border-orange-300 text-orange-700 px-4 py-2">
-              <Coins className="w-4 h-4 mr-2" />
-              {creditsRemaining} Credits
-            </Badge>
-          )}
+          <div className="flex items-center gap-4">
+            {isPro ? (
+              <Badge className="bg-white/20 text-white border-white/30 px-4 py-2 text-sm">
+                <Crown className="w-4 h-4 mr-2" />
+                Pro Member
+              </Badge>
+            ) : (
+              <Badge className="bg-white/20 text-white border-white/30 px-4 py-2 text-sm">
+                <Coins className="w-4 h-4 mr-2" />
+                {creditsRemaining} Credits
+              </Badge>
+            )}
 
-          {hasProgram ? (
-            <Button 
-              onClick={onRegenerateProgram}
-              disabled={isGenerating}
-              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
-            >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Regenerating...
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Regenerate Program
-                </>
-              )}
-            </Button>
-          ) : (
-            <Button 
-              onClick={() => setShowAIDialog(true)}
-              disabled={!isPro && creditsRemaining <= 0}
-              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
-            >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="h-4 w-4 mr-2" />
-                  Generate Program
-                </>
-              )}
-            </Button>
-          )}
+            {hasProgram ? (
+              <Button 
+                onClick={onRegenerateProgram}
+                disabled={isGenerating}
+                className="bg-white/20 hover:bg-white/30 border-white/30 text-white"
+                variant="outline"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Regenerating...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Regenerate
+                  </>
+                )}
+              </Button>
+            ) : (
+              <Button 
+                onClick={() => setShowAIDialog(true)}
+                disabled={!isPro && creditsRemaining <= 0}
+                className="bg-white text-indigo-600 hover:bg-gray-50"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Generate Program
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -211,17 +203,49 @@ export const ExercisePage: React.FC = () => {
       )}
 
       {/* Workout Type Tabs */}
-      <Tabs value={workoutType} onValueChange={handleWorkoutTypeChange} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto">
-          <TabsTrigger value="home" className="flex items-center gap-2">
-            <Home className="h-4 w-4" />
-            Home Workout
-          </TabsTrigger>
-          <TabsTrigger value="gym" className="flex items-center gap-2">
-            <Building className="h-4 w-4" />
-            Gym Workout
-          </TabsTrigger>
-        </TabsList>
+      <Tabs value={workoutType} onValueChange={(value) => setWorkoutType(value as "home" | "gym")} className="w-full">
+        <div className="flex items-center justify-between mb-6">
+          <TabsList className="grid grid-cols-2 w-80">
+            <TabsTrigger value="home" className="flex items-center gap-2">
+              <Home className="h-4 w-4" />
+              Home Workout
+            </TabsTrigger>
+            <TabsTrigger value="gym" className="flex items-center gap-2">
+              <Building className="h-4 w-4" />
+              Gym Workout
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Week Navigation */}
+          {hasProgram && (
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentWeekOffset(currentWeekOffset - 1)}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <div className="text-center px-4">
+                <div className="font-medium text-sm">
+                  {formatWeekRange(weekStartDate)}
+                </div>
+                <div className="text-xs text-gray-500">
+                  {currentWeekOffset === 0 ? 'Current Week' : 
+                   currentWeekOffset > 0 ? `Week +${currentWeekOffset}` : 
+                   `Week ${currentWeekOffset}`}
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentWeekOffset(currentWeekOffset + 1)}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+        </div>
 
         <TabsContent value={workoutType} className="mt-6">
           {!hasProgram ? (
@@ -263,38 +287,9 @@ export const ExercisePage: React.FC = () => {
               <div className="lg:col-span-1">
                 <Card>
                   <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <Calendar className="h-5 w-5 text-indigo-600" />
-                        Week Overview
-                      </CardTitle>
-                    </div>
-                    {/* Week Navigation */}
-                    <div className="flex items-center justify-between mt-3 pt-3 border-t">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentWeekOffset(currentWeekOffset - 1)}
-                      >
-                        <ChevronLeft className="h-4 w-4" />
-                      </Button>
-                      <div className="text-center">
-                        <div className="font-medium text-sm">
-                          {formatWeekRange(weekStartDate)}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {currentWeekOffset === 0 ? 'Current' : 
-                           currentWeekOffset > 0 ? `+${currentWeekOffset}` : 
-                           `${currentWeekOffset}`}
-                        </div>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentWeekOffset(currentWeekOffset + 1)}
-                      >
-                        <ChevronRight className="h-4 w-4" />
-                      </Button>
+                    <div className="flex items-center gap-2 mb-3">
+                      <Calendar className="h-4 w-4 text-indigo-600" />
+                      <span className="text-sm font-medium text-gray-700">Week Overview</span>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-2">
@@ -420,7 +415,7 @@ export const ExercisePage: React.FC = () => {
                         {/* Exercises */}
                         <div className="space-y-4">
                           {todaysExercises.map((exercise) => (
-                            <ExerciseCard
+                            <SmartExerciseCard
                               key={exercise.id}
                               exercise={exercise}
                               onComplete={onExerciseComplete}

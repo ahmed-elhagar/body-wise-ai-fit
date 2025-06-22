@@ -12,6 +12,7 @@ export { LoadingState } from './components/loading/LoadingState';
 export { FormAnalysis } from './components/ai/FormAnalysis';
 export { RecoveryMetrics } from './components/recovery/RecoveryMetrics';
 export { ProgressTracker } from './components/progress/ProgressTracker';
+export { SmartExerciseCard } from './components/SmartExerciseCard';
 
 // Hooks
 export { useExerciseProgram } from './hooks/core/useExerciseProgram';
