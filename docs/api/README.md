@@ -1,3 +1,4 @@
+
 # FitFatta API Documentation 🚀
 
 ## 🎯 **Overview**
@@ -12,66 +13,65 @@ FitFatta uses **15 Supabase Edge Functions** for AI processing and business logi
 
 ### **AI & Generation Functions**
 1. **`generate-meal-plan`** - AI-powered meal plan generation with cultural preferences
-2. **`generate-workout`** - AI workout generation based on equipment and goals
-3. **`analyze-form`** - Exercise form analysis using computer vision
-4. **`coach-chat`** - AI coaching conversation processing
+2. **`generate-exercise-program`** - AI workout generation based on equipment and goals
+3. **`generate-meal-recipe`** - Detailed recipe generation with instructions
+4. **`generate-meal-alternatives`** - Smart meal swapping functionality
+5. **`exchange-exercise`** - Alternative exercise recommendations
+6. **`analyze-food-image`** - AI food photo analysis and calorie estimation
+7. **`generate-ai-snack`** - Quick snack recommendations
+8. **`generate-meal-image`** - AI meal image generation
 
 ### **Communication Functions**
-5. **`send-shopping-list-email`** - Email shopping lists to users
-6. **`send-workout-email`** - Email workout plans
-7. **`send-progress-report`** - Weekly progress email reports
-8. **`send-notification`** - Push notification system
-
-### **Data Processing Functions**
-9. **`process-food-data`** - Food database search and nutrition calculation
-10. **`calculate-nutrition`** - Macro and micronutrient calculations
-11. **`track-progress`** - Progress tracking and analytics
-12. **`sync-wearable-data`** - Fitness tracker data synchronization
+9. **`fitness-chat`** - AI fitness coaching conversations
+10. **`chat`** - General AI assistant functionality
 
 ### **Utility Functions**
-13. **`image-upload`** - Profile and progress photo upload handling
-14. **`generate-report`** - PDF report generation
-15. **`backup-user-data`** - User data backup and export
+11. **`shuffle-weekly-meals`** - Meal randomization within plans
+12. **`send-shopping-list-email`** - Email shopping lists to users
+13. **`get-exercise-recommendations`** - Exercise suggestions based on goals
+14. **`track-exercise-performance`** - Workout performance logging
+
+### **Payment Functions**
+15. **`create-subscription`** - Stripe subscription creation and management
 
 ---
 
 ## 🗄️ **Database Schema**
 
-FitFatta uses **24 core tables** with Row Level Security (RLS):
+FitFatta uses **24+ core tables** with Row Level Security (RLS):
 
-### **User Management (5 tables)**
-- `profiles` - User profile information and preferences
-- `user_preferences` - Detailed user settings and configurations
-- `user_goals` - Fitness and nutrition goals
-- `user_equipment` - Available exercise equipment
-- `user_sessions` - Session tracking and analytics
+### **User Management**
+- `profiles` - Complete user profiles with life-phase support
+- `onboarding_progress` - Detailed onboarding tracking
+- `user_preferences` - Comprehensive preference management
+- `user_roles` - Role-based access control
+- `subscriptions` - Premium subscription management
 
-### **Meal Planning (6 tables)**
-- `meal_plans` - Weekly meal plan storage
-- `daily_meals` - Individual meal records
-- `recipes` - Recipe database with cultural tags
-- `ingredients` - Ingredient database with nutrition data
-- `shopping_lists` - Generated shopping list items
-- `meal_preferences` - User dietary preferences and restrictions
+### **Meal Planning & Nutrition**
+- `weekly_meal_plans` - AI-generated meal plans
+- `daily_meals` - Individual meal details with nutrition
+- `food_items` - Comprehensive food database (verified items)
+- `food_database` - General food database for searches
+- `food_consumption_log` - User food intake tracking
 
-### **Exercise & Fitness (6 tables)**
-- `workout_plans` - AI-generated workout programs
-- `exercises` - Exercise database (200+ exercises)
-- `workout_sessions` - Completed workout tracking
-- `exercise_logs` - Individual exercise performance
-- `form_analysis` - Exercise form analysis results
-- `equipment_exercises` - Exercise-equipment relationships
+### **Exercise & Fitness**
+- `weekly_exercise_programs` - Exercise program metadata
+- `daily_workouts` - Daily workout sessions
+- `exercises` - Exercise database with instructions
+- `weight_entries` - Body weight and composition tracking
+- `user_goals` - Goal setting and progress tracking
 
-### **Progress Tracking (4 tables)**
-- `weight_logs` - Weight tracking over time
-- `body_measurements` - Body composition measurements
-- `progress_photos` - Progress photo storage
-- `achievement_logs` - Goal achievements and milestones
+### **AI & Analytics**
+- `ai_generation_logs` - Complete AI usage tracking
+- `ai_models` - AI model configuration and fallbacks
+- `ai_feature_models` - Feature-specific model assignments
+- `health_assessments` - Health and fitness assessments
 
-### **Communication (3 tables)**
-- `chat_conversations` - AI coaching chat history
-- `notifications` - System notifications
-- `email_logs` - Email delivery tracking
+### **Communication & Coaching**
+- `coach_trainees` - Coach-trainee relationships
+- `coach_trainee_messages` - Messaging system
+- `coach_tasks` - Task management for coaches
+- `user_notifications` - In-app notification system
 
 ---
 
@@ -95,7 +95,7 @@ FitFatta uses **24 core tables** with Row Level Security (RLS):
 
 ### **Base URL**
 ```
-https://[PROJECT-ID].supabase.co/functions/v1/
+https://xnoslfftfktqvyoefccw.supabase.co/functions/v1/
 ```
 
 ### **Authentication**
@@ -107,7 +107,7 @@ Authorization: Bearer [JWT_TOKEN]
 ### **Common Headers**
 ```bash
 Content-Type: application/json
-apikey: [ANON_KEY]
+apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
 ---
@@ -127,21 +127,12 @@ POST /functions/v1/generate-meal-plan
     "healthGoals": ["weight_loss"]
   }
 }
-
-// 2. Save meal plan
-POST /rest/v1/meal_plans
-{
-  "user_id": "uuid",
-  "week_start": "2025-01-20",
-  "meals": [...],
-  "nutrition_totals": {...}
-}
 ```
 
-### **Workout Generation**
+### **Exercise Program Generation**
 ```typescript
 // 1. Generate AI workout
-POST /functions/v1/generate-workout
+POST /functions/v1/generate-exercise-program
 {
   "userId": "uuid",
   "equipment": ["dumbbells", "resistance_bands"],
@@ -149,14 +140,16 @@ POST /functions/v1/generate-workout
   "goals": ["muscle_gain"],
   "duration": 45
 }
+```
 
-// 2. Save workout plan
-POST /rest/v1/workout_plans
+### **Food Analysis**
+```typescript
+// 1. Analyze food photo
+POST /functions/v1/analyze-food-image
 {
-  "user_id": "uuid",
-  "name": "Upper Body Strength",
-  "exercises": [...],
-  "estimated_duration": 45
+  "userId": "uuid",
+  "imageData": "base64_encoded_image",
+  "mealType": "lunch"
 }
 ```
 
@@ -183,6 +176,7 @@ POST /rest/v1/workout_plans
 - **400**: Bad Request (validation errors)
 - **401**: Unauthorized (invalid token)
 - **403**: Forbidden (insufficient permissions)
+- **404**: Not Found
 - **429**: Too Many Requests (rate limited)
 - **500**: Internal Server Error
 
@@ -201,32 +195,13 @@ POST /rest/v1/workout_plans
 
 ---
 
-## 📚 **Documentation Files**
-
-### **Detailed Function Docs**
-- `edge-functions.md` - Complete Edge Function documentation
-- `database-schema.md` - Full database schema and relationships
-- `authentication.md` - Auth flows and security implementation
-- `api-examples.md` - Code examples and integration guides
-
-### **Integration Guides**
-- `meal-plan-api.md` - Meal planning API integration
-- `workout-api.md` - Exercise API integration
-- `progress-api.md` - Progress tracking API
-- `chat-api.md` - AI coaching API
-
----
-
 ## 🚀 **Getting Started**
 
 ### **1. Authentication Setup**
 ```typescript
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
 
-const supabase = createClient(
-  'https://[PROJECT-ID].supabase.co',
-  '[ANON-KEY]'
-);
+const { data: { session } } = await supabase.auth.getSession();
 ```
 
 ### **2. Making API Calls**
@@ -239,20 +214,21 @@ const { data, error } = await supabase.functions.invoke('generate-meal-plan', {
 ### **3. Database Queries**
 ```typescript
 const { data, error } = await supabase
-  .from('meal_plans')
+  .from('weekly_meal_plans')
   .select('*')
   .eq('user_id', userId);
 ```
 
 ---
 
-## 🎯 **Next Steps**
+## 📚 **Additional Documentation**
 
-1. **Detailed Function Documentation**: Complete docs for each Edge Function
-2. **Schema Documentation**: Full database schema with relationships
-3. **Integration Examples**: Real-world usage examples
-4. **Testing Documentation**: API testing strategies and tools
+- `database-schema.md` - Complete database schema with relationships
+- `edge-functions.md` - Detailed Edge Function documentation
+- `/features/` - Feature-specific API documentation
 
 ---
 
-The FitFatta API provides a comprehensive, secure, and scalable backend for delivering personalized fitness and nutrition experiences. 🚀✨ 
+**Last Updated**: January 2025  
+**API Version**: 2.0  
+**Status**: Production Ready ✅
