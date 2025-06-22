@@ -1,263 +1,230 @@
+
 import React from 'react';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { 
   Calendar, 
+  Clock, 
   Dumbbell, 
   Target, 
-  Timer, 
-  Award, 
-  Plus, 
-  Sparkles, 
-  Loader2,
-  Activity,
   TrendingUp,
-  Zap
+  CheckCircle2,
+  Play,
+  Sparkles 
 } from 'lucide-react';
-import { format, addDays } from 'date-fns';
-import type { ExerciseProgram, Exercise } from '../types';
+import { format } from 'date-fns';
+import { ExerciseProgram, DailyWorkout } from '../types';
 
 interface ExerciseOverviewProps {
-  currentProgram?: ExerciseProgram;
-  todaysExercises: Exercise[];
-  selectedDayNumber: number;
-  currentWeekOffset: number;
-  weekStartDate: Date;
+  currentProgram: ExerciseProgram | null;
+  todaysExercises: any[];
   completedExercises: number;
   totalExercises: number;
   progressPercentage: number;
-  workoutType: "home" | "gym";
-  onDaySelect: (dayNumber: number) => void;
-  onExerciseComplete: (exerciseId: string) => void;
-  onShowAIModal: () => void;
-  hasProgram: boolean;
+  onGenerateProgram: () => void;
   isGenerating: boolean;
 }
 
 export const ExerciseOverview: React.FC<ExerciseOverviewProps> = ({
   currentProgram,
   todaysExercises,
-  selectedDayNumber,
-  currentWeekOffset,
-  weekStartDate,
   completedExercises,
   totalExercises,
   progressPercentage,
-  workoutType,
-  onDaySelect,
-  onShowAIModal,
-  hasProgram,
+  onGenerateProgram,
   isGenerating
 }) => {
-  const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const todaysWorkout = currentProgram?.daily_workouts?.find(
+    workout => workout.day_number === new Date().getDay() || 1
+  );
 
-  // Group exercises by type for today
-  const exercisesByType = {
-    warmup: todaysExercises.filter(ex => ex.category === 'warmup'),
-    strength: todaysExercises.filter(ex => ex.category === 'strength' || ex.category === 'main'),
-    cardio: todaysExercises.filter(ex => ex.category === 'cardio'),
-    cooldown: todaysExercises.filter(ex => ex.category === 'cooldown' || ex.category === 'stretching')
-  };
-
-  const exerciseTypeConfig = [
-    { 
-      id: 'warmup', 
-      name: 'Warm-up', 
-      icon: Zap, 
-      color: 'from-orange-400 to-amber-500',
-      bgColor: 'bg-orange-50',
-      borderColor: 'border-orange-200',
-      textColor: 'text-orange-700',
-      exercises: exercisesByType.warmup
-    },
-    { 
-      id: 'strength', 
-      name: 'Strength', 
-      icon: Dumbbell, 
-      color: 'from-blue-400 to-indigo-500',
-      bgColor: 'bg-blue-50',
-      borderColor: 'border-blue-200',
-      textColor: 'text-blue-700',
-      exercises: exercisesByType.strength
-    },
-    { 
-      id: 'cardio', 
-      name: 'Cardio', 
-      icon: Activity, 
-      color: 'from-green-400 to-emerald-500',
-      bgColor: 'bg-green-50',
-      borderColor: 'border-green-200',
-      textColor: 'text-green-700',
-      exercises: exercisesByType.cardio
-    },
-    { 
-      id: 'cooldown', 
-      name: 'Cool-down', 
-      icon: Target, 
-      color: 'from-purple-400 to-pink-500',
-      bgColor: 'bg-purple-50',
-      borderColor: 'border-purple-200',
-      textColor: 'text-purple-700',
-      exercises: exercisesByType.cooldown
-    }
-  ];
+  if (!currentProgram) {
+    return (
+      <div className="space-y-6">
+        <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+          <CardContent className="p-8 text-center">
+            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Dumbbell className="w-8 h-8 text-blue-600" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              No Exercise Program Found
+            </h3>
+            <p className="text-gray-600 mb-6 max-w-md mx-auto">
+              Get started with a personalized AI-generated exercise program tailored to your goals and fitness level.
+            </p>
+            <Button 
+              onClick={onGenerateProgram}
+              disabled={isGenerating}
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+            >
+              {isGenerating ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Generate AI Program
+                </>
+              )}
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      {/* Week Overview */}
-      <Card className="p-6">
-        <h3 className="font-bold text-gray-900 mb-4 flex items-center">
-          <Calendar className="h-5 w-5 mr-2 text-indigo-600" />
-          Weekly Schedule
-        </h3>
-        <div className="grid grid-cols-7 gap-3">
-          {weekDays.map((day, index) => {
-            const dayNumber = index + 1;
-            const isSelected = selectedDayNumber === dayNumber;
-            const dayDate = addDays(weekStartDate, index);
-            const isCurrentDay = format(dayDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
-            
-            // Get exercises for this day
-            const dayWorkout = currentProgram?.daily_workouts?.find(
-              workout => workout.day_number === dayNumber
-            );
-            const dayExercises = dayWorkout?.exercises || [];
-            const dayCompletedExercises = dayExercises.filter(ex => ex.completed);
-            
-            return (
-              <button
-                key={day}
-                onClick={() => onDaySelect(dayNumber)}
-                className={`p-4 rounded-xl text-center transition-all border-2 ${
-                  isSelected
-                    ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg border-transparent'
-                    : isCurrentDay
-                    ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
-                    : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-200'
-                }`}
-              >
-                <div className="text-xs font-medium mb-1">{day}</div>
-                <div className="text-xl font-bold mb-2">{format(dayDate, 'd')}</div>
-                {dayExercises.length > 0 ? (
-                  <div className="text-xs">
-                    {dayCompletedExercises.length}/{dayExercises.length} exercises
-                  </div>
-                ) : (
-                  <div className="text-xs text-gray-400">Rest</div>
-                )}
-                {isCurrentDay && !isSelected && (
-                  <div className="w-2 h-2 bg-indigo-500 rounded-full mx-auto mt-2"></div>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </Card>
-
-      {/* Today's Workout Preview */}
-      {hasProgram ? (
-        <Card className="p-6">
-          <h3 className="font-bold text-gray-900 mb-4 flex items-center">
-            <Dumbbell className="h-5 w-5 mr-2 text-indigo-600" />
-            Today's Workout Preview
-          </h3>
-          
-          {todaysExercises.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {exerciseTypeConfig.map((exerciseType) => (
-                <div key={exerciseType.id} className={`${exerciseType.bgColor} ${exerciseType.borderColor} border rounded-xl p-4`}>
-                  <div className="flex items-center space-x-3 mb-3">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br ${exerciseType.color}`}>
-                      <exerciseType.icon className="h-4 w-4 text-white" />
-                    </div>
-                    <div>
-                      <h4 className={`font-semibold ${exerciseType.textColor}`}>{exerciseType.name}</h4>
-                      <p className="text-xs text-gray-600">{exerciseType.exercises.length} exercises</p>
-                    </div>
-                  </div>
-                  <Progress 
-                    value={exerciseType.exercises.length > 0 ? Math.round((exerciseType.exercises.filter(ex => ex.completed).length / exerciseType.exercises.length) * 100) : 0} 
-                    className="h-2"
-                  />
-                  
-                  {/* Exercise Preview */}
-                  {exerciseType.exercises.length > 0 && (
-                    <div className="mt-3 space-y-1">
-                      {exerciseType.exercises.slice(0, 2).map((exercise) => (
-                        <div key={exercise.id} className="text-xs text-gray-600 truncate">
-                          • {exercise.name}
-                        </div>
-                      ))}
-                      {exerciseType.exercises.length > 2 && (
-                        <div className="text-xs text-gray-500">
-                          +{exerciseType.exercises.length - 2} more
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Target className="h-8 w-8 text-gray-400" />
-              </div>
-              <h4 className="text-lg font-semibold text-gray-900 mb-2">Rest Day</h4>
-              <p className="text-gray-600 mb-4">
-                Take time to recover and prepare for tomorrow's workout.
+      {/* Program Overview */}
+      <Card className="bg-gradient-to-br from-purple-50 to-blue-50 border-purple-200">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-xl text-gray-900">
+                {currentProgram.program_name}
+              </CardTitle>
+              <p className="text-gray-600 mt-1">
+                Week {currentProgram.current_week}
               </p>
-              <div className="flex justify-center space-x-3">
-                <Button variant="outline" size="sm" className="border-gray-300">
-                  Light Activity
-                </Button>
-                <Button variant="outline" size="sm" className="border-gray-300">
-                  Stretching
-                </Button>
+            </div>
+            <Badge className="bg-purple-100 text-purple-800 border-purple-200">
+              {currentProgram.difficulty_level}
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="text-center">
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                <Calendar className="w-6 h-6 text-blue-600" />
               </div>
+              <p className="text-sm text-gray-600">Started</p>
+              <p className="font-semibold text-gray-900">
+                {format(new Date(currentProgram.week_start_date), 'MMM d')}
+              </p>
             </div>
-          )}
-          
-          {/* Quick Actions */}
-          {todaysExercises.length > 0 && (
-            <div className="mt-6 flex justify-center space-x-3">
-              <Button className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700">
-                <Activity className="h-4 w-4 mr-2" />
-                Start Workout
-              </Button>
-              <Button variant="outline" className="border-gray-300">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Exercise
-              </Button>
+            <div className="text-center">
+              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                <Target className="w-6 h-6 text-green-600" />
+              </div>
+              <p className="text-sm text-gray-600">Type</p>
+              <p className="font-semibold text-gray-900 capitalize">
+                {currentProgram.workout_type}
+              </p>
             </div>
-          )}
-        </Card>
-      ) : (
-        <Card className="p-8 text-center">
-          <div className="max-w-md mx-auto">
-            <div className="w-16 h-16 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mb-4 mx-auto">
-              <Dumbbell className="h-8 w-8 text-white" />
+            <div className="text-center">
+              <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                <Clock className="w-6 h-6 text-orange-600" />
+              </div>
+              <p className="text-sm text-gray-600">Workouts</p>
+              <p className="font-semibold text-gray-900">
+                {currentProgram.daily_workouts?.length || 0}
+              </p>
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">No Exercise Program Available</h3>
-            <p className="text-gray-600 mb-6">
-              Use the "Generate AI Program" button in the header to create your personalized workout plan.
-            </p>
-            
-            {/* Quick Start Options */}
-            <div className="grid grid-cols-2 gap-3">
-              <Button variant="outline" className="border-gray-300">
-                <Target className="h-4 w-4 mr-2" />
-                Quick Workout
-              </Button>
-              <Button variant="outline" className="border-gray-300">
-                <TrendingUp className="h-4 w-4 mr-2" />
-                Browse Exercises
-              </Button>
+            <div className="text-center">
+              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                <TrendingUp className="w-6 h-6 text-purple-600" />
+              </div>
+              <p className="text-sm text-gray-600">Calories</p>
+              <p className="font-semibold text-gray-900">
+                {currentProgram.total_estimated_calories || 0}
+              </p>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Today's Workout */}
+      {todaysWorkout && (
+        <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-green-800">
+              <Play className="w-5 h-5" />
+              Today's Workout
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-gray-900">
+                  {todaysWorkout.workout_name}
+                </h3>
+                <Badge className="bg-green-100 text-green-800 border-green-200">
+                  {todaysWorkout.estimated_duration} min
+                </Badge>
+              </div>
+              
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Target className="w-4 h-4" />
+                <span>
+                  {todaysWorkout.muscle_groups?.join(', ') || 'Full Body'}
+                </span>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">Progress</span>
+                  <span className="font-medium text-gray-900">
+                    {completedExercises}/{totalExercises} exercises
+                  </span>
+                </div>
+                <Progress value={progressPercentage} className="h-2" />
+              </div>
+
+              {todaysWorkout.completed ? (
+                <div className="flex items-center gap-2 text-green-600">
+                  <CheckCircle2 className="w-5 h-5" />
+                  <span className="font-medium">Workout Completed!</span>
+                </div>
+              ) : (
+                <Button className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700">
+                  <Play className="w-4 h-4 mr-2" />
+                  Start Workout
+                </Button>
+              )}
+            </div>
+          </CardContent>
         </Card>
       )}
+
+      {/* Weekly Progress */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-blue-600" />
+            Weekly Progress
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-7 gap-2">
+            {currentProgram.daily_workouts?.map((workout, index) => (
+              <div
+                key={workout.id}
+                className={`p-3 rounded-lg text-center ${
+                  workout.completed
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-gray-100 text-gray-600'
+                }`}
+              >
+                <div className="text-xs font-medium mb-1">
+                  Day {workout.day_number}
+                </div>
+                {workout.completed ? (
+                  <CheckCircle2 className="w-4 h-4 mx-auto" />
+                ) : (
+                  <div className="w-4 h-4 mx-auto rounded-full border-2 border-current" />
+                )}
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
-}; 
+};
+
+export default ExerciseOverview;
