@@ -13,8 +13,11 @@ export const useMealPlanData = (weekOffset: number = 0) => {
   const { user } = useAuth();
   const { handleError, handleAPITimeout } = useEnhancedErrorHandling();
 
+  // Create a stable query key to prevent infinite loops
+  const queryKey = ['weekly-meal-plan', user?.id, weekOffset];
+
   return useQuery({
-    queryKey: ['weekly-meal-plan', user?.id, weekOffset],
+    queryKey,
     queryFn: async () => {
       if (!user?.id) {
         console.log('❌ useMealPlanData - No user ID for meal plan fetch');
@@ -22,16 +25,29 @@ export const useMealPlanData = (weekOffset: number = 0) => {
       }
       
       try {
+        // Calculate date only once and cache it
         const weekStartDate = getWeekStartDate(weekOffset);
         const weekStartDateStr = format(weekStartDate, 'yyyy-MM-dd');
+        
+        console.log('🔍 Fetching meal plan data:', {
+          userId: user.id.substring(0, 8) + '...',
+          weekOffset,
+          weekStartDate: weekStartDateStr
+        });
         
         // Use enhanced API timeout handling
         const result = await handleAPITimeout(async () => {
           return await fetchMealPlanData(user.id, weekStartDateStr);
         }, 15000, 1); // 15 second timeout, 1 retry
 
+        console.log('✅ Meal plan data fetched:', {
+          hasWeeklyPlan: !!result?.weeklyPlan,
+          dailyMealsCount: result?.dailyMeals?.length || 0
+        });
+
         return result;
       } catch (error) {
+        console.error('❌ Error in useMealPlanData:', error);
         handleError(error, {
           operation: 'Meal Plan Fetch',
           userId: user.id,

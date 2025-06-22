@@ -2,7 +2,15 @@
 import { addWeeks, startOfWeek, format } from 'date-fns';
 import type { DailyMeal } from '@/features/meal-plan/types';
 
+// Cache to prevent excessive recalculation
+const weekStartCache = new Map<number, Date>();
+
 export const getWeekStartDate = (offset: number = 0): Date => {
+  // Check cache first
+  if (weekStartCache.has(offset)) {
+    return weekStartCache.get(offset)!;
+  }
+
   const today = new Date();
   
   // EXACT MATCH with backend: Use Saturday as week start to match backend calculation
@@ -14,13 +22,19 @@ export const getWeekStartDate = (offset: number = 0): Date => {
   const targetWeek = new Date(currentSaturday);
   targetWeek.setDate(currentSaturday.getDate() + offset * 7);
   
-  console.log('📅 Frontend getWeekStartDate calculation:', {
-    today: today.toISOString().split('T')[0],
-    dayOfWeek,
-    currentSaturday: currentSaturday.toISOString().split('T')[0],
+  // Cache the result
+  weekStartCache.set(offset, targetWeek);
+  
+  // Clear cache periodically to prevent memory leaks
+  if (weekStartCache.size > 10) {
+    const oldestKey = Math.min(...weekStartCache.keys());
+    weekStartCache.delete(oldestKey);
+  }
+  
+  console.log('📅 getWeekStartDate calculation (cached):', {
     offset,
     targetWeek: targetWeek.toISOString().split('T')[0],
-    targetWeekISO: targetWeek.toISOString()
+    cacheSize: weekStartCache.size
   });
   
   return targetWeek;

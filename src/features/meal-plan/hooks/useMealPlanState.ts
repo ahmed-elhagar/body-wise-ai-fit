@@ -18,13 +18,17 @@ export const useMealPlanState = () => {
   const isPro = false; // Default non-pro
   const hasCredits = userCredits > 0;
   
-  // Navigation state
+  // Navigation state - memoize to prevent excessive recalculation
   const [currentWeekOffset, setCurrentWeekOffsetInternal] = useState(0);
   const [selectedDayNumber, setSelectedDayNumber] = useState(() => getCurrentSaturdayDay());
   
-  const weekStartDate = useMemo(() => getWeekStartDate(currentWeekOffset), [currentWeekOffset]);
+  // Memoize week start date to prevent recalculation loops
+  const weekStartDate = useMemo(() => {
+    console.log('📅 Calculating weekStartDate for offset:', currentWeekOffset);
+    return getWeekStartDate(currentWeekOffset);
+  }, [currentWeekOffset]);
 
-  // Core meal plan data
+  // Core meal plan data - pass simple values to prevent circular refs
   const {
     data: currentWeekPlan,
     isLoading,
@@ -82,10 +86,12 @@ export const useMealPlanState = () => {
     refetch
   );
 
-  // Enhanced week change handler
-  const setCurrentWeekOffset = useCallback(async (newOffset: number) => {
+  // Enhanced week change handler - memoized to prevent infinite loops
+  const setCurrentWeekOffset = useCallback((newOffset: number) => {
     console.log('📅 Changing week from', currentWeekOffset, 'to', newOffset);
-    setCurrentWeekOffsetInternal(newOffset);
+    if (newOffset !== currentWeekOffset) {
+      setCurrentWeekOffsetInternal(newOffset);
+    }
   }, [currentWeekOffset]);
 
   return {
