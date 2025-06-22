@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -173,7 +172,9 @@ export const MealPlanContainer: React.FC = () => {
               unit: ing?.unit || 'piece'
             }))
           : [],
-        alternatives: Array.isArray(meal.alternatives) ? meal.alternatives : []
+        alternatives: Array.isArray(meal.alternatives) 
+          ? meal.alternatives.map((alt: any) => String(alt))
+          : []
       }));
       
       setDailyMeals(convertedMeals);

@@ -21,7 +21,21 @@ import { SmartReplySuggestions } from "./SmartReplySuggestions";
 import ConversationAnalytics from "./ConversationAnalytics";
 import ConnectionStatus from "./ConnectionStatus";
 import { cn } from "@/lib/utils";
-import { ChatMessage } from "../types/chat.types";
+
+// Define proper message types for the chat interface
+interface ChatMessage {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  created_at: string;
+  sender_type: "user" | "ai" | "coach" | "trainee";
+}
+
+interface SmartReplyMessage {
+  role: "user" | "assistant";
+  content: string;
+  timestamp?: number;
+}
 
 const AIChatInterface = () => {
   const [showSettings, setShowSettings] = useState(false);
@@ -90,7 +104,7 @@ const AIChatInterface = () => {
   }));
 
   // Convert messages for SmartReplySuggestions with proper format
-  const smartReplyMessages = messages.map(msg => ({
+  const smartReplyMessages: SmartReplyMessage[] = messages.map(msg => ({
     role: msg.role as "user" | "assistant",
     content: msg.content,
     timestamp: msg.timestamp?.getTime() || Date.now()
