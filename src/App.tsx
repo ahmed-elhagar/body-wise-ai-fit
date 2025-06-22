@@ -17,6 +17,7 @@ import ChatPage from '@/features/chat/components/ChatPage';
 import CoachPage from '@/features/coach/components/CoachPage';
 import ProfilePage from '@/features/profile/components/ProfilePage';
 import AdminPage from '@/features/admin/components/AdminPage';
+import FoodTrackerPage from '@/features/food-tracker/components/FoodTrackerPage';
 import './App.css';
 
 const queryClient = new QueryClient({
@@ -95,6 +96,14 @@ function AppContent() {
         element={
           <ProtectedRoute>
             <ChatPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/food-tracker" 
+        element={
+          <ProtectedRoute>
+            <FoodTrackerPage />
           </ProtectedRoute>
         } 
       />

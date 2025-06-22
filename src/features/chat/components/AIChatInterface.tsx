@@ -80,7 +80,7 @@ const AIChatInterface = () => {
   const hasMessages = messages.length > 0;
   const lastAssistantMessage = messages.filter(m => m.role === 'assistant').pop()?.content || "";
 
-  // Convert messages for analytics - properly map to expected format
+  // Convert messages for analytics - properly transform to expected format
   const analyticsMessages: { role: "user" | "assistant"; content: string; timestamp?: number; }[] = messages.map(msg => ({
     role: msg.role as "user" | "assistant",
     content: msg.content,
