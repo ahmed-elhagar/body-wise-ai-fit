@@ -1,25 +1,11 @@
 
-// Main progress components
 export { default as ProgressDashboard } from './ProgressDashboard';
-export { ProgressOverview } from './ProgressOverview';
-export { FitnessProgressSection } from './FitnessProgressSection';
-export { WeightProgressSection } from './WeightProgressSection';
-export { NutritionProgressSection } from './NutritionProgressSection';
-export { GoalsProgressSection } from './GoalsProgressSection';
-export { AchievementsSection } from './AchievementsSection';
-
-// Goal sub-components
-export { GoalsOverview } from './goals/GoalsOverview';
-export { GoalsProgressChart } from './goals/GoalsProgressChart';
-export { GoalsList } from './goals/GoalsList';
-export { GoalsEmptyState } from './goals/GoalsEmptyState';
-
-// Nutrition sub-components
-export { NutritionStatsGrid } from './nutrition/NutritionStatsGrid';
-export { TodayNutritionSummary } from './nutrition/TodayNutritionSummary';
-export { WeeklyNutritionChart } from './nutrition/WeeklyNutritionChart';
-
-// Migrated weight components (Phase 1C - Weight Management Migration)
-export { default as WeightEntryForm } from './weight/WeightEntryForm';
-export { default as WeightProgressChart } from './weight/WeightProgressChart';
-export { default as WeightStatsCards } from './weight/WeightStatsCards';
+export { default as ProgressOverview } from './ProgressOverview';
+export { default as WeightProgressSection } from './WeightProgressSection';
+export { default as FitnessProgressSection } from './FitnessProgressSection';
+export { default as GoalsProgressSection } from './GoalsProgressSection';
+export { default as NutritionProgressSection } from './NutritionProgressSection';
+export { default as AchievementsSection } from './AchievementsSection';
+export { default as ModernProgressTracker } from './ModernProgressTracker';
+export { default as WeightTracking } from './WeightTracking';
+export { default as ProgressPage } from './ProgressPage';

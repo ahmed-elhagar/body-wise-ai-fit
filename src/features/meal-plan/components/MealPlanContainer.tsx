@@ -172,7 +172,8 @@ export const MealPlanContainer: React.FC = () => {
               quantity: ing?.quantity || '1',
               unit: ing?.unit || 'piece'
             }))
-          : []
+          : [],
+        alternatives: Array.isArray(meal.alternatives) ? meal.alternatives : []
       }));
       
       setDailyMeals(convertedMeals);

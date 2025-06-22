@@ -14,6 +14,9 @@ export interface CreditCheckResult {
 export const useCentralizedCredits = () => {
   const { user } = useAuth();
   const [isCheckingCredits, setIsCheckingCredits] = useState(false);
+  
+  // Default credits for simplified system
+  const credits = 5;
 
   const checkAndUseCredit = useCallback(async (
     generationType: string,
@@ -96,6 +99,7 @@ export const useCentralizedCredits = () => {
     checkAndUseCredit,
     checkAndUseCredits,
     completeGeneration,
-    isCheckingCredits
+    isCheckingCredits,
+    credits
   };
 };
