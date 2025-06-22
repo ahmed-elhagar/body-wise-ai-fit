@@ -17,10 +17,11 @@ import { useAIChat } from "@/features/ai/hooks/useAIChat";
 import AIChatMessage from "./AIChatMessage";
 import ConversationStarters from "./ConversationStarters";
 import ChatInput from "./ChatInput";
-import SmartReplySuggestions from "./SmartReplySuggestions";
+import { SmartReplySuggestions } from "./SmartReplySuggestions";
 import ConversationAnalytics from "./ConversationAnalytics";
 import ConnectionStatus from "./ConnectionStatus";
 import { cn } from "@/lib/utils";
+import { ChatMessage } from "../types/chat.types";
 
 const AIChatInterface = () => {
   const [showSettings, setShowSettings] = useState(false);
@@ -79,13 +80,14 @@ const AIChatInterface = () => {
   const hasMessages = messages.length > 0;
   const lastAssistantMessage = messages.filter(m => m.role === 'assistant').pop()?.content || "";
 
-  // Convert messages for analytics - handle timestamp conversion
-  const analyticsMessages = messages.map(msg => ({
+  // Convert messages for analytics - handle proper type conversion
+  const analyticsMessages: ChatMessage[] = messages.map(msg => ({
     id: msg.id,
     content: msg.content,
     sender_type: msg.role === 'user' ? 'user' : 'ai',
     created_at: new Date().toISOString(),
-    timestamp: msg.timestamp instanceof Date ? msg.timestamp.getTime() : msg.timestamp
+    sender_id: undefined,
+    metadata: undefined
   }));
 
   return (

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useProfile } from '@/features/profile/hooks/useProfile';
 import { useAuth } from '@/features/auth/hooks/useAuth';
@@ -19,9 +20,6 @@ import {
   Clock,
   Trophy
 } from 'lucide-react';
-import GradientCard from '@/shared/components/design-system/GradientCard';
-import StatsCard from '@/shared/components/design-system/StatsCard';
-import { ActionButton } from '@/shared/components/design-system/ActionButton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -30,7 +28,6 @@ import SimpleLoadingIndicator from '@/components/ui/simple-loading-indicator';
 import { format } from 'date-fns';
 import AddFoodDialog from './AddFoodDialog';
 import { toast } from 'sonner';
-import { brandColors, gradients, shadows } from '@/shared/config/design.config';
 
 interface MacroData {
   calories: number;
@@ -131,45 +128,27 @@ const SimpleFoodTracker: React.FC<SimpleFoodTrackerProps> = ({ refreshKey, onAdd
 
   if (isLoading) {
     return (
-      <div 
-        className="min-h-screen flex items-center justify-center"
-        style={{ background: gradients.background }}
-      >
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
         <SimpleLoadingIndicator />
       </div>
     );
   }
 
   return (
-    <div 
-      className="min-h-screen"
-      style={{ background: gradients.background }}
-    >
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="p-4 md:p-6 lg:p-8">
         <div className="max-w-7xl mx-auto space-y-8">
           {/* Enhanced Header Section */}
-          <div 
-            className="relative overflow-hidden rounded-3xl"
-            style={{ 
-              background: gradients.primary,
-              boxShadow: shadows.brand
-            }}
-          >
-            {/* Decorative elements */}
+          <Card className="relative overflow-hidden bg-gradient-to-br from-blue-600 to-purple-700 text-white border-0 shadow-2xl">
             <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
             <div className="absolute -top-20 -right-20 w-40 h-40 bg-white/5 rounded-full blur-3xl" />
             <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-white/5 rounded-full blur-2xl" />
-            <div className="absolute top-10 right-10 w-2 h-2 bg-white/30 rounded-full animate-pulse" />
-            <div className="absolute bottom-20 right-32 w-1 h-1 bg-white/40 rounded-full animate-pulse delay-300" />
             
-            <div className="relative p-8 md:p-10">
+            <CardContent className="relative p-8 md:p-10">
               <div className={`flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8 ${isRTL ? 'lg:flex-row-reverse' : ''}`}>
                 <div className="flex-1">
                   <div className={`flex items-center gap-6 mb-6 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                    <div 
-                      className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-3xl flex items-center justify-center border border-white/30"
-                      style={{ boxShadow: '0 8px 32px rgba(255, 255, 255, 0.1)' }}
-                    >
+                    <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-3xl flex items-center justify-center border border-white/30 shadow-lg">
                       <Utensils className="w-8 h-8 text-white" />
                     </div>
                     <div>
@@ -182,7 +161,7 @@ const SimpleFoodTracker: React.FC<SimpleFoodTrackerProps> = ({ refreshKey, onAdd
                     </div>
                   </div>
                   
-                  {/* Quick Progress Overview */}
+                  {/* Progress Overview Cards */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20">
                       <div className="flex items-center gap-3">
@@ -227,98 +206,35 @@ const SimpleFoodTracker: React.FC<SimpleFoodTrackerProps> = ({ refreshKey, onAdd
                 </div>
                 
                 <div className="flex flex-col gap-4">
-                  <ActionButton
+                  <Button
                     onClick={() => setIsAddFoodOpen(true)}
-                    icon={Plus}
-                    variant="secondary"
-                    size="lg"
-                    className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30"
+                    className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 px-6 py-3"
                   >
+                    <Plus className="w-4 h-4 mr-2" />
                     {t('add_food')}
-                  </ActionButton>
+                  </Button>
                   
-                  <ActionButton
+                  <Button
                     onClick={() => handleAddWater(250)}
-                    icon={Droplets}
-                    variant="secondary"
-                    size="lg"
-                    className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30"
+                    variant="outline"
+                    className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 px-6 py-3"
                   >
+                    <Droplets className="w-4 h-4 mr-2" />
                     {t('add_water')}
-                  </ActionButton>
+                  </Button>
                 </div>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
           {/* Main Content Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Nutrition Overview */}
+            {/* Today's Food Log */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Macro Progress Cards */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <StatsCard
-                  title={t('calories')}
-                  value={Math.round(consumedTotals.calories)}
-                  subtitle={`${Math.round(remaining.calories)} remaining`}
-                  icon={Flame}
-                  trend={{
-                    value: Math.round(progress.calories),
-                    label: progress.calories >= 80 ? 'On Track!' : 'Keep Going',
-                    isPositive: progress.calories >= 50
-                  }}
-                  variant="soft"
-                  size="sm"
-                />
-                
-                <StatsCard
-                  title={t('protein')}
-                  value={`${Math.round(consumedTotals.protein)}g`}
-                  subtitle={`${Math.round(remaining.protein)}g remaining`}
-                  icon={Dumbbell}
-                  trend={{
-                    value: Math.round(progress.protein),
-                    label: progress.protein >= 100 ? 'Goal Reached!' : 'Almost There',
-                    isPositive: progress.protein >= 50
-                  }}
-                  variant="soft"
-                  size="sm"
-                />
-                
-                <StatsCard
-                  title={t('carbs')}
-                  value={`${Math.round(consumedTotals.carbs)}g`}
-                  subtitle={`${Math.round(remaining.carbs)}g remaining`}
-                  icon={Apple}
-                  trend={{
-                    value: Math.round(progress.carbs),
-                    label: "Good Balance",
-                    isPositive: true
-                  }}
-                  variant="soft"
-                  size="sm"
-                />
-                
-                <StatsCard
-                  title={t('water')}
-                  value={`${Math.round(waterIntake / 250)} cups`}
-                  subtitle={`${Math.round(remaining.water / 250)} cups remaining`}
-                  icon={Droplets}
-                  trend={{
-                    value: Math.round(progress.water),
-                    label: "Stay Hydrated",
-                    isPositive: progress.water >= 50
-                  }}
-                  variant="soft"
-                  size="sm"
-                />
-              </div>
-
-              {/* Today's Food Log */}
-              <Card className="border-0" style={{ boxShadow: shadows.md }}>
+              <Card className="border-0 shadow-lg">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-3">
-                    <Clock className="w-6 h-6 text-brand-600" />
+                    <Clock className="w-6 h-6 text-blue-600" />
                     {t("today's_meals")}
                     <Badge variant="secondary" className="ml-auto">
                       {todayConsumption?.length || 0} items
@@ -334,8 +250,8 @@ const SimpleFoodTracker: React.FC<SimpleFoodTrackerProps> = ({ refreshKey, onAdd
                           className="flex items-center justify-between p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors"
                         >
                           <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-brand-100 rounded-xl flex items-center justify-center">
-                              <Utensils className="w-6 h-6 text-brand-600" />
+                            <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                              <Utensils className="w-6 h-6 text-blue-600" />
                             </div>
                             <div>
                               <h4 className="font-semibold text-gray-900">
@@ -364,7 +280,7 @@ const SimpleFoodTracker: React.FC<SimpleFoodTrackerProps> = ({ refreshKey, onAdd
                       <p className="text-gray-400 text-sm mb-6">{t('start_tracking_your_nutrition')}</p>
                       <Button 
                         onClick={() => setIsAddFoodOpen(true)}
-                        className="bg-brand-600 hover:bg-brand-700"
+                        className="bg-blue-600 hover:bg-blue-700"
                       >
                         <Plus className="w-4 h-4 mr-2" />
                         {t('add_first_meal')}
@@ -375,13 +291,13 @@ const SimpleFoodTracker: React.FC<SimpleFoodTrackerProps> = ({ refreshKey, onAdd
               </Card>
             </div>
 
-            {/* Sidebar - Progress & Insights */}
+            {/* Sidebar - Progress & Quick Actions */}
             <div className="space-y-6">
               {/* Daily Progress */}
-              <Card className="border-0" style={{ boxShadow: shadows.md }}>
+              <Card className="border-0 shadow-lg">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-3">
-                    <Target className="w-6 h-6 text-brand-600" />
+                    <Target className="w-6 h-6 text-blue-600" />
                     {t('daily_progress')}
                   </CardTitle>
                 </CardHeader>
@@ -429,17 +345,17 @@ const SimpleFoodTracker: React.FC<SimpleFoodTrackerProps> = ({ refreshKey, onAdd
               </Card>
 
               {/* Quick Actions */}
-              <Card className="border-0" style={{ boxShadow: shadows.md }}>
+              <Card className="border-0 shadow-lg">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-3">
-                    <Zap className="w-6 h-6 text-brand-600" />
+                    <Zap className="w-6 h-6 text-blue-600" />
                     {t('quick_actions')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <Button 
                     onClick={() => setIsAddFoodOpen(true)}
-                    className="w-full justify-start bg-brand-50 text-brand-700 hover:bg-brand-100"
+                    className="w-full justify-start bg-blue-50 text-blue-700 hover:bg-blue-100"
                     variant="ghost"
                   >
                     <Plus className="w-4 h-4 mr-3" />
@@ -448,11 +364,11 @@ const SimpleFoodTracker: React.FC<SimpleFoodTrackerProps> = ({ refreshKey, onAdd
                   
                   <Button 
                     onClick={() => handleAddWater(250)}
-                    className="w-full justify-start bg-blue-50 text-blue-700 hover:bg-blue-100"
+                    className="w-full justify-start bg-cyan-50 text-cyan-700 hover:bg-cyan-100"
                     variant="ghost"
                   >
                     <Droplets className="w-4 h-4 mr-3" />
-                    {t('add_water_250ml')}
+                    Add 250ml Water
                   </Button>
                   
                   <Button 
@@ -461,7 +377,7 @@ const SimpleFoodTracker: React.FC<SimpleFoodTrackerProps> = ({ refreshKey, onAdd
                     variant="ghost"
                   >
                     <Coffee className="w-4 h-4 mr-3" />
-                    {t('add_water_500ml')}
+                    Add 500ml Water
                   </Button>
                 </CardContent>
               </Card>

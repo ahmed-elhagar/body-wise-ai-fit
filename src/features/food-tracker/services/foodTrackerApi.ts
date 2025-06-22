@@ -22,6 +22,23 @@ export interface NutritionSummary {
   mealCount: number;
 }
 
+export interface NutritionGoals {
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+}
+
+export interface FoodSearchResult {
+  id: string;
+  name: string;
+  calories_per_100g: number;
+  protein_per_100g: number;
+  carbs_per_100g: number;
+  fat_per_100g: number;
+  category: string;
+}
+
 export const foodTrackerApi = {
   // Get user's food entries for a specific date
   async getFoodEntries(userId: string, date: string): Promise<FoodEntry[]> {
