@@ -3,8 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, Target, Calendar, Award } from "lucide-react";
+import type { ExerciseProgram } from '../../types';
 
 interface ProgressTrackerProps {
+  currentProgram?: ExerciseProgram;
   weeklyProgress?: number;
   monthlyProgress?: number;
   streakDays?: number;
@@ -16,6 +18,7 @@ interface ProgressTrackerProps {
 }
 
 export const ProgressTracker = ({
+  currentProgram,
   weeklyProgress = 0,
   monthlyProgress = 0,
   streakDays = 0,

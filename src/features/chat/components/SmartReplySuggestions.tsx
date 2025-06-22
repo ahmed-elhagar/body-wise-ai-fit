@@ -77,3 +77,6 @@ export const SmartReplySuggestions: React.FC<SmartReplySuggestionsProps> = ({
     </Card>
   );
 };
+
+// Default export for compatibility
+export default SmartReplySuggestions;

@@ -5,12 +5,19 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Camera, Play, CheckCircle, AlertCircle, TrendingUp } from 'lucide-react';
+import type { Exercise } from '../../types';
 
 interface FormAnalysisProps {
+  todaysExercises?: Exercise[];
+  activeExerciseId?: string | null;
   className?: string;
 }
 
-export const FormAnalysis: React.FC<FormAnalysisProps> = ({ className }) => {
+export const FormAnalysis: React.FC<FormAnalysisProps> = ({ 
+  todaysExercises = [],
+  activeExerciseId = null,
+  className 
+}) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<any>(null);
 

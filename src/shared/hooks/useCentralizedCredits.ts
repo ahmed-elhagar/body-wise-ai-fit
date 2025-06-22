@@ -81,6 +81,9 @@ export const useCentralizedCredits = () => {
     }
   };
 
+  // Add alias for backward compatibility
+  const checkAndUseCredit = checkAndUseCredits;
+
   const completeGeneration = async (logId: string, success: boolean, data?: any) => {
     try {
       await supabase.rpc('complete_ai_generation', {
@@ -97,6 +100,7 @@ export const useCentralizedCredits = () => {
     credits: profile?.ai_generations_remaining || 0,
     isPro: profile?.isPro || false,
     checkAndUseCredits,
+    checkAndUseCredit, // Alias for backward compatibility
     completeGeneration,
     isChecking,
     refetch
