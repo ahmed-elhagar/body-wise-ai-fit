@@ -8,13 +8,20 @@ import { GoalCard } from './GoalCard';
 import { GoalsOverview } from './GoalsOverview';
 import { GoalCreationDialog } from './GoalCreationDialog';
 import { useGoals } from "@/features/dashboard/hooks/useGoals";
+import { Goal } from "../types";
 
 const GoalsDashboard = () => {
   const { goals, isLoading, deleteGoal } = useGoals();
   const [showCreationDialog, setShowCreationDialog] = useState(false);
 
-  const activeGoals = goals.filter(goal => goal.status === 'active');
-  const completedGoals = goals.filter(goal => goal.status === 'completed');
+  // Convert database goals to our Goal type
+  const convertedGoals: Goal[] = goals.map(goal => ({
+    ...goal,
+    milestones: Array.isArray(goal.milestones) ? goal.milestones : []
+  }));
+
+  const activeGoals = convertedGoals.filter(goal => goal.status === 'active');
+  const completedGoals = convertedGoals.filter(goal => goal.status === 'completed');
 
   const handleDeleteGoal = async (goalId: string) => {
     if (window.confirm('Are you sure you want to delete this goal?')) {

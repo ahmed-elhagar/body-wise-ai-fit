@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -8,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus } from "lucide-react";
 import { useGoals } from "@/features/dashboard/hooks/useGoals";
+import { GoalFormData } from "../types";
 
 interface GoalCreationDialogProps {
   open: boolean;
@@ -16,13 +16,13 @@ interface GoalCreationDialogProps {
 
 export const GoalCreationDialog = ({ open, onOpenChange }: GoalCreationDialogProps) => {
   const { createGoal, isCreating } = useGoals();
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<GoalFormData>({
     title: '',
     description: '',
-    goalType: 'weight' as const,
+    goalType: 'weight',
     targetValue: 0,
     targetUnit: 'kg',
-    difficulty: 'medium' as const,
+    difficulty: 'medium',
     timeframe: 30
   });
 
