@@ -1,3 +1,4 @@
+
 import { lazy } from 'react';
 
 // Lazy load pages for better performance - only existing components

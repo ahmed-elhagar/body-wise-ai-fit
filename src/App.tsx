@@ -10,7 +10,7 @@ import { ErrorBoundary } from 'react-error-boundary';
 import ProtectedRoute from '@/features/auth/components/ProtectedRoute';
 import OnboardingContainer from '@/features/auth/components/onboarding/OnboardingContainer';
 import { useAuth } from '@/features/auth/hooks/useAuth';
-import HomePage from '@/pages/HomePage';
+import Dashboard from '@/features/dashboard/components/Dashboard';
 import MealPlanPage from '@/features/meal-plan/components/MealPlanPage';
 import ExercisePage from '@/features/exercise/components/ExercisePage';
 import ChatPage from '@/features/chat/components/ChatPage';
@@ -63,7 +63,14 @@ function AppContent() {
 
   return (
     <Routes>
-      <Route path="/" element={<HomePage />} />
+      <Route 
+        path="/" 
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        } 
+      />
       <Route 
         path="/onboarding" 
         element={
