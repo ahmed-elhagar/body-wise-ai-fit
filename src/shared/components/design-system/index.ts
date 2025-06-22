@@ -1,3 +1,4 @@
+
 /**
  * Design System Components Export
  * 
@@ -23,16 +24,9 @@ export type { UniversalLoadingStateProps } from './UniversalLoadingState';
 export { TabButton, TabGroup, MobileTabButton } from './TabButton';
 export type { TabButtonProps, TabGroupProps } from './TabButton';
 
-// Stats Components
-export { 
-  GradientStatsCard,
-  CaloriesStatsCard,
-  WeightStatsCard,
-  WorkoutStatsCard,
-  GoalStatsCard,
-  StatsGrid
-} from './GradientStatsCard';
-export type { GradientStatsCardProps, StatsGridProps } from './GradientStatsCard';
+// Stats Components - Export default imports properly
+export { default as GradientStatsCard } from './GradientStatsCard';
+export type { GradientStatsCardProps } from './GradientStatsCard';
 
 // Header Components
 export { 
@@ -64,9 +58,8 @@ export type {
   FloatingActionButtonProps
 } from './ActionButton';
 
-// Theme Components
-export { ThemeSelector, QuickThemeSwitch, ThemeSettingsPanel } from './ThemeSelector';
-export type { ThemeSelectorProps } from './ThemeSelector';
+// Theme Components - Export default imports properly
+export { default as ThemeSelector } from './ThemeSelector';
 
-// Demo Component
-export { DesignSystemDemo } from './DesignSystemDemo';
+// Demo Component - Export default import properly
+export { default as DesignSystemDemo } from './DesignSystemDemo';

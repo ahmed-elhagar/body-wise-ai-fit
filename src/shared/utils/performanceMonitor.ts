@@ -19,9 +19,20 @@ export interface PerformanceData {
   };
 }
 
+export interface PerformanceSummary {
+  averageRenderTime: number;
+  totalApiCalls: number;
+  errorRate: number;
+  slowestComponents: Array<{
+    componentName: string;
+    renderTime: number;
+  }>;
+}
+
 class PerformanceMonitor {
   private metrics: PerformanceMetric[] = [];
   private observers: ((data: PerformanceData) => void)[] = [];
+  private componentMetrics = new Map<string, number[]>();
 
   startTimer(name: string): () => void {
     const startTime = performance.now();
@@ -50,6 +61,38 @@ class PerformanceMonitor {
     this.notifyObservers();
   }
 
+  trackComponentRender(componentName: string, startTime: number, propsCount?: number): void {
+    const renderTime = performance.now() - startTime;
+    
+    if (!this.componentMetrics.has(componentName)) {
+      this.componentMetrics.set(componentName, []);
+    }
+    
+    const metrics = this.componentMetrics.get(componentName)!;
+    metrics.push(renderTime);
+    
+    // Keep only last 10 renders per component
+    if (metrics.length > 10) {
+      metrics.splice(0, metrics.length - 10);
+    }
+    
+    this.addMetric({
+      name: `component_${componentName}`,
+      value: renderTime,
+      timestamp: Date.now(),
+      category: 'render'
+    });
+  }
+
+  recordMetric(metric: { name: string; value: number; unit: string; feature?: string }): void {
+    this.addMetric({
+      name: metric.name,
+      value: metric.value,
+      timestamp: Date.now(),
+      category: 'api'
+    });
+  }
+
   getMetrics(): PerformanceMetric[] {
     return [...this.metrics];
   }
@@ -64,6 +107,23 @@ class PerformanceMonitor {
         : 0,
       totalApiCalls: apiMetrics.length,
       errorRate: 0 // Placeholder for error tracking
+    };
+  }
+
+  getPerformanceSummary(): PerformanceSummary {
+    const summary = this.getSummary();
+    const slowestComponents: Array<{ componentName: string; renderTime: number }> = [];
+    
+    this.componentMetrics.forEach((times, componentName) => {
+      const avgTime = times.reduce((sum, time) => sum + time, 0) / times.length;
+      slowestComponents.push({ componentName, renderTime: avgTime });
+    });
+    
+    slowestComponents.sort((a, b) => b.renderTime - a.renderTime);
+    
+    return {
+      ...summary,
+      slowestComponents: slowestComponents.slice(0, 5)
     };
   }
 
@@ -89,6 +149,7 @@ class PerformanceMonitor {
 
   clear(): void {
     this.metrics = [];
+    this.componentMetrics.clear();
     this.notifyObservers();
   }
 }

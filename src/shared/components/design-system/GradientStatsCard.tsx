@@ -13,7 +13,7 @@ interface StatItem {
   color: 'orange' | 'green' | 'blue' | 'purple';
 }
 
-interface GradientStatsCardProps {
+export interface GradientStatsCardProps {
   title: string;
   stats: StatItem[];
   className?: string;
