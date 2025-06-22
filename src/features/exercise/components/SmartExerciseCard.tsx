@@ -18,7 +18,8 @@ import {
   Loader2,
   Plus,
   Minus,
-  Edit3
+  Edit3,
+  RefreshCw
 } from 'lucide-react';
 import { Exercise } from '../types';
 
@@ -53,15 +54,19 @@ export const SmartExerciseCard: React.FC<SmartExerciseCardProps> = ({
   const totalSets = exercise.sets || 3;
   const restSeconds = exercise.rest_seconds || 60;
 
-  // Rest timer effect
+  // Rest timer countdown effect
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isResting && restTimer > 0) {
       interval = setInterval(() => {
-        setRestTimer(prev => prev - 1);
+        setRestTimer(prev => {
+          if (prev <= 1) {
+            setIsResting(false);
+            return 0;
+          }
+          return prev - 1;
+        });
       }, 1000);
-    } else if (restTimer === 0 && isResting) {
-      setIsResting(false);
     }
     return () => clearInterval(interval);
   }, [isResting, restTimer]);
@@ -145,9 +150,13 @@ export const SmartExerciseCard: React.FC<SmartExerciseCardProps> = ({
 
   const progressPercentage = (completedSets.length / totalSets) * 100;
 
+  const handleExchange = () => {
+    onExchange(exercise.id, 'User requested alternative exercise');
+  };
+
   if (exercise.completed) {
     return (
-      <Card className="bg-green-50 border-green-200">
+      <Card className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -175,7 +184,7 @@ export const SmartExerciseCard: React.FC<SmartExerciseCardProps> = ({
   }
 
   return (
-    <Card className="transition-all duration-200 hover:shadow-md">
+    <Card className="transition-all duration-200 hover:shadow-md bg-gradient-to-br from-white to-gray-50/50">
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -202,16 +211,17 @@ export const SmartExerciseCard: React.FC<SmartExerciseCardProps> = ({
           </div>
           <div className="flex items-center gap-2">
             <Button
-              onClick={() => onExchange(exercise.id, 'User requested alternative exercise')}
+              onClick={handleExchange}
               disabled={isExchanging}
               variant="outline"
               size="sm"
               className="text-gray-600 hover:text-gray-800"
+              title="Change Exercise"
             >
               {isExchanging ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <RotateCcw className="h-4 w-4" />
+                <RefreshCw className="h-4 w-4" />
               )}
             </Button>
             <Button
@@ -219,8 +229,9 @@ export const SmartExerciseCard: React.FC<SmartExerciseCardProps> = ({
               variant="outline"
               size="sm"
               className="text-gray-600 hover:text-gray-800"
+              title="Reset Progress"
             >
-              Reset
+              <RotateCcw className="h-4 w-4" />
             </Button>
           </div>
         </div>
@@ -228,7 +239,7 @@ export const SmartExerciseCard: React.FC<SmartExerciseCardProps> = ({
 
       <CardContent className="space-y-4">
         {exercise.instructions && (
-          <p className="text-sm text-gray-600 leading-relaxed bg-gray-50 p-3 rounded-lg">
+          <p className="text-sm text-gray-600 leading-relaxed bg-blue-50 p-3 rounded-lg border border-blue-100">
             {exercise.instructions}
           </p>
         )}
@@ -268,7 +279,7 @@ export const SmartExerciseCard: React.FC<SmartExerciseCardProps> = ({
 
         {/* Rest Timer */}
         {isResting && (
-          <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
+          <div className="p-4 bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-orange-600" />
@@ -294,7 +305,7 @@ export const SmartExerciseCard: React.FC<SmartExerciseCardProps> = ({
 
         {/* Current Set Input */}
         {!isResting && currentSet <= totalSets && (
-          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
             <div className="flex items-center justify-between mb-4">
               <h4 className="font-medium text-blue-900">
                 Set {currentSet} of {totalSets}
@@ -304,8 +315,9 @@ export const SmartExerciseCard: React.FC<SmartExerciseCardProps> = ({
               </Badge>
             </div>
             
-            {/* Reps Input */}
-            <div className="space-y-3">
+            {/* Reps and Weight Input */}
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              {/* Reps Input */}
               <div>
                 <label className="text-xs font-medium text-gray-700 block mb-2">
                   Reps
@@ -315,7 +327,7 @@ export const SmartExerciseCard: React.FC<SmartExerciseCardProps> = ({
                     onClick={() => adjustReps(false)}
                     variant="outline"
                     size="sm"
-                    className="h-8 w-8 p-0"
+                    className="h-10 w-10 p-0"
                   >
                     <Minus className="h-4 w-4" />
                   </Button>
@@ -327,14 +339,14 @@ export const SmartExerciseCard: React.FC<SmartExerciseCardProps> = ({
                       onKeyPress={(e) => {
                         if (e.key === 'Enter') setIsEditingReps(false);
                       }}
-                      className="text-center w-16 h-8"
+                      className="text-center w-16 h-10"
                       autoFocus
                     />
                   ) : (
                     <Button
                       onClick={() => setIsEditingReps(true)}
                       variant="ghost"
-                      className="h-8 w-16 text-lg font-semibold"
+                      className="h-10 w-16 text-lg font-semibold"
                     >
                       {currentReps}
                     </Button>
@@ -343,7 +355,7 @@ export const SmartExerciseCard: React.FC<SmartExerciseCardProps> = ({
                     onClick={() => adjustReps(true)}
                     variant="outline"
                     size="sm"
-                    className="h-8 w-8 p-0"
+                    className="h-10 w-10 p-0"
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
@@ -360,43 +372,43 @@ export const SmartExerciseCard: React.FC<SmartExerciseCardProps> = ({
                     onClick={() => adjustWeight(false)}
                     variant="outline"
                     size="sm"
-                    className="h-8 w-8 p-0"
+                    className="h-10 w-10 p-0"
                   >
                     <Minus className="h-4 w-4" />
                   </Button>
-                  <span className="text-lg font-semibold w-16 text-center">
+                  <div className="text-lg font-semibold w-16 text-center h-10 flex items-center justify-center">
                     {currentWeight}
-                  </span>
+                  </div>
                   <Button
                     onClick={() => adjustWeight(true)}
                     variant="outline"
                     size="sm"
-                    className="h-8 w-8 p-0"
+                    className="h-10 w-10 p-0"
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
-
-              <Button
-                onClick={handleCompleteSet}
-                disabled={isTrackingProgress}
-                className="w-full bg-blue-600 hover:bg-blue-700 mt-4"
-                size="lg"
-              >
-                {isTrackingProgress ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle2 className="h-4 w-4 mr-2" />
-                    Complete Set {currentSet}
-                  </>
-                )}
-              </Button>
             </div>
+
+            <Button
+              onClick={handleCompleteSet}
+              disabled={isTrackingProgress}
+              className="w-full bg-blue-600 hover:bg-blue-700"
+              size="lg"
+            >
+              {isTrackingProgress ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="h-4 w-4 mr-2" />
+                  Complete Set {currentSet}
+                </>
+              )}
+            </Button>
           </div>
         )}
       </CardContent>

@@ -111,7 +111,7 @@ export const ExercisePage: React.FC = () => {
     
     if (tier === 'Pro') {
       return (
-        <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white">
+        <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs">
           <Crown className="w-3 h-3 mr-1" />
           Pro
         </Badge>
@@ -120,7 +120,7 @@ export const ExercisePage: React.FC = () => {
     
     if (tier === 'Coach') {
       return (
-        <Badge className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white">
+        <Badge className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-xs">
           Coach
         </Badge>
       );
@@ -128,7 +128,7 @@ export const ExercisePage: React.FC = () => {
     
     if (tier === 'Admin') {
       return (
-        <Badge className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
+        <Badge className="bg-gradient-to-r from-purple-500 to-purple-600 text-white text-xs">
           Admin
         </Badge>
       );
@@ -157,35 +157,34 @@ export const ExercisePage: React.FC = () => {
   return (
     <div className="container mx-auto p-6 max-w-7xl space-y-6">
       
-      {/* Stable Header */}
+      {/* Stable Header - Never shows loading */}
       <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl p-6 text-white">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">Exercise Programs</h1>
-            <p className="text-blue-100 text-lg">AI-powered personalized workouts</p>
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center gap-4">
+            <div>
+              <h1 className="text-3xl font-bold mb-2">Exercise Programs</h1>
+              <p className="text-blue-100 text-lg">AI-powered personalized workouts</p>
+            </div>
+            {renderMemberBadge()}
           </div>
 
-          <div className="flex items-center gap-4">
-            {renderMemberBadge()}
-            
-            <Button 
-              onClick={handleGenerateProgram}
-              disabled={isGenerating || (!isPro && creditsRemaining <= 0)}
-              className="bg-white text-blue-600 hover:bg-gray-50"
-            >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  AI Program
-                </>
-              )}
-            </Button>
-          </div>
+          <Button 
+            onClick={handleGenerateProgram}
+            disabled={isGenerating || (!isPro && creditsRemaining <= 0)}
+            className="bg-white text-blue-600 hover:bg-gray-50"
+          >
+            {isGenerating ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4 mr-2" />
+                AI Program
+              </>
+            )}
+          </Button>
         </div>
 
         {/* Navigation Controls */}
@@ -251,7 +250,7 @@ export const ExercisePage: React.FC = () => {
         </Alert>
       )}
 
-      {/* Content Area */}
+      {/* Content Area - This is where loading states appear */}
       {isLoading ? (
         <LoadingState />
       ) : !hasProgram ? (

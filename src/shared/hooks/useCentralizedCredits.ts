@@ -74,10 +74,16 @@ export const useCentralizedCredits = () => {
     }
   });
 
+  // Legacy API for backward compatibility
+  const checkAndUseCredit = async (generationType: string): Promise<CheckAndUseCreditsResponse> => {
+    return checkAndUseCredits.mutateAsync(generationType);
+  };
+
   return {
     credits,
     isLoading,
     checkAndUseCredits: checkAndUseCredits.mutateAsync,
+    checkAndUseCredit, // Legacy API
     completeGeneration: completeGeneration.mutateAsync
   };
 };
