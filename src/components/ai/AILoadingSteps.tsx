@@ -3,13 +3,15 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Loader2, CheckCircle } from 'lucide-react';
 
+export interface AIStep {
+  id: string;
+  label: string;
+  completed: boolean;
+  loading: boolean;
+}
+
 interface AILoadingStepsProps {
-  steps: {
-    id: string;
-    label: string;
-    completed: boolean;
-    loading: boolean;
-  }[];
+  steps: AIStep[];
 }
 
 const AILoadingSteps: React.FC<AILoadingStepsProps> = ({ steps }) => {
@@ -38,3 +40,4 @@ const AILoadingSteps: React.FC<AILoadingStepsProps> = ({ steps }) => {
 };
 
 export default AILoadingSteps;
+export { AILoadingSteps };

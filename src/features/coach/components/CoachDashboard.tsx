@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -188,8 +187,8 @@ const CoachDashboard = () => {
 
         {/* Assign Trainee Dialog */}
         <AssignTraineeDialog 
-          open={showAssignDialog}
-          onOpenChange={setShowAssignDialog}
+          isOpen={showAssignDialog}
+          onClose={() => setShowAssignDialog(false)}
         />
       </div>
     </div>

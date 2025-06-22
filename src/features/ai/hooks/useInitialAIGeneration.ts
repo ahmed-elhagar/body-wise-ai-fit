@@ -156,7 +156,7 @@ export const useInitialAIGeneration = () => {
     };
 
     // Only trigger if we don't have existing content
-    if (hasExistingContent === false) {
+    if (hasExistingContent === false && profile?.first_name) {
       const timeoutId = setTimeout(triggerInitialGeneration, 1000);
       return () => clearTimeout(timeoutId);
     }

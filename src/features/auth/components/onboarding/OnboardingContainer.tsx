@@ -63,7 +63,7 @@ const Onboarding: React.FC = () => {
   });
 
   const navigate = useNavigate();
-  const { updateProfile } = useProfile();
+  const { updateProfile, profile } = useProfile();
 
   const totalSteps = 5;
   const progressPercentage = (currentStep / totalSteps) * 100;
@@ -181,6 +181,19 @@ const Onboarding: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleHealthSubmit = (data: any) => {
+    const updatedProfile = {
+      ...profile,
+      health_conditions: data.health_conditions || [],
+      allergies: data.allergies || [],
+      dietary_restrictions: data.dietary_restrictions || [],
+      special_conditions: data.special_conditions || []
+    };
+    
+    setProfile(updatedProfile);
+    setCurrentStep(currentStep + 1);
   };
 
   const renderStep1 = () => (
@@ -721,4 +734,4 @@ const Onboarding: React.FC = () => {
   );
 };
 
-export default Onboarding; 
+export default Onboarding;

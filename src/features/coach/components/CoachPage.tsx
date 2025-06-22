@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -247,9 +246,11 @@ const CoachPage = () => {
       />
       
       <CreateTaskDialog 
-        open={showCreateTaskDialog}
-        onOpenChange={setShowCreateTaskDialog}
-        trainees={trainees || []}
+        traineeId={undefined}
+        onCreate={(task) => {
+          console.log('Task created:', task);
+          setShowCreateTaskDialog(false);
+        }}
       />
     </div>
   );

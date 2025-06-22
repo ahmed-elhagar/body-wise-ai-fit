@@ -1,49 +1,69 @@
-import { useState, useEffect } from 'react';
+
+import { useState, useCallback } from 'react';
 
 interface AIAnalytics {
-  totalConversations: number;
-  averageResponseTime: number;
-  satisfactionScore: number;
+  totalMessages: number;
+  avgResponseTime: number;
+  engagementScore: number;
+  aiHelpfulness: number;
+  sentimentTrend: string;
   topTopics: string[];
-  loading: boolean;
-  error: string | null;
 }
 
 export const useAIAnalytics = () => {
-  const [analytics, setAnalytics] = useState<AIAnalytics>({
-    totalConversations: 0,
-    averageResponseTime: 0,
-    satisfactionScore: 0,
-    topTopics: [],
-    loading: true,
-    error: null
-  });
+  const [analytics, setAnalytics] = useState<AIAnalytics | null>(null);
 
-  useEffect(() => {
-    const fetchAnalytics = async () => {
-      try {
-        // Mock data - replace with actual API call
-        setTimeout(() => {
-          setAnalytics({
-            totalConversations: 1247,
-            averageResponseTime: 2.3,
-            satisfactionScore: 4.7,
-            topTopics: ['Meal Planning', 'Exercise Routines', 'Nutrition', 'Weight Loss'],
-            loading: false,
-            error: null
-          });
-        }, 1000);
-      } catch (error) {
-        setAnalytics(prev => ({
-          ...prev,
-          loading: false,
-          error: error instanceof Error ? error.message : 'Failed to fetch analytics'
-        }));
-      }
+  const analyzeConversation = useCallback((messages: Array<{ role: string; content: string; timestamp?: number }>) => {
+    if (!messages || messages.length === 0) return null;
+
+    const totalMessages = messages.length;
+    const avgResponseTime = 1500; // Mock average response time
+    const engagementScore = Math.min(95, totalMessages * 5);
+    const aiHelpfulness = Math.min(90, totalMessages * 4);
+    const sentimentTrend = 'positive';
+    
+    // Extract topics from messages
+    const topTopics = messages
+      .map(m => m.content.toLowerCase())
+      .join(' ')
+      .split(' ')
+      .filter(word => ['workout', 'nutrition', 'diet', 'exercise', 'fitness'].includes(word))
+      .slice(0, 5);
+
+    const result = {
+      totalMessages,
+      avgResponseTime,
+      engagementScore,
+      aiHelpfulness,
+      sentimentTrend,
+      topTopics: Array.from(new Set(topTopics))
     };
 
-    fetchAnalytics();
+    setAnalytics(result);
+    return result;
   }, []);
 
-  return analytics;
+  const generateInsights = useCallback((analyticsData: AIAnalytics) => {
+    const insights = [];
+    
+    if (analyticsData.engagementScore > 80) {
+      insights.push("Great conversation engagement! Users are actively participating.");
+    }
+    
+    if (analyticsData.aiHelpfulness > 85) {
+      insights.push("AI responses are highly helpful and relevant.");
+    }
+    
+    if (analyticsData.topTopics.length > 0) {
+      insights.push(`Main discussion topics: ${analyticsData.topTopics.join(', ')}`);
+    }
+
+    return insights;
+  }, []);
+
+  return {
+    analytics,
+    analyzeConversation,
+    generateInsights
+  };
 };

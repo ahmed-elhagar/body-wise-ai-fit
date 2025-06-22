@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,7 +16,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCoachTasks, CoachTask } from "@/features/coach/hooks/useCoachTasks";
-import { CreateTaskDialog } from "./CreateTaskDialog";
+import CreateTaskDialog from "./CreateTaskDialog";
 
 interface CoachTasksPanelProps {
   trainees: any[];
