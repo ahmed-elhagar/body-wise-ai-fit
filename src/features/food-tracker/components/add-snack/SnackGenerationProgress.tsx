@@ -3,7 +3,7 @@ import React, { useMemo } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { UnifiedAILoadingDialog } from "@/features/chat/components";
 import { useAILoadingSteps } from "@/features/ai/hooks/useAILoadingSteps";
-import type { ExtendedAIStep } from "@/features/ai/hooks/useAILoadingSteps";
+import type { AIStep } from "@/features/ai/hooks/useAILoadingSteps";
 
 interface SnackGenerationProgressProps {
   step: string;
@@ -18,7 +18,7 @@ const SnackGenerationProgress = ({
 }: SnackGenerationProgressProps) => {
   const { t, isRTL } = useLanguage();
 
-  const steps = useMemo((): ExtendedAIStep[] => [
+  const steps = useMemo((): AIStep[] => [
     {
       id: 'analyzing-calories',
       title: t('mealPlan.addSnack.analyzing') || 'Analyzing remaining calories',

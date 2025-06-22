@@ -22,7 +22,7 @@ export interface ExtendedAIStep extends AIStep {
 }
 
 export const useAILoadingSteps = (
-  steps: ExtendedAIStep[],
+  steps: AIStep[],
   isActive: boolean,
   options: UseAILoadingStepsOptions = {}
 ) => {

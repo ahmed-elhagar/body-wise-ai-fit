@@ -1,127 +1,73 @@
-import React from "react";
-import { Crown, ShieldCheck, Users, Settings, BarChart, LucideIcon } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
-import { 
-  SidebarMenu, 
-  SidebarMenuItem, 
-  SidebarMenuButton, 
-  SidebarGroup,
-  SidebarGroupLabel 
-} from "@/components/ui/sidebar";
-import { useI18n } from "@/shared/hooks/useI18n";
-import { useAdmin } from "@/shared/hooks/useAdmin";
-import { cn } from "@/lib/utils";
 
-interface NavigationItem {
-  href: string;
-  icon: LucideIcon;
-  label: string;
-  description?: string;
-}
+import React from 'react';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { 
+  Settings, 
+  Users, 
+  BarChart3, 
+  Shield,
+  Activity,
+  AlertTriangle
+} from 'lucide-react';
+import { useAdmin } from '@/shared/hooks/useAdmin';
+import { Link } from 'react-router-dom';
 
 const SidebarAdminPanel = () => {
-  const { tFrom, isRTL } = useI18n();
-  const tAdmin = tFrom('admin');
-  const location = useLocation();
-  const { isAdmin } = useAdmin();
+  const { isAdmin, isLoading } = useAdmin();
 
-  const adminItems: NavigationItem[] = [
-    { 
-      href: "/admin/dashboard", 
-      icon: ShieldCheck, 
-      label: String(tAdmin("tabs.dashboard")),
-      description: String(tAdmin("description"))
-    },
-    { 
-      href: "/admin/users", 
-      icon: Users, 
-      label: String(tAdmin("tabs.users")),
-      description: String(tAdmin("users.subtitle"))
-    },
-    { 
-      href: "/admin/analytics", 
-      icon: BarChart, 
-      label: String(tAdmin("tabs.analytics")),
-      description: String(tAdmin("analytics.subtitle"))
-    },
-    { 
-      href: "/admin/settings", 
-      icon: Settings, 
-      label: String(tAdmin("tabs.system")),
-      description: String(tAdmin("system.subtitle"))
-    },
-  ];
+  if (isLoading) {
+    return (
+      <Card className="p-4 animate-pulse">
+        <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+        <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+      </Card>
+    );
+  }
 
   if (!isAdmin) {
     return null;
   }
 
   return (
-    <SidebarGroup className="px-4 py-2 bg-gradient-to-br from-purple-50 to-indigo-50 mx-2 rounded-lg border border-purple-200">
-      <SidebarGroupLabel className={cn(
-        "text-xs font-bold text-purple-700 uppercase tracking-wider mb-3 flex items-center gap-2 px-2",
-        isRTL && "flex-row-reverse text-right font-arabic"
-      )} data-sidebar="group-label">
-        <Crown className="w-4 h-4 text-purple-600" />
-        {String(tAdmin("title"))}
-      </SidebarGroupLabel>
-      
-      <div className={cn(
-        "text-xs text-purple-600 mb-3 px-2 font-medium",
-        isRTL && "text-right font-arabic"
-      )}>
-        {String(tAdmin("description"))}
+    <Card className="p-4 bg-gradient-to-r from-red-50 to-orange-50 border-red-200">
+      <div className="flex items-center gap-2 mb-3">
+        <Shield className="w-4 h-4 text-red-600" />
+        <h3 className="font-semibold text-red-800">Admin Panel</h3>
+        <Badge variant="destructive" className="text-xs">ADMIN</Badge>
       </div>
-
-      <SidebarMenu className="space-y-1">
-        {adminItems.map((item) => {
-          const isActive = location.pathname === item.href;
-          return (
-            <SidebarMenuItem key={item.href}>
-              <SidebarMenuButton
-                asChild
-                isActive={isActive}
-                className={cn(
-                  "w-full text-purple-700 hover:text-purple-900 hover:bg-purple-100 transition-colors rounded-lg",
-                  isActive && "bg-purple-100 text-purple-800 shadow-sm",
-                  isActive && !isRTL && "border-r-2 border-purple-600",
-                  isActive && isRTL && "border-l-2 border-purple-600"
-                )}
-                data-sidebar="menu-button"
-              >
-                <Link 
-                  to={item.href} 
-                  className={cn(
-                    "flex flex-col gap-1 px-3 py-2 w-full",
-                    isRTL && "text-right"
-                  )} 
-                  data-sidebar="menu-item"
-                >
-                  <div className={cn(
-                    "flex items-center gap-2",
-                    isRTL && "flex-row-reverse"
-                  )}>
-                    <item.icon className="h-4 w-4 flex-shrink-0" />
-                    <span className={cn("font-medium text-sm truncate", isRTL && "font-arabic")}>
-                      {item.label}
-                    </span>
-                  </div>
-                  {item.description && (
-                    <span className={cn(
-                      "text-xs text-purple-600 truncate",
-                      !isRTL && "ml-6",
-                      isRTL && "mr-6 font-arabic"
-                    )}>
-                      {item.description}
-                    </span>
-                  )}
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          );
-        })}
-      </SidebarMenu>
-    </SidebarGroup>
+      
+      <div className="space-y-2">
+        <Link to="/admin">
+          <Button variant="ghost" size="sm" className="w-full justify-start text-red-700 hover:bg-red-100">
+            <Users className="w-4 h-4 mr-2" />
+            User Management
+          </Button>
+        </Link>
+        
+        <Link to="/admin?tab=analytics">
+          <Button variant="ghost" size="sm" className="w-full justify-start text-red-700 hover:bg-red-100">
+            <BarChart3 className="w-4 h-4 mr-2" />
+            Analytics
+          </Button>
+        </Link>
+        
+        <Link to="/admin?tab=system">
+          <Button variant="ghost" size="sm" className="w-full justify-start text-red-700 hover:bg-red-100">
+            <Activity className="w-4 h-4 mr-2" />
+            System Health
+          </Button>
+        </Link>
+      </div>
+      
+      <div className="mt-3 pt-3 border-t border-red-200">
+        <p className="text-xs text-red-600 flex items-center gap-1">
+          <AlertTriangle className="w-3 h-3" />
+          Admin access detected
+        </p>
+      </div>
+    </Card>
   );
 };
 

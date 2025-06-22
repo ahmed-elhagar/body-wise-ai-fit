@@ -7,7 +7,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Progress } from '@/components/ui/progress';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
@@ -35,19 +34,13 @@ import {
 import { useProfile } from '@/features/profile/hooks/useProfile';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useI18n } from '@/shared/hooks/useI18n';
-import StatsCard from '@/shared/components/design-system/StatsCard';
-import GradientCard from '@/shared/components/design-system/GradientCard';
-import { ActionButton } from '@/shared/components/design-system/ActionButton';
-import { brandColors, gradients, shadows } from '@/shared/config/design.config';
 
 interface ProfileData {
   firstName: string;
   lastName: string;
   email: string;
-  phone: string;
   location: string;
   bio: string;
-  dateOfBirth: string;
   gender: string;
   height: number;
   weight: number;
@@ -76,15 +69,13 @@ const ProfessionalProfile: React.FC = () => {
     firstName: profile?.first_name || '',
     lastName: profile?.last_name || '',
     email: user?.email || '',
-    phone: profile?.phone || '',
     location: profile?.location || '',
     bio: profile?.bio || '',
-    dateOfBirth: profile?.date_of_birth || '',
     gender: profile?.gender || '',
     height: profile?.height || 0,
     weight: profile?.weight || 0,
     activityLevel: profile?.activity_level || 'moderate',
-    fitnessGoals: profile?.fitness_goals || [],
+    fitnessGoals: profile?.fitness_goal ? [profile.fitness_goal] : [],
     healthConditions: profile?.health_conditions || [],
     notifications: {
       email: true,
@@ -102,8 +93,6 @@ const ProfessionalProfile: React.FC = () => {
     const fields = [
       formData.firstName,
       formData.lastName,
-      formData.phone,
-      formData.dateOfBirth,
       formData.gender,
       formData.height > 0,
       formData.weight > 0,
@@ -124,11 +113,11 @@ const ProfessionalProfile: React.FC = () => {
     }));
   };
 
-  const handleNestedChange = (parent: string, field: string, value: any) => {
+  const handleNestedChange = (parent: keyof ProfileData, field: string, value: any) => {
     setFormData(prev => ({
       ...prev,
       [parent]: {
-        ...prev[parent as keyof ProfileData],
+        ...(prev[parent] as any),
         [field]: value
       }
     }));
@@ -139,15 +128,13 @@ const ProfessionalProfile: React.FC = () => {
       await updateProfile({
         first_name: formData.firstName,
         last_name: formData.lastName,
-        phone: formData.phone,
         location: formData.location,
         bio: formData.bio,
-        date_of_birth: formData.dateOfBirth,
         gender: formData.gender,
         height: formData.height,
         weight: formData.weight,
         activity_level: formData.activityLevel,
-        fitness_goals: formData.fitnessGoals,
+        fitness_goal: formData.fitnessGoals[0] || '',
         health_conditions: formData.healthConditions,
       });
       setIsEditing(false);
@@ -157,9 +144,9 @@ const ProfessionalProfile: React.FC = () => {
   };
 
   const getCompletionColor = () => {
-    if (completionPercentage >= 80) return brandColors.success[500];
-    if (completionPercentage >= 50) return brandColors.warning[500];
-    return brandColors.error[500];
+    if (completionPercentage >= 80) return 'text-green-600';
+    if (completionPercentage >= 50) return 'text-yellow-600';
+    return 'text-red-600';
   };
 
   const getCompletionBadge = () => {
@@ -172,152 +159,161 @@ const ProfessionalProfile: React.FC = () => {
 
   // Profile Header Component
   const ProfileHeader = () => (
-    <GradientCard variant="primary" className="mb-8">
-      <div className="relative">
-        {/* Background decorative elements */}
-        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full blur-2xl"></div>
-        
-        <div className="relative z-10 p-8">
-          <div className="flex flex-col md:flex-row items-center gap-6">
-            {/* Avatar Section */}
-            <div className="relative">
-              <Avatar className="w-24 h-24 border-4 border-white shadow-lg">
-                <AvatarImage src={profile?.avatar_url || ''} alt="Profile" />
-                <AvatarFallback className="bg-white text-brand-600 text-2xl font-bold">
-                  {formData.firstName.charAt(0)}{formData.lastName.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
-              <Button
-                size="sm"
-                variant="secondary"
-                className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full p-0 bg-white shadow-md hover:shadow-lg"
-              >
-                <Camera className="w-4 h-4" />
-              </Button>
-            </div>
+    <Card className="mb-8 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+      <div className="relative p-8">
+        <div className="flex flex-col md:flex-row items-center gap-6">
+          {/* Avatar Section */}
+          <div className="relative">
+            <Avatar className="w-24 h-24 border-4 border-white shadow-lg">
+              <AvatarFallback className="bg-white text-blue-600 text-2xl font-bold">
+                {formData.firstName.charAt(0)}{formData.lastName.charAt(0)}
+              </AvatarFallback>
+            </Avatar>
+            <Button
+              size="sm"
+              variant="secondary"
+              className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full p-0 bg-white shadow-md hover:shadow-lg"
+            >
+              <Camera className="w-4 h-4" />
+            </Button>
+          </div>
 
-            {/* Profile Info */}
-            <div className="flex-1 text-center md:text-left">
-              <h1 className="text-3xl font-bold text-white mb-2">
-                {formData.firstName} {formData.lastName}
-              </h1>
-              <p className="text-white/80 mb-4">
-                {formData.bio || 'Fitness enthusiast on a journey to better health'}
-              </p>
-              <div className="flex flex-wrap gap-2 justify-center md:justify-start">
-                {formData.location && (
-                  <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
-                    <MapPin className="w-3 h-3 mr-1" />
-                    {formData.location}
-                  </Badge>
-                )}
-                <Badge className={badge.color}>
-                  {badge.label}
+          {/* Profile Info */}
+          <div className="flex-1 text-center md:text-left">
+            <h1 className="text-3xl font-bold text-white mb-2">
+              {formData.firstName} {formData.lastName}
+            </h1>
+            <p className="text-white/80 mb-4">
+              {formData.bio || 'Fitness enthusiast on a journey to better health'}
+            </p>
+            <div className="flex flex-wrap gap-2 justify-center md:justify-start">
+              {formData.location && (
+                <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
+                  <MapPin className="w-3 h-3 mr-1" />
+                  {formData.location}
                 </Badge>
-              </div>
-            </div>
-
-            {/* Profile Completion */}
-            <div className="text-center">
-              <div className="relative w-20 h-20 mb-2">
-                <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 80 80">
-                  <circle
-                    cx="40"
-                    cy="40"
-                    r="36"
-                    stroke="rgba(255,255,255,0.2)"
-                    strokeWidth="4"
-                    fill="none"
-                  />
-                  <circle
-                    cx="40"
-                    cy="40"
-                    r="36"
-                    stroke="white"
-                    strokeWidth="4"
-                    fill="none"
-                    strokeDasharray={`${2 * Math.PI * 36}`}
-                    strokeDashoffset={`${2 * Math.PI * 36 * (1 - completionPercentage / 100)}`}
-                    strokeLinecap="round"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-lg font-bold text-white">
-                    {completionPercentage}%
-                  </span>
-                </div>
-              </div>
-              <p className="text-white/80 text-sm">Profile Complete</p>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex gap-2">
-              {isEditing ? (
-                <>
-                  <ActionButton
-                    onClick={handleSave}
-                    disabled={isLoading}
-                    className="bg-white text-brand-600 hover:bg-gray-50"
-                  >
-                    <Save className="w-4 h-4 mr-2" />
-                    Save
-                  </ActionButton>
-                  <ActionButton
-                    onClick={() => setIsEditing(false)}
-                    variant="secondary"
-                    className="bg-white/20 text-white border-white/30 hover:bg-white/30"
-                  >
-                    <X className="w-4 h-4 mr-2" />
-                    Cancel
-                  </ActionButton>
-                </>
-              ) : (
-                <ActionButton
-                  onClick={() => setIsEditing(true)}
-                  className="bg-white text-brand-600 hover:bg-gray-50"
-                >
-                  <Edit3 className="w-4 h-4 mr-2" />
-                  Edit Profile
-                </ActionButton>
               )}
+              <Badge className={badge.color}>
+                {badge.label}
+              </Badge>
             </div>
+          </div>
+
+          {/* Profile Completion */}
+          <div className="text-center">
+            <div className="relative w-20 h-20 mb-2">
+              <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 80 80">
+                <circle
+                  cx="40"
+                  cy="40"
+                  r="36"
+                  stroke="rgba(255,255,255,0.2)"
+                  strokeWidth="4"
+                  fill="none"
+                />
+                <circle
+                  cx="40"
+                  cy="40"
+                  r="36"
+                  stroke="white"
+                  strokeWidth="4"
+                  fill="none"
+                  strokeDasharray={`${2 * Math.PI * 36}`}
+                  strokeDashoffset={`${2 * Math.PI * 36 * (1 - completionPercentage / 100)}`}
+                  strokeLinecap="round"
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-lg font-bold text-white">
+                  {completionPercentage}%
+                </span>
+              </div>
+            </div>
+            <p className="text-white/80 text-sm">Profile Complete</p>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-2">
+            {isEditing ? (
+              <>
+                <Button
+                  onClick={handleSave}
+                  disabled={isLoading}
+                  className="bg-white text-blue-600 hover:bg-gray-50"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  Save
+                </Button>
+                <Button
+                  onClick={() => setIsEditing(false)}
+                  variant="secondary"
+                  className="bg-white/20 text-white border-white/30 hover:bg-white/30"
+                >
+                  <X className="w-4 h-4 mr-2" />
+                  Cancel
+                </Button>
+              </>
+            ) : (
+              <Button
+                onClick={() => setIsEditing(true)}
+                className="bg-white text-blue-600 hover:bg-gray-50"
+              >
+                <Edit3 className="w-4 h-4 mr-2" />
+                Edit Profile
+              </Button>
+            )}
           </div>
         </div>
       </div>
-    </GradientCard>
+    </Card>
   );
 
   // Quick Stats Component
   const QuickStats = () => (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-      <StatsCard
-        title="Current Weight"
-        value={`${formData.weight || '--'} kg`}
-        icon={<Scale className="w-5 h-5" />}
-        trend={5}
-        className="bg-gradient-to-br from-blue-50 to-indigo-50"
-      />
-      <StatsCard
-        title="Height"
-        value={`${formData.height || '--'} cm`}
-        icon={<TrendingUp className="w-5 h-5" />}
-        className="bg-gradient-to-br from-green-50 to-emerald-50"
-      />
-      <StatsCard
-        title="BMI"
-        value={formData.weight && formData.height ? 
-          ((formData.weight / ((formData.height / 100) ** 2)).toFixed(1)) : '--'
-        }
-        icon={<Activity className="w-5 h-5" />}
-        className="bg-gradient-to-br from-purple-50 to-violet-50"
-      />
-      <StatsCard
-        title="Goals"
-        value={`${formData.fitnessGoals.length} Active`}
-        icon={<Target className="w-5 h-5" />}
-        className="bg-gradient-to-br from-orange-50 to-amber-50"
-      />
+      <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50">
+        <div className="flex items-center gap-3">
+          <Scale className="w-8 h-8 text-blue-600" />
+          <div>
+            <p className="text-sm text-gray-600">Current Weight</p>
+            <p className="text-2xl font-bold text-gray-900">{formData.weight || '--'} kg</p>
+          </div>
+        </div>
+      </Card>
+      
+      <Card className="p-6 bg-gradient-to-br from-green-50 to-emerald-50">
+        <div className="flex items-center gap-3">
+          <TrendingUp className="w-8 h-8 text-green-600" />
+          <div>
+            <p className="text-sm text-gray-600">Height</p>
+            <p className="text-2xl font-bold text-gray-900">{formData.height || '--'} cm</p>
+          </div>
+        </div>
+      </Card>
+      
+      <Card className="p-6 bg-gradient-to-br from-purple-50 to-violet-50">
+        <div className="flex items-center gap-3">
+          <Activity className="w-8 h-8 text-purple-600" />
+          <div>
+            <p className="text-sm text-gray-600">BMI</p>
+            <p className="text-2xl font-bold text-gray-900">
+              {formData.weight && formData.height ? 
+                ((formData.weight / ((formData.height / 100) ** 2)).toFixed(1)) : '--'
+              }
+            </p>
+          </div>
+        </div>
+      </Card>
+      
+      <Card className="p-6 bg-gradient-to-br from-orange-50 to-amber-50">
+        <div className="flex items-center gap-3">
+          <Target className="w-8 h-8 text-orange-600" />
+          <div>
+            <p className="text-sm text-gray-600">Goals</p>
+            <p className="text-2xl font-bold text-gray-900">{formData.fitnessGoals.length} Active</p>
+          </div>
+        </div>
+      </Card>
     </div>
   );
 
@@ -328,7 +324,7 @@ const ProfessionalProfile: React.FC = () => {
         <QuickStats />
 
         {/* Main Content Tabs */}
-        <Card className="bg-white/90 backdrop-blur-sm border-0" style={{ boxShadow: shadows.xl }}>
+        <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <div className="border-b border-gray-200 px-6">
               <TabsList className="grid w-full grid-cols-4 lg:grid-cols-6 bg-transparent h-auto p-0">
@@ -365,7 +361,7 @@ const ProfessionalProfile: React.FC = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <Card className="p-6">
                     <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                      <User className="w-5 h-5 text-brand-600" />
+                      <User className="w-5 h-5 text-blue-600" />
                       Personal Information
                     </h3>
                     <div className="space-y-4">
@@ -402,16 +398,6 @@ const ProfessionalProfile: React.FC = () => {
                         />
                       </div>
                       <div>
-                        <Label htmlFor="phone">Phone</Label>
-                        <Input
-                          id="phone"
-                          value={formData.phone}
-                          onChange={(e) => handleInputChange('phone', e.target.value)}
-                          disabled={!isEditing}
-                          className="mt-1"
-                        />
-                      </div>
-                      <div>
                         <Label htmlFor="location">Location</Label>
                         <Input
                           id="location"
@@ -437,21 +423,10 @@ const ProfessionalProfile: React.FC = () => {
 
                   <Card className="p-6">
                     <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                      <Activity className="w-5 h-5 text-brand-600" />
+                      <Activity className="w-5 h-5 text-blue-600" />
                       Physical Information
                     </h3>
                     <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="dateOfBirth">Date of Birth</Label>
-                        <Input
-                          id="dateOfBirth"
-                          type="date"
-                          value={formData.dateOfBirth}
-                          onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
-                          disabled={!isEditing}
-                          className="mt-1"
-                        />
-                      </div>
                       <div>
                         <Label htmlFor="gender">Gender</Label>
                         <Select 
@@ -522,7 +497,7 @@ const ProfessionalProfile: React.FC = () => {
               <TabsContent value="health" className="space-y-6">
                 <Card className="p-6">
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <Heart className="w-5 h-5 text-brand-600" />
+                    <Heart className="w-5 h-5 text-blue-600" />
                     Health Conditions
                   </h3>
                   <p className="text-gray-600 mb-4">
@@ -560,7 +535,7 @@ const ProfessionalProfile: React.FC = () => {
               <TabsContent value="goals" className="space-y-6">
                 <Card className="p-6">
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <Target className="w-5 h-5 text-brand-600" />
+                    <Target className="w-5 h-5 text-blue-600" />
                     Fitness Goals
                   </h3>
                   <p className="text-gray-600 mb-4">
@@ -598,7 +573,7 @@ const ProfessionalProfile: React.FC = () => {
               <TabsContent value="preferences" className="space-y-6">
                 <Card className="p-6">
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <Utensils className="w-5 h-5 text-brand-600" />
+                    <Utensils className="w-5 h-5 text-blue-600" />
                     Food Preferences
                   </h3>
                   <p className="text-gray-600 mb-4">
@@ -611,7 +586,7 @@ const ProfessionalProfile: React.FC = () => {
               <TabsContent value="notifications" className="space-y-6">
                 <Card className="p-6">
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <Bell className="w-5 h-5 text-brand-600" />
+                    <Bell className="w-5 h-5 text-blue-600" />
                     Notification Preferences
                   </h3>
                   <div className="space-y-4">
@@ -662,7 +637,7 @@ const ProfessionalProfile: React.FC = () => {
               <TabsContent value="privacy" className="space-y-6">
                 <Card className="p-6">
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <Shield className="w-5 h-5 text-brand-600" />
+                    <Shield className="w-5 h-5 text-blue-600" />
                     Privacy Settings
                   </h3>
                   <div className="space-y-4">
@@ -707,4 +682,4 @@ const ProfessionalProfile: React.FC = () => {
   );
 };
 
-export default ProfessionalProfile; 
+export default ProfessionalProfile;
