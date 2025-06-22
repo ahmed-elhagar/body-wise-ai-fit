@@ -6,26 +6,26 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { useSubscription } from "@/shared/hooks/useSubscription";
 import { useI18n } from "@/shared/hooks/useI18n";
+import { useAdmin } from "@/shared/hooks/useAdmin";
 import { toast } from "sonner";
 import ProMemberBadge from "@/components/ui/pro-member-badge";
 
 interface ProfilePageHeaderProps {
   hasUnsavedChanges: boolean;
   completionPercentage: number;
-  formData: any;
   user: any;
 }
 
-const ProfilePageHeader = ({ 
+export const ProfilePageHeader = ({ 
   hasUnsavedChanges, 
   completionPercentage, 
-  formData, 
   user 
 }: ProfilePageHeaderProps) => {
   const navigate = useNavigate();
-  const { isAdmin, signOut } = useAuth();
+  const { signOut } = useAuth();
   const { isProMember } = useSubscription();
   const { tFrom, isRTL } = useI18n();
+  const { isAdmin } = useAdmin();
   const tProfile = tFrom('profile');
 
   const handleSignOut = async () => {
@@ -120,5 +120,3 @@ const ProfilePageHeader = ({
     </div>
   );
 };
-
-export default ProfilePageHeader;

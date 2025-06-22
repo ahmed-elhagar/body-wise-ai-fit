@@ -8,13 +8,16 @@ export interface UserOnlineStatus {
   lastSeen: Date | null;
   updateStatus: (online: boolean) => Promise<void>;
   onlineUsers: string[];
+  isUserOnline: (userId: string) => boolean;
+  getUserLastSeen: (userId: string) => Date | null;
 }
 
-export const useUserOnlineStatus = (): UserOnlineStatus => {
+export const useUserOnlineStatus = (userIds: string[] = []): UserOnlineStatus => {
   const { user } = useAuth();
   const [isOnline, setIsOnline] = useState(false);
   const [lastSeen, setLastSeen] = useState<Date | null>(null);
   const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
+  const [userStatuses, setUserStatuses] = useState<Record<string, { isOnline: boolean; lastSeen: Date | null }>>({});
 
   const updateUserPresence = useCallback(async (online: boolean) => {
     if (!user?.id) return;
@@ -42,6 +45,14 @@ export const useUserOnlineStatus = (): UserOnlineStatus => {
   const updateStatus = useCallback(async (online: boolean) => {
     await updateUserPresence(online);
   }, [updateUserPresence]);
+
+  const isUserOnline = useCallback((userId: string) => {
+    return userStatuses[userId]?.isOnline || false;
+  }, [userStatuses]);
+
+  const getUserLastSeen = useCallback((userId: string) => {
+    return userStatuses[userId]?.lastSeen || null;
+  }, [userStatuses]);
 
   // Set user as online when component mounts
   useEffect(() => {
@@ -83,6 +94,36 @@ export const useUserOnlineStatus = (): UserOnlineStatus => {
     };
   }, [user?.id, updateUserPresence]);
 
+  // Fetch status for specific users
+  useEffect(() => {
+    if (userIds.length === 0) return;
+
+    const fetchUserStatuses = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('id, is_online, last_seen')
+          .in('id', userIds);
+
+        if (error) throw error;
+
+        const statusMap: Record<string, { isOnline: boolean; lastSeen: Date | null }> = {};
+        data?.forEach(profile => {
+          statusMap[profile.id] = {
+            isOnline: profile.is_online || false,
+            lastSeen: profile.last_seen ? new Date(profile.last_seen) : null
+          };
+        });
+
+        setUserStatuses(statusMap);
+      } catch (error) {
+        console.error('Error fetching user statuses:', error);
+      }
+    };
+
+    fetchUserStatuses();
+  }, [userIds]);
+
   // Subscribe to real-time presence updates
   useEffect(() => {
     if (!user?.id) return;
@@ -113,6 +154,8 @@ export const useUserOnlineStatus = (): UserOnlineStatus => {
     isOnline,
     lastSeen,
     updateStatus,
-    onlineUsers
+    onlineUsers,
+    isUserOnline,
+    getUserLastSeen
   };
 };
