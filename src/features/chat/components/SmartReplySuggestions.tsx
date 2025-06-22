@@ -1,103 +1,79 @@
 
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Sparkles, Loader2 } from "lucide-react";
-import { useSmartReplies } from "@/features/chat/hooks/useSmartReplies";
-import { useLanguage } from "@/contexts/LanguageContext";
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { ChatMessage } from '../types/chat.types';
 
-interface SmartReplySuggestionsProps {
-  messageContext: string;
-  onSuggestionSelect: (suggestion: string) => void;
+export interface SmartReplySuggestionsProps {
+  conversationHistory: ChatMessage[];
+  onSelectReply: (reply: string) => void;
   className?: string;
 }
 
-const SmartReplySuggestions = ({ 
-  messageContext, 
-  onSuggestionSelect, 
-  className = "" 
-}: SmartReplySuggestionsProps) => {
-  const { t } = useLanguage();
-  const { replies, loading, generateReplies, clearReplies } = useSmartReplies();
+export const SmartReplySuggestions: React.FC<SmartReplySuggestionsProps> = ({
+  conversationHistory,
+  onSelectReply,
+  className = ''
+}) => {
+  const generateSmartReplies = (history: ChatMessage[]): string[] => {
+    if (history.length === 0) return [];
 
-  const handleGenerateReplies = async () => {
-    await generateReplies(messageContext);
+    const lastMessage = history[history.length - 1];
+    const messageContent = lastMessage.content.toLowerCase();
+
+    // Generate contextual replies based on message content
+    if (messageContent.includes('workout') || messageContent.includes('exercise')) {
+      return [
+        "That sounds like a great workout plan!",
+        "How often should I do this routine?",
+        "Can you suggest any modifications for beginners?"
+      ];
+    }
+
+    if (messageContent.includes('nutrition') || messageContent.includes('diet') || messageContent.includes('meal')) {
+      return [
+        "Thanks for the nutrition advice!",
+        "What about portion sizes?",
+        "Can you suggest some healthy alternatives?"
+      ];
+    }
+
+    if (messageContent.includes('progress') || messageContent.includes('goal')) {
+      return [
+        "I'm excited to track my progress!",
+        "How should I measure my results?",
+        "What if I don't see progress right away?"
+      ];
+    }
+
+    // Default replies
+    return [
+      "That's really helpful, thank you!",
+      "Can you tell me more about this?",
+      "I'll definitely try that approach."
+    ];
   };
 
-  if (replies.length === 0 && !loading) {
-    return (
-      <Card className={`p-4 ${className}`}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-purple-500" />
-            <span className="text-sm font-medium">{t('Smart Replies')}</span>
-          </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleGenerateReplies}
-            disabled={loading}
-          >
-            {loading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              t('Generate')
-            )}
-          </Button>
-        </div>
-      </Card>
-    );
-  }
+  const suggestions = generateSmartReplies(conversationHistory);
 
-  if (loading) {
-    return (
-      <Card className={`p-4 ${className}`}>
-        <div className="flex items-center gap-2">
-          <Loader2 className="h-4 w-4 animate-spin text-purple-500" />
-          <span className="text-sm text-gray-600">
-            {t('Generating smart replies...')}
-          </span>
-        </div>
-      </Card>
-    );
-  }
+  if (suggestions.length === 0) return null;
 
   return (
     <Card className={`p-4 ${className}`}>
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-purple-500" />
-          <span className="text-sm font-medium">{t('Smart Replies')}</span>
-        </div>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={clearReplies}
-          className="text-xs"
-        >
-          {t('Clear')}
-        </Button>
-      </div>
-      
-      <div className="space-y-2">
-        {replies.map((reply, index) => (
+      <h4 className="text-sm font-medium text-gray-700 mb-3">Quick Replies</h4>
+      <div className="flex flex-wrap gap-2">
+        {suggestions.map((suggestion, index) => (
           <Button
             key={index}
             variant="outline"
             size="sm"
-            className="w-full text-left justify-start h-auto p-2 whitespace-normal"
-            onClick={() => onSuggestionSelect(reply.text)}
+            onClick={() => onSelectReply(suggestion)}
+            className="text-xs hover:bg-indigo-50 hover:border-indigo-300"
           >
-            <div className="flex items-start gap-2">
-              <span className="text-xs bg-purple-100 text-purple-600 px-1 rounded">
-                {reply.type}
-              </span>
-              <span className="text-sm">{reply.text}</span>
-            </div>
+            {suggestion}
           </Button>
         ))}
       </div>
     </Card>
   );
 };
-
-export default SmartReplySuggestions;

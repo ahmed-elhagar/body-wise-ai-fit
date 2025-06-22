@@ -92,6 +92,14 @@ export const ProgressTracker = ({
               <Badge variant="secondary">Consistency King</Badge>
             </div>
           </div>
+
+          {/* Workout Timer */}
+          {workoutTimer > 0 && (
+            <div className="text-center p-4 bg-orange-50 rounded-lg">
+              <p className="text-sm text-orange-700 mb-1">Workout Time</p>
+              <p className="text-2xl font-bold text-orange-900">{formatTime(workoutTimer)}</p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

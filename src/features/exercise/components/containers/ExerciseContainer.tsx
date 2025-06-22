@@ -26,13 +26,13 @@ export const ExerciseContainer: React.FC<ExerciseContainerProps> = ({ className 
     todaysExercises,
     isLoading: programLoading,
     error: programError,
-    refetch: refetchProgram
-  } = useExerciseProgram(selectedDayNumber, currentWeekOffset);
+    onGenerateAIProgram,
+    onRegenerateProgram
+  } = useExerciseProgram();
 
   const {
-    completeExercise,
-    updateExerciseProgress,
-    isUpdating
+    onExerciseComplete,
+    onExerciseProgressUpdate
   } = useWorkoutSession();
 
   // Timer effect
@@ -60,8 +60,7 @@ export const ExerciseContainer: React.FC<ExerciseContainerProps> = ({ className 
 
   const handleExerciseComplete = async (exerciseId: string) => {
     try {
-      await completeExercise(exerciseId);
-      await refetchProgram();
+      await onExerciseComplete(exerciseId);
     } catch (error) {
       console.error('Failed to complete exercise:', error);
     }
@@ -75,13 +74,7 @@ export const ExerciseContainer: React.FC<ExerciseContainerProps> = ({ className 
     weight?: number
   ) => {
     try {
-      await updateExerciseProgress(exerciseId, {
-        sets,
-        reps,
-        notes,
-        weight
-      });
-      await refetchProgram();
+      await onExerciseProgressUpdate(exerciseId, sets, reps, notes, weight);
     } catch (error) {
       console.error('Failed to update exercise progress:', error);
     }
@@ -102,7 +95,7 @@ export const ExerciseContainer: React.FC<ExerciseContainerProps> = ({ className 
 
   const handleRegenerateProgram = async () => {
     try {
-      await refetchProgram();
+      await onRegenerateProgram();
     } catch (error) {
       console.error('Failed to regenerate program:', error);
     }

@@ -18,8 +18,9 @@ export { default as ExerciseContainerLegacy } from './components/ExerciseContain
 export { ExerciseOverview } from './components/ExerciseOverview';
 export { ExerciseLayout } from './components/ExerciseLayout';
 
-// Hooks
-export * from './hooks';
+// Hooks - only export from core
+export * from './hooks/core/useExerciseProgram';
+export * from './hooks/core/useWorkoutSession';
 
 // Services
 export { default as ExerciseService } from './services/exerciseService';

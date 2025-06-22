@@ -4,46 +4,39 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Camera, Play, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Camera, Play, CheckCircle, AlertCircle, TrendingUp } from 'lucide-react';
 
 interface FormAnalysisProps {
-  activeExerciseId?: string | null;
-  energyLevel?: number;
-  recoveryScore?: number;
+  className?: string;
 }
 
-export const FormAnalysis: React.FC<FormAnalysisProps> = ({
-  activeExerciseId = null,
-  energyLevel = 70,
-  recoveryScore = 85
-}) => {
+export const FormAnalysis: React.FC<FormAnalysisProps> = ({ className }) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<any>(null);
 
-  const handleAnalyzeForm = async () => {
+  const handleStartAnalysis = () => {
     setIsAnalyzing(true);
-    
-    // Simulate form analysis
+    // Simulate analysis
     setTimeout(() => {
       setAnalysisResult({
-        score: 88,
+        score: 85,
         feedback: [
-          'Good posture maintained throughout the movement',
-          'Depth could be improved by 2-3 inches',
-          'Excellent control during the eccentric phase'
+          'Good posture maintained throughout the exercise',
+          'Proper breathing technique observed',
+          'Full range of motion achieved'
         ],
         recommendations: [
-          'Focus on driving through your heels',
-          'Keep your chest up and core engaged',
-          'Work on ankle mobility for better depth'
+          'Focus on slower controlled movements',
+          'Engage core muscles more consistently',
+          'Increase time under tension'
         ]
       });
       setIsAnalyzing(false);
-    }, 2000);
+    }, 3000);
   };
 
   return (
-    <div className="space-y-6">
+    <div className={`space-y-6 ${className}`}>
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -51,71 +44,95 @@ export const FormAnalysis: React.FC<FormAnalysisProps> = ({
             AI Form Analysis
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="text-center p-6 border-2 border-dashed border-gray-300 rounded-lg">
-            <Camera className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600 mb-4">
-              Record your exercise form for AI analysis
-            </p>
-            <Button 
-              onClick={handleAnalyzeForm}
-              disabled={isAnalyzing}
-              className="w-full"
-            >
-              {isAnalyzing ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                  Analyzing Form...
-                </>
-              ) : (
-                <>
-                  <Play className="h-4 w-4 mr-2" />
-                  Start Analysis
-                </>
-              )}
-            </Button>
-          </div>
-
-          {analysisResult && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-green-600" />
-                  <span className="font-medium">Form Score</span>
-                </div>
-                <Badge variant="secondary" className="bg-green-100 text-green-800">
+        <CardContent className="space-y-6">
+          {!analysisResult ? (
+            <div className="text-center space-y-4">
+              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
+                <Camera className="h-12 w-12 text-gray-400" />
+              </div>
+              <div>
+                <h3 className="font-semibold mb-2">Analyze Your Form</h3>
+                <p className="text-gray-600 text-sm mb-4">
+                  Use AI to get real-time feedback on your exercise form
+                </p>
+                <Button 
+                  onClick={handleStartAnalysis}
+                  disabled={isAnalyzing}
+                  className="bg-gradient-to-r from-purple-600 to-indigo-600"
+                >
+                  {isAnalyzing ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Analyzing...
+                    </>
+                  ) : (
+                    <>
+                      <Play className="h-4 w-4 mr-2" />
+                      Start Analysis
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {/* Form Score */}
+              <div className="text-center">
+                <div className="text-3xl font-bold text-green-600 mb-2">
                   {analysisResult.score}/100
-                </Badge>
+                </div>
+                <Progress value={analysisResult.score} className="w-full max-w-xs mx-auto" />
+                <p className="text-sm text-gray-600 mt-2">Overall Form Score</p>
               </div>
 
+              {/* Feedback */}
               <div>
-                <h4 className="font-medium mb-2 flex items-center gap-2">
+                <h4 className="font-semibold mb-3 flex items-center gap-2">
                   <CheckCircle className="h-4 w-4 text-green-600" />
-                  Positive Feedback
+                  What's Going Well
                 </h4>
-                <ul className="space-y-1">
+                <div className="space-y-2">
                   {analysisResult.feedback.map((item: string, index: number) => (
-                    <li key={index} className="text-sm text-gray-600 flex items-start gap-2">
-                      <span className="text-green-500 mt-1">•</span>
-                      {item}
-                    </li>
+                    <div key={index} className="flex items-start gap-2 p-3 bg-green-50 rounded-lg">
+                      <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      <span className="text-sm text-green-800">{item}</span>
+                    </div>
                   ))}
-                </ul>
+                </div>
               </div>
 
+              {/* Recommendations */}
               <div>
-                <h4 className="font-medium mb-2 flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4 text-amber-600" />
-                  Recommendations
+                <h4 className="font-semibold mb-3 flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-blue-600" />
+                  Areas for Improvement
                 </h4>
-                <ul className="space-y-1">
+                <div className="space-y-2">
                   {analysisResult.recommendations.map((item: string, index: number) => (
-                    <li key={index} className="text-sm text-gray-600 flex items-start gap-2">
-                      <span className="text-amber-500 mt-1">•</span>
-                      {item}
-                    </li>
+                    <div key={index} className="flex items-start gap-2 p-3 bg-blue-50 rounded-lg">
+                      <AlertCircle className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                      <span className="text-sm text-blue-800">{item}</span>
+                    </div>
                   ))}
-                </ul>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-2 pt-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setAnalysisResult(null)}
+                  className="flex-1"
+                >
+                  New Analysis
+                </Button>
+                <Button 
+                  onClick={handleStartAnalysis}
+                  disabled={isAnalyzing}
+                  className="flex-1"
+                >
+                  Re-analyze
+                </Button>
               </div>
             </div>
           )}

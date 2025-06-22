@@ -56,7 +56,7 @@ function AppContent() {
     );
   }
 
-  const handleOnboardingComplete = () => {
+  const handleOnboardingComplete = async () => {
     window.location.href = '/';
   };
 
