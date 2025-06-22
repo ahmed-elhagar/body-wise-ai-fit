@@ -70,7 +70,7 @@ export const useExerciseProgram = () => {
         `)
         .eq('user_id', user.id)
         .eq('status', 'active')
-        .eq('workout_type', workoutType) // Filter by workout type
+        .eq('workout_type', workoutType)
         .gte('week_start_date', weekStartStr)
         .lte('week_start_date', weekEndStr)
         .order('created_at', { ascending: false })
@@ -121,7 +121,7 @@ export const useExerciseProgram = () => {
             language: preferences.language || 'en'
           },
           preferences: {
-            workoutType: preferences.workoutType || workoutType, // Use current workout type
+            workoutType: preferences.workoutType || workoutType,
             goalType: preferences.goalType || 'general_fitness',
             fitnessLevel: preferences.fitnessLevel || 'beginner',
             availableTime: preferences.availableTime || '30-45 minutes',
@@ -279,8 +279,8 @@ export const useExerciseProgram = () => {
     exerciseId: string, 
     sets: number, 
     reps: string, 
-    notes?: string, 
-    weight?: number
+    weight?: number, 
+    notes?: string
   ) => {
     return trackPerformance.mutateAsync({ exerciseId, sets, reps, weight, notes });
   };
