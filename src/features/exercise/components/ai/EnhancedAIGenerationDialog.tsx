@@ -1,14 +1,14 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles, Loader2, Crown, Coins } from 'lucide-react';
+import { Sparkles, Loader2, Crown, Coins, User } from 'lucide-react';
 import { ExercisePreferences } from '../../hooks/core/useExerciseProgram';
+import { useProfile } from '@/features/ai/hooks/useProfile';
 
 interface EnhancedAIGenerationDialogProps {
   open: boolean;
@@ -29,6 +29,7 @@ export const EnhancedAIGenerationDialog: React.FC<EnhancedAIGenerationDialogProp
   isPro,
   isGenerating
 }) => {
+  const { profile } = useProfile();
   const [preferences, setPreferences] = useState<ExercisePreferences>({
     workoutType: currentWorkoutType,
     fitnessLevel: 'beginner',
@@ -38,6 +39,26 @@ export const EnhancedAIGenerationDialog: React.FC<EnhancedAIGenerationDialogProp
     difficulty: 'beginner',
     duration: '4 weeks'
   });
+
+  // Populate preferences from user profile when dialog opens
+  useEffect(() => {
+    if (open && profile) {
+      setPreferences(prev => ({
+        ...prev,
+        age: profile.age || undefined,
+        gender: profile.gender || undefined,
+        weight: profile.weight || undefined,
+        height: profile.height || undefined,
+        activityLevel: profile.activity_level || undefined,
+        fitnessLevel: profile.activity_level ? 
+          profile.activity_level === 'low' ? 'beginner' :
+          profile.activity_level === 'high' ? 'advanced' : 'intermediate'
+          : 'beginner',
+        goalType: profile.fitness_goal || 'general_fitness',
+        language: profile.preferred_language || 'en'
+      }));
+    }
+  }, [open, profile]);
 
   const handleGenerate = async () => {
     try {
@@ -99,6 +120,24 @@ export const EnhancedAIGenerationDialog: React.FC<EnhancedAIGenerationDialogProp
               <Badge className="bg-purple-100 text-purple-700">AI Generated</Badge>
             </div>
           </div>
+
+          {/* Profile Info */}
+          {profile && (
+            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+              <div className="flex items-center gap-2 mb-2">
+                <User className="w-4 h-4 text-blue-600" />
+                <span className="text-blue-800 font-medium">Your Profile Data</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-sm text-blue-700">
+                {profile.age && <div>Age: {profile.age}</div>}
+                {profile.gender && <div>Gender: {profile.gender}</div>}
+                {profile.weight && <div>Weight: {profile.weight}kg</div>}
+                {profile.height && <div>Height: {profile.height}cm</div>}
+                {profile.activity_level && <div>Activity: {profile.activity_level}</div>}
+                {profile.fitness_goal && <div>Goal: {profile.fitness_goal}</div>}
+              </div>
+            </div>
+          )}
 
           {/* Basic Settings */}
           <div className="grid grid-cols-2 gap-4">
@@ -215,6 +254,31 @@ export const EnhancedAIGenerationDialog: React.FC<EnhancedAIGenerationDialogProp
                   <SelectItem value="12 weeks">12 weeks</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+          </div>
+
+          {/* Personal Details Override */}
+          <div className="space-y-4">
+            <Label className="text-sm font-medium text-gray-700">Override Profile Data (Optional)</Label>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-xs">Age</Label>
+                <Input
+                  type="number"
+                  placeholder={profile?.age?.toString() || "Age"}
+                  value={preferences.age || ''}
+                  onChange={(e) => setPreferences(prev => ({ ...prev, age: parseInt(e.target.value) || undefined }))}
+                />
+              </div>
+              <div>
+                <Label className="text-xs">Weight (kg)</Label>
+                <Input
+                  type="number"
+                  placeholder={profile?.weight?.toString() || "Weight"}
+                  value={preferences.weight || ''}
+                  onChange={(e) => setPreferences(prev => ({ ...prev, weight: parseFloat(e.target.value) || undefined }))}
+                />
+              </div>
             </div>
           </div>
 

@@ -36,57 +36,40 @@ serve(async (req) => {
       throw new Error('Missing required fields: exerciseId, userId, action');
     }
 
-    // Log performance data for analytics
-    const { error: logError } = await supabase
-      .from('ai_generation_logs')
-      .insert({
-        user_id: userId,
-        generation_type: 'exercise_performance',
-        prompt_data: {
-          exercise_id: exerciseId,
-          action,
-          progress_data: progressData,
-          timestamp
-        },
-        status: 'completed',
-        credits_used: 0 // No credit cost for tracking
-      });
-
-    if (logError) {
-      console.error('Error logging performance:', logError);
-      throw logError;
-    }
-
-    // Calculate performance metrics if progress data is provided
-    let performanceMetrics = null;
-    if (progressData && action === 'progress_updated') {
-      // Get exercise details for comparison
-      const { data: exercise, error: exerciseError } = await supabase
+    // Update exercise progress in database
+    if (action === 'progress_updated' && progressData) {
+      const { error: exerciseError } = await supabase
         .from('exercises')
-        .select('name, sets, reps, difficulty')
-        .eq('id', exerciseId)
-        .single();
+        .update({
+          actual_sets: progressData.sets_completed,
+          actual_reps: progressData.reps_completed,
+          notes: progressData.notes,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', exerciseId);
 
-      if (!exerciseError && exercise) {
-        const targetSets = exercise.sets || 3;
-        const actualSets = progressData.sets_completed || 0;
-        const completionRate = (actualSets / targetSets) * 100;
-
-        performanceMetrics = {
-          exercise_name: exercise.name,
-          target_sets: targetSets,
-          actual_sets: actualSets,
-          completion_rate: completionRate,
-          difficulty: exercise.difficulty,
-          exceeded_target: actualSets > targetSets
-        };
-
-        console.log('📈 Performance metrics calculated:', performanceMetrics);
+      if (exerciseError) {
+        console.error('Error updating exercise:', exerciseError);
+        throw exerciseError;
       }
     }
 
-    // Update user's last workout date for streak tracking
+    // Update exercise completion status
     if (action === 'completed') {
+      const { error: completeError } = await supabase
+        .from('exercises')
+        .update({
+          completed: true,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', exerciseId);
+
+      if (completeError) {
+        console.error('Error completing exercise:', completeError);
+        throw completeError;
+      }
+
+      // Update user's last workout date for streak tracking
       const { error: profileError } = await supabase
         .from('profiles')
         .update({
@@ -103,8 +86,7 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({ 
       success: true,
-      message: 'Performance tracked successfully',
-      performanceMetrics
+      message: 'Performance tracked successfully'
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

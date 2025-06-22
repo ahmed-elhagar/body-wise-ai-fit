@@ -40,16 +40,52 @@ export const useCentralizedCredits = () => {
     mutationFn: async (generationType: string): Promise<CheckAndUseCreditsResponse> => {
       if (!user?.id) throw new Error('User not authenticated');
 
-      const { data, error } = await supabase.functions.invoke('check-and-use-ai-generation', {
-        body: {
-          userId: user.id,
-          generationType,
-          promptData: {}
-        }
-      });
+      // Check if user is Pro (unlimited generations)
+      const { data: subscription } = await supabase
+        .from('subscriptions')
+        .select('status, current_period_end')
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+        .gt('current_period_end', new Date().toISOString())
+        .maybeSingle();
 
-      if (error) throw error;
-      return data as CheckAndUseCreditsResponse;
+      const isPro = !!subscription;
+
+      if (isPro) {
+        return { success: true, remaining: -1 };
+      }
+
+      // Check user's remaining credits
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('ai_generations_remaining')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError) {
+        throw new Error('Failed to check user credits');
+      }
+
+      const remaining = profile.ai_generations_remaining || 0;
+
+      if (remaining <= 0) {
+        return { success: false, remaining: 0, error: 'Insufficient credits' };
+      }
+
+      // Decrement credits
+      const { error: updateError } = await supabase
+        .from('profiles')  
+        .update({ 
+          ai_generations_remaining: remaining - 1,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+
+      if (updateError) {
+        throw new Error('Failed to update credits');
+      }
+
+      return { success: true, remaining: remaining - 1 };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-credits'] });
@@ -65,11 +101,7 @@ export const useCentralizedCredits = () => {
       responseData?: any;
       errorMessage?: string;
     }) => {
-      const { error } = await supabase.functions.invoke('complete-ai-generation', {
-        body: params
-      });
-
-      if (error) throw error;
+      // This is a placeholder - implement if needed for logging
       return { success: true };
     }
   });
