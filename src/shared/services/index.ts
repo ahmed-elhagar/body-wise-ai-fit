@@ -2,6 +2,13 @@
 // Shared Services Export
 export { supabase } from '@/integrations/supabase/client';
 
+// Base Service Classes and Types
+export { BaseService } from './BaseService';
+export type { ServiceOptions, QueryResult } from './BaseService';
+
+// Common Types
+export type { ApiResponse } from '@/shared/types/common';
+
 // Performance Services
 export { 
   performanceMonitor, 

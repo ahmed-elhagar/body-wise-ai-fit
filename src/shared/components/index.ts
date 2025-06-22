@@ -1,1 +1,2 @@
-export { default as PerformanceDashboard } from './PerformanceDashboard'; 
+
+// Export shared components (PerformanceDashboard removed as it was deleted)
