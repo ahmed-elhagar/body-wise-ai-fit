@@ -1,99 +1,108 @@
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
-import { Plus, Target, TrendingUp, Award, Clock } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { useFoodConsumption, FoodConsumptionLog } from "@/features/food-tracker/hooks";
-import FoodLogTimeline from "./FoodLogTimeline";
-import SimpleFoodTracker from "./SimpleFoodTracker";
-import { format } from "date-fns";
 
-interface TodayTabProps {
-  key?: number;
+import React from 'react';
+import { Plus } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { useFoodConsumption } from '../hooks';
+
+export interface TodayTabProps {
   onAddFood: () => void;
 }
 
-const TodayTab = ({ key: forceRefreshKey, onAddFood }: TodayTabProps) => {
-  const { t } = useLanguage();
-  const { todayConsumption, todayMealPlan, isLoading, forceRefresh } = useFoodConsumption();
-
-  useEffect(() => {
-    console.log('🔄 TodayTab mounted/refreshed, fetching data...');
-    forceRefresh();
-  }, [forceRefresh, forceRefreshKey]);
-
-  const dailyTotals = {
-    consumption: (todayConsumption || []).reduce(
-      (acc, item) => ({
-        calories: acc.calories + (item.calories_consumed || 0),
-        protein: acc.protein + (item.protein_consumed || 0),
-        carbs: acc.carbs + (item.carbs_consumed || 0),
-        fat: acc.fat + (item.fat_consumed || 0),
-      }),
-      { calories: 0, protein: 0, carbs: 0, fat: 0 }
-    ),
-    mealPlan: (todayMealPlan || []).reduce(
-      (acc, item) => ({
-        calories: acc.calories + (item.calories || 0),
-        protein: acc.protein + (item.protein || 0),
-        carbs: acc.carbs + (item.carbs || 0),
-        fat: acc.fat + (item.fat || 0),
-      }),
-      { calories: 0, protein: 0, carbs: 0, fat: 0 }
-    )
-  };
-
-  const combinedTotals = {
-    calories: dailyTotals.consumption.calories,
-    protein: dailyTotals.consumption.protein,
-    carbs: dailyTotals.consumption.carbs,
-    fat: dailyTotals.consumption.fat,
-  };
-
-  const dailyGoals = {
-    calories: 2000,
-    protein: 150,
-    carbs: 250,
-    fat: 65
-  };
-
-  const progress = {
-    calories: dailyGoals.calories > 0 ? Math.min((combinedTotals.calories / dailyGoals.calories) * 100, 100) : 0,
-    protein: dailyGoals.protein > 0 ? Math.min((combinedTotals.protein / dailyGoals.protein) * 100, 100) : 0,
-    carbs: dailyGoals.carbs > 0 ? Math.min((combinedTotals.carbs / dailyGoals.carbs) * 100, 100) : 0,
-    fat: dailyGoals.fat > 0 ? Math.min((combinedTotals.fat / dailyGoals.fat) * 100, 100) : 0
-  };
-
-  const mealDistribution = (todayConsumption || []).reduce((acc, item) => {
-    const mealTypeKey = item.meal_type || 'snack'; 
-    acc[mealTypeKey] = (acc[mealTypeKey] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-
-  const totalMeals: number = Object.values(mealDistribution).reduce((sum: number, count: number) => sum + count, 0);
-
-  const todayStats = {
-    calories: combinedTotals.calories,
-    protein: combinedTotals.protein,
-    remainingCalories: Math.max(0, dailyGoals.calories - combinedTotals.calories),
-    mealsLogged: totalMeals 
-  };
+const TodayTab: React.FC<TodayTabProps> = ({ onAddFood }) => {
+  const { t } = useTranslation(['foodTracker', 'common']);
+  const { todayConsumption, isLoading } = useFoodConsumption();
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
+      <div className="space-y-4">
+        <div className="animate-pulse">
+          <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+          <div className="h-32 bg-gray-200 rounded"></div>
+        </div>
       </div>
     );
   }
 
+  const mealTypes = ['breakfast', 'lunch', 'dinner', 'snacks'];
+
   return (
-    <SimpleFoodTracker 
-      refreshKey={forceRefreshKey}
-      onAddFood={onAddFood}
-    />
+    <div className="space-y-6">
+      {/* Meal sections */}
+      {mealTypes.map((mealType) => {
+        const mealItems = todayConsumption?.filter(item => item.meal_type === mealType) || [];
+        
+        return (
+          <Card key={mealType} className="card-enhanced">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg capitalize">
+                  {t(mealType)}
+                </CardTitle>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onAddFood}
+                  className="flex items-center gap-1"
+                >
+                  <Plus className="h-4 w-4" />
+                  {t('add_food')}
+                </Button>
+              </div>
+            </CardHeader>
+            
+            <CardContent>
+              {mealItems.length > 0 ? (
+                <div className="space-y-2">
+                  {mealItems.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                    >
+                      <div>
+                        <p className="font-medium">
+                          {item.food_item?.name || 'Unknown Food'}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          {item.quantity_g}g - {Math.round(item.calories_consumed)} {t('common:units.calories')}
+                        </p>
+                      </div>
+                      <div className="text-right text-sm text-gray-600">
+                        <p>P: {Math.round(item.protein_consumed)}g</p>
+                        <p>C: {Math.round(item.carbs_consumed)}g</p>
+                        <p>F: {Math.round(item.fat_consumed)}g</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <p>{t('no_meals_logged')}</p>
+                  <p className="text-sm mt-1">{t('start_logging')}</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        );
+      })}
+      
+      {/* Empty state if no consumption data */}
+      {(!todayConsumption || todayConsumption.length === 0) && (
+        <Card className="card-enhanced">
+          <CardContent className="text-center py-12">
+            <div className="text-gray-500">
+              <p className="text-lg font-medium mb-2">{t('no_meals_logged')}</p>
+              <p className="text-sm mb-4">{t('start_logging')}</p>
+              <Button onClick={onAddFood} className="flex items-center gap-2 mx-auto">
+                <Plus className="h-4 w-4" />
+                {t('add_food')}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 };
 

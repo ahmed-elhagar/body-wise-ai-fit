@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Plus, Search, Camera, History, BarChart3, Utensils } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { FeatureLayout } from '@/shared/components/design-system';
@@ -24,15 +24,33 @@ const FoodTracker: React.FC<FoodTrackerProps> = ({
   const [activeTab, setActiveTab] = useState('today');
   
   const { 
-    consumedTotals, 
-    targetCalories, 
+    todayConsumption,
+    todayMealPlan,
     isLoading,
-    error 
+    forceRefresh
   } = useFoodConsumption();
 
+  // Calculate nutrition totals from today's consumption
+  const consumedTotals = useMemo(() => {
+    if (!todayConsumption) {
+      return { calories: 0, protein: 0, carbs: 0, fat: 0 };
+    }
+
+    return todayConsumption.reduce((totals, item) => ({
+      calories: totals.calories + (item.calories_consumed || 0),
+      protein: totals.protein + (item.protein_consumed || 0),
+      carbs: totals.carbs + (item.carbs_consumed || 0),
+      fat: totals.fat + (item.fat_consumed || 0)
+    }), { calories: 0, protein: 0, carbs: 0, fat: 0 });
+  }, [todayConsumption]);
+
+  // Calculate target calories (simplified calculation)
+  const targetCalories = 2000; // Default target
+  const targetProtein = 150; // Default protein target
+
   // Calculate progress percentages
-  const calorieProgress = targetCalories > 0 ? (consumedTotals.calories / targetCalories) * 100 : 0;
-  const proteinProgress = 150 > 0 ? (consumedTotals.protein / 150) * 100 : 0; // Assuming 150g protein target
+  const calorieProgress = targetCalories > 0 ? Math.min((consumedTotals.calories / targetCalories) * 100, 100) : 0;
+  const proteinProgress = targetProtein > 0 ? Math.min((consumedTotals.protein / targetProtein) * 100, 100) : 0;
 
   // Tab configuration following design system
   const tabs = [
@@ -43,7 +61,7 @@ const FoodTracker: React.FC<FoodTrackerProps> = ({
     },
     {
       id: 'search',
-      label: t('Search'),
+      label: t('search'),
       icon: Search,
     },
     {
@@ -99,10 +117,10 @@ const FoodTracker: React.FC<FoodTrackerProps> = ({
         title={t('meals')}
         stats={[{
           label: t('today'),
-          value: '3/4',
+          value: `${todayConsumption?.length || 0}/4`,
           color: 'purple' as const,
           change: {
-            value: 75,
+            value: Math.round(((todayConsumption?.length || 0) / 4) * 100),
             isPositive: true
           }
         }]}
@@ -120,7 +138,7 @@ const FoodTracker: React.FC<FoodTrackerProps> = ({
         onClick={onAddFood}
         disabled={isLoading}
       >
-        {t('Add Food')}
+        {t('add_food')}
       </ActionButton>
       
       <ActionButton
@@ -135,31 +153,34 @@ const FoodTracker: React.FC<FoodTrackerProps> = ({
     </div>
   );
 
-  // Render tab content
+  // Render tab content with proper props
   const renderTabContent = () => {
     switch (activeTab) {
       case 'today':
-        return <TodayTab key={refreshKey} />;
+        return (
+          <TodayTab 
+            key={refreshKey} 
+            onAddFood={onAddFood || (() => {})}
+          />
+        );
       case 'search':
-        return <SearchTab />;
+        return (
+          <SearchTab 
+            onFoodAdded={() => forceRefresh()}
+            onClose={() => setActiveTab('today')}
+          />
+        );
       case 'history':
         return <HistoryTab />;
       default:
-        return <TodayTab key={refreshKey} />;
+        return (
+          <TodayTab 
+            key={refreshKey} 
+            onAddFood={onAddFood || (() => {})}
+          />
+        );
     }
   };
-
-  if (error) {
-    return (
-      <div className="p-6">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-red-800">
-            {t('common:errors.loadingError')}
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <FeatureLayout
