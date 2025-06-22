@@ -1,10 +1,10 @@
 
 import React from 'react';
-import { ExerciseContainer as MainExerciseContainer } from './containers/ExerciseContainer';
+import { ExercisePage } from './ExercisePage';
 
-// Re-export the main container to maintain backward compatibility
+// Main container component
 export const ExerciseContainer: React.FC = () => {
-  return <MainExerciseContainer />;
+  return <ExercisePage />;
 };
 
 export default ExerciseContainer;

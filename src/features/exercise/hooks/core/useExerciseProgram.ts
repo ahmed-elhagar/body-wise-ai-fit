@@ -41,15 +41,17 @@ export const useExerciseProgram = () => {
   const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
   const [workoutType, setWorkoutType] = useState<"home" | "gym">("home");
 
-  // Fetch current exercise program
+  // Calculate week start date based on offset
+  const weekStartDate = addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), currentWeekOffset * 7);
+
+  // Fetch current exercise program with proper week filtering
   const { data: currentProgram, isLoading, error } = useQuery({
     queryKey: ['exercise-program', user?.id, currentWeekOffset],
     queryFn: async () => {
       if (!user?.id) return null;
 
-      // Calculate week start date based on offset
-      const weekStart = addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), currentWeekOffset * 7);
-      const weekStartStr = format(weekStart, 'yyyy-MM-dd');
+      const weekStartStr = format(weekStartDate, 'yyyy-MM-dd');
+      const weekEndStr = format(addDays(weekStartDate, 6), 'yyyy-MM-dd');
 
       const { data, error } = await supabase
         .from('weekly_exercise_programs')
@@ -63,7 +65,7 @@ export const useExerciseProgram = () => {
         .eq('user_id', user.id)
         .eq('status', 'active')
         .gte('week_start_date', weekStartStr)
-        .lt('week_start_date', format(addDays(weekStart, 7), 'yyyy-MM-dd'))
+        .lte('week_start_date', weekEndStr)
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -82,8 +84,6 @@ export const useExerciseProgram = () => {
   const generateProgram = useMutation({
     mutationFn: async (preferences: ExercisePreferences) => {
       if (!user?.id) throw new Error('User not authenticated');
-
-      const weekStart = addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), currentWeekOffset * 7);
 
       const { data, error } = await supabase.functions.invoke('generate-exercise-program', {
         body: {
@@ -109,7 +109,7 @@ export const useExerciseProgram = () => {
             duration: preferences.duration || '4 weeks',
             workoutDays: preferences.workoutDays || '3-4 days',
             difficulty: preferences.difficulty || 'beginner',
-            weekStartDate: format(weekStart, 'yyyy-MM-dd')
+            weekStartDate: format(weekStartDate, 'yyyy-MM-dd')
           }
         }
       });
@@ -217,29 +217,10 @@ export const useExerciseProgram = () => {
     },
   });
 
-  // Get exercise recommendations
-  const { data: recommendations } = useQuery({
-    queryKey: ['exercise-recommendations', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return null;
-
-      const { data, error } = await supabase.functions.invoke('get-exercise-recommendations', {
-        body: { userId: user.id }
-      });
-
-      if (error) {
-        console.error('Error getting recommendations:', error);
-        return null;
-      }
-
-      return data;
-    },
-    enabled: !!user?.id,
-  });
-
-  // Calculate today's exercises - use current day of week
+  // Calculate today's exercises - get current day or selected day exercises
+  const currentDayNumber = selectedDayNumber || new Date().getDay() || 7; // Sunday = 7
   const todaysExercises = currentProgram?.daily_workouts?.find(
-    workout => workout.day_number === new Date().getDay() || 1
+    workout => workout.day_number === currentDayNumber
   )?.exercises || [];
 
   const completedExercises = todaysExercises.filter(ex => ex.completed).length;
@@ -248,8 +229,6 @@ export const useExerciseProgram = () => {
 
   // Calculate additional properties
   const isRestDay = todaysExercises.length === 0;
-  const weekStartDate = addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), currentWeekOffset * 7);
-  
   const hasProgram = !!currentProgram;
   const isPro = profile?.role === 'pro' || false;
   const creditsRemaining = credits;
@@ -298,7 +277,6 @@ export const useExerciseProgram = () => {
     completedExercises,
     totalExercises,
     progressPercentage,
-    recommendations,
     
     // State
     selectedDayNumber,
@@ -317,16 +295,11 @@ export const useExerciseProgram = () => {
     creditsRemaining,
     
     // Mutations and handlers
-    generateProgram: generateProgram.mutateAsync,
     isGenerating: generateProgram.isPending,
-    updateExerciseCompletion: (exerciseId: string, completed: boolean) => 
-      updateExerciseCompletion.mutate({ exerciseId, completed }),
-    trackPerformance: (exerciseId: string, sets: number, reps: string, weight?: number, notes?: string) =>
-      trackPerformance.mutate({ exerciseId, sets, reps, weight, notes }),
-    exchangeExercise: onExerciseExchange,
     onGenerateAIProgram,
     onRegenerateProgram,
     onExerciseComplete,
-    onExerciseProgressUpdate
+    onExerciseProgressUpdate,
+    onExerciseExchange
   };
 };

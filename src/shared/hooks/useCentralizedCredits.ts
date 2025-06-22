@@ -4,6 +4,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { toast } from 'sonner';
 
+interface CheckAndUseCreditsResponse {
+  success: boolean;
+  logId?: string;
+  remaining?: number;
+  error?: string;
+}
+
 export const useCentralizedCredits = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -30,7 +37,7 @@ export const useCentralizedCredits = () => {
   });
 
   const checkAndUseCredits = useMutation({
-    mutationFn: async (generationType: string) => {
+    mutationFn: async (generationType: string): Promise<CheckAndUseCreditsResponse> => {
       if (!user?.id) throw new Error('User not authenticated');
 
       const { data, error } = await supabase.functions.invoke('check-and-use-ai-generation', {
@@ -42,7 +49,7 @@ export const useCentralizedCredits = () => {
       });
 
       if (error) throw error;
-      return data;
+      return data as CheckAndUseCreditsResponse;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-credits'] });
@@ -51,8 +58,6 @@ export const useCentralizedCredits = () => {
       toast.error(`Credit check failed: ${error.message}`);
     }
   });
-
-  const checkAndUseCredit = checkAndUseCredits.mutate;
 
   const completeGeneration = useMutation({
     mutationFn: async ({ logId, responseData, errorMessage }: {
@@ -69,14 +74,14 @@ export const useCentralizedCredits = () => {
       });
 
       if (error) throw error;
+      return { success: true };
     }
   });
 
   return {
     credits,
     isLoading,
-    checkAndUseCredits: checkAndUseCredits.mutate,
-    checkAndUseCredit,
-    completeGeneration: completeGeneration.mutate
+    checkAndUseCredits: checkAndUseCredits.mutateAsync,
+    completeGeneration: completeGeneration.mutateAsync
   };
 };
