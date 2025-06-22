@@ -25,10 +25,11 @@ export const useMealPlanData = (weekOffset: number = 0) => {
     }
   }, [weekOffset]);
 
-  // Create a simple, stable query key with only primitive values
+  // Create a simple, stable query key with only primitive values (no Date objects)
   const queryKey = useMemo(() => {
     const userId = user?.id || 'anonymous';
-    return ['weekly-meal-plan', userId, weekOffset, weekStartDateStr];
+    // Only use primitive values - no Date objects or complex objects
+    return ['weekly-meal-plan', userId, weekOffset, weekStartDateStr] as const;
   }, [user?.id, weekOffset, weekStartDateStr]);
 
   return useQuery({

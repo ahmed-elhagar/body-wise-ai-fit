@@ -21,7 +21,7 @@ export const useMealPlanState = () => {
   const [currentWeekOffset, setCurrentWeekOffsetInternal] = useState(0);
   const [selectedDayNumber, setSelectedDayNumber] = useState(() => getCurrentSaturdayDay());
   
-  // Calculate week start date only when needed, with error handling
+  // Calculate week start date only when needed, memoized with error handling
   const weekStartDate = useMemo(() => {
     try {
       return getWeekStartDate(currentWeekOffset);
@@ -94,9 +94,10 @@ export const useMealPlanState = () => {
     refetch
   );
 
-  // Enhanced week change handler - prevent infinite loops with strict equality check
+  // Enhanced week change handler - use useCallback to prevent unnecessary re-renders
   const setCurrentWeekOffset = useCallback((newOffset: number) => {
     console.log('📅 Changing week from', currentWeekOffset, 'to', newOffset);
+    // Only update if the offset actually changed
     if (newOffset !== currentWeekOffset) {
       setCurrentWeekOffsetInternal(newOffset);
     }
