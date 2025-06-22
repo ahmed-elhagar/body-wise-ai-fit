@@ -255,7 +255,7 @@ const FoodTracker: React.FC<FoodTrackerProps> = ({ refreshKey, onAddFood }) => {
                             </div>
                             <div>
                               <h4 className="font-semibold text-gray-900">
-                                {item.food_items?.name || 'Unknown Food'}
+                                {item.food_item?.name || 'Unknown Food'}
                               </h4>
                               <p className="text-sm text-gray-500">
                                 {item.quantity_g}g • {item.meal_type}
