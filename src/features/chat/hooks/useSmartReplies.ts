@@ -1,40 +1,41 @@
 
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
-interface SmartReply {
-  id: string;
+export interface SmartReply {
   text: string;
-  category: 'question' | 'feedback' | 'request' | 'acknowledgment';
-  relevanceScore: number;
+  type: 'quick' | 'detailed' | 'question';
 }
 
 export const useSmartReplies = () => {
   const [replies, setReplies] = useState<SmartReply[]>([]);
-  const [loading, setLoading] = useState(false);
 
-  const generateReplies = useCallback(async (messageContext: string) => {
-    setLoading(true);
-    try {
-      // Mock smart replies generation
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
+  const { mutate: generateReplies, isPending: loading } = useMutation({
+    mutationFn: async (messageContext: string): Promise<SmartReply[]> => {
+      // Mock implementation - replace with actual AI generation
       const mockReplies: SmartReply[] = [
-        { id: '1', text: 'Thank you!', category: 'acknowledgment', relevanceScore: 0.9 },
-        { id: '2', text: 'Can you tell me more?', category: 'question', relevanceScore: 0.8 },
-        { id: '3', text: 'That\'s helpful', category: 'feedback', relevanceScore: 0.7 },
+        { text: "Thanks for the advice!", type: 'quick' },
+        { text: "Could you explain more about this?", type: 'question' },
+        { text: "I appreciate your help with my fitness journey.", type: 'detailed' }
       ];
       
-      setReplies(mockReplies);
-    } catch (error) {
-      console.error('Error generating smart replies:', error);
-    } finally {
-      setLoading(false);
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      return mockReplies;
+    },
+    onSuccess: (data) => {
+      setReplies(data);
+    },
+    onError: (error) => {
+      console.error('Failed to generate smart replies:', error);
     }
-  }, []);
+  });
 
-  const clearReplies = useCallback(() => {
+  const clearReplies = () => {
     setReplies([]);
-  }, []);
+  };
 
   return {
     replies,

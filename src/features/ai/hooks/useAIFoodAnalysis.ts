@@ -42,26 +42,22 @@ export const useAIFoodAnalysis = () => {
         if (error) throw error;
 
         // Complete the generation log
-        if (creditResult.success) {
-          await supabase.functions.invoke('complete-ai-generation', {
-            body: {
-              logId: creditResult.remaining, // Using remaining as placeholder
-              responseData: data,
-              errorMessage: null
-            }
+        if (creditResult.logId) {
+          await supabase.rpc('complete_ai_generation', {
+            log_id_param: creditResult.logId,
+            response_data_param: data,
+            error_message_param: null
           });
         }
 
         return data;
       } catch (error) {
         // Log the error
-        if (creditResult.success) {
-          await supabase.functions.invoke('complete-ai-generation', {
-            body: {
-              logId: creditResult.remaining, // Using remaining as placeholder
-              responseData: null,
-              errorMessage: error instanceof Error ? error.message : 'Unknown error'
-            }
+        if (creditResult.logId) {
+          await supabase.rpc('complete_ai_generation', {
+            log_id_param: creditResult.logId,
+            response_data_param: null,
+            error_message_param: error instanceof Error ? error.message : 'Unknown error'
           });
         }
         throw error;

@@ -1,72 +1,76 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { TrendingUp, Target, Activity } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { TrendingUp, Target, Calendar, Award } from "lucide-react";
 
 interface ProgressTrackerProps {
-  completedWorkouts: number;
+  weeklyProgress: number;
+  monthlyProgress: number;
+  streakDays: number;
   totalWorkouts: number;
-  weeklyGoal: number;
-  currentStreak: number;
 }
 
 export const ProgressTracker = ({
-  completedWorkouts,
-  totalWorkouts,
-  weeklyGoal,
-  currentStreak
+  weeklyProgress,
+  monthlyProgress,
+  streakDays,
+  totalWorkouts
 }: ProgressTrackerProps) => {
-  const completionPercentage = totalWorkouts > 0 ? (completedWorkouts / totalWorkouts) * 100 : 0;
-  const weeklyProgress = weeklyGoal > 0 ? (completedWorkouts / weeklyGoal) * 100 : 0;
-
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <TrendingUp className="w-5 h-5" />
-          Progress Tracker
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm">
-            <span>Overall Progress</span>
-            <span>{Math.round(completionPercentage)}%</span>
-          </div>
-          <Progress value={completionPercentage} />
-          <p className="text-xs text-gray-600">
-            {completedWorkouts} of {totalWorkouts} workouts completed
-          </p>
-        </div>
-
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm">
-            <span>Weekly Goal</span>
-            <span>{Math.round(weeklyProgress)}%</span>
-          </div>
-          <Progress value={weeklyProgress} />
-          <p className="text-xs text-gray-600">
-            {completedWorkouts} of {weeklyGoal} weekly workouts
-          </p>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div className="text-center">
-            <div className="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full mx-auto mb-2">
-              <Target className="w-6 h-6 text-blue-600" />
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5" />
+            Progress Overview
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Weekly Progress */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium">This Week</span>
+              <span className="text-sm text-gray-600">{weeklyProgress}%</span>
             </div>
-            <p className="text-2xl font-bold">{currentStreak}</p>
-            <p className="text-xs text-gray-600">Day Streak</p>
+            <Progress value={weeklyProgress} className="h-2" />
           </div>
-          <div className="text-center">
-            <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-full mx-auto mb-2">
-              <Activity className="w-6 h-6 text-green-600" />
+
+          {/* Monthly Progress */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium">This Month</span>
+              <span className="text-sm text-gray-600">{monthlyProgress}%</span>
             </div>
-            <p className="text-2xl font-bold">{completedWorkouts}</p>
-            <p className="text-xs text-gray-600">Completed</p>
+            <Progress value={monthlyProgress} className="h-2" />
           </div>
-        </div>
-      </CardContent>
-    </Card>
+
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="text-center p-4 bg-blue-50 rounded-lg">
+              <Calendar className="h-8 w-8 text-blue-600 mx-auto mb-2" />
+              <p className="text-2xl font-bold text-blue-900">{streakDays}</p>
+              <p className="text-sm text-blue-700">Day Streak</p>
+            </div>
+            
+            <div className="text-center p-4 bg-green-50 rounded-lg">
+              <Award className="h-8 w-8 text-green-600 mx-auto mb-2" />
+              <p className="text-2xl font-bold text-green-900">{totalWorkouts}</p>
+              <p className="text-sm text-green-700">Total Workouts</p>
+            </div>
+          </div>
+
+          {/* Achievement Badges */}
+          <div className="space-y-2">
+            <h4 className="font-medium text-sm">Recent Achievements</h4>
+            <div className="flex flex-wrap gap-2">
+              <Badge variant="secondary">7-Day Streak</Badge>
+              <Badge variant="secondary">First Workout</Badge>
+              <Badge variant="secondary">Consistency King</Badge>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };

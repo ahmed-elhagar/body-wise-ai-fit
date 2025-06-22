@@ -89,7 +89,7 @@ const SmartReplySuggestions = ({
           >
             <div className="flex items-start gap-2">
               <span className="text-xs bg-purple-100 text-purple-600 px-1 rounded">
-                {reply.tone}
+                {reply.type}
               </span>
               <span className="text-sm">{reply.text}</span>
             </div>
