@@ -4,14 +4,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { UnifiedAILoadingDialog } from "@/features/chat/components";
 import { useAILoadingSteps } from "@/features/ai/hooks/useAILoadingSteps";
 
-interface AIStep {
-  id: string;
-  title: string;
-  description: string;
-  status: 'pending' | 'active' | 'completed' | 'error';
-  estimatedDuration?: number;
-  label?: string;
-}
+// Import the exact AIStep interface from the chat components
+import type { AIStep } from "@/features/chat/components/AILoadingSteps";
 
 interface SnackGenerationProgressProps {
   step: string;
@@ -29,37 +23,29 @@ const SnackGenerationProgress = ({
   const steps = useMemo((): AIStep[] => [
     {
       id: 'analyzing-calories',
-      title: t('mealPlan.addSnack.analyzing') || 'Analyzing remaining calories',
+      label: 'Analyzing calories',
       description: 'Calculating optimal snack size for your daily goals',
-      status: 'pending' as const,
-      estimatedDuration: 2,
-      label: 'Analyzing calories'
+      estimatedDuration: 2
     },
     {
       id: 'generating-snack',
-      title: t('mealPlan.addSnack.generating') || 'Generating AI Snack',
+      label: 'Generating snack',
       description: 'Creating the perfect snack for your remaining calories',
-      status: 'pending' as const,
-      estimatedDuration: 5,
-      label: 'Generating snack'
+      estimatedDuration: 5
     },
     {
       id: 'optimizing-nutrition',
-      title: t('mealPlan.addSnack.optimizing') || 'Optimizing nutrition',
+      label: 'Optimizing nutrition',
       description: 'Ensuring nutritional balance with your existing meals',
-      status: 'pending' as const,
-      estimatedDuration: 3,
-      label: 'Optimizing nutrition'
+      estimatedDuration: 3
     },
     {
       id: 'finalizing-snack',
-      title: t('mealPlan.addSnack.finalizing') || 'Finalizing snack',
+      label: 'Finalizing snack',
       description: 'Adding snack to your meal plan',
-      status: 'pending' as const,
-      estimatedDuration: 2,
-      label: 'Finalizing snack'
+      estimatedDuration: 2
     }
-  ], [t]);
+  ], []);
 
   const { currentStepIndex, isComplete, progress } = useAILoadingSteps(
     steps, 

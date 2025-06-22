@@ -63,14 +63,15 @@ export const useUserOnlineStatus = (userIds: string[] = []): UserOnlineStatus =>
     // Set user as offline when page is closed/refreshed
     const handleBeforeUnload = () => {
       if (user?.id) {
-        // Use sendBeacon for reliable offline status update
-        navigator.sendBeacon(
-          `${supabase.supabaseUrl}/rest/v1/profiles?id=eq.${user.id}`,
-          JSON.stringify({
-            is_online: false,
-            last_seen: new Date().toISOString()
-          })
-        );
+        // Use fetch for reliable offline status update instead of navigator.sendBeacon
+        fetch('/api/user-offline', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: user.id }),
+          keepalive: true
+        }).catch(() => {
+          // Silently fail - user is leaving anyway
+        });
       }
     };
 

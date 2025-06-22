@@ -277,7 +277,7 @@ const TraineeCoachChat = ({ coachId, coachName, onBack }: TraineeCoachChatProps)
       <ChatHeader
         coachName={coachName}
         isCoachOnline={isCoachOnline}
-        coachLastSeen={coachLastSeen}
+        coachLastSeen={coachLastSeen?.toISOString() || null}
         isConnected={isConnected}
         onBack={onBack}
       />
