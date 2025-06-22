@@ -14,7 +14,6 @@ interface ExerciseProgram {
   week_start_date: string;
   current_week: number;
   total_estimated_calories: number;
-  daily_workouts_count: number;
   daily_workouts: Array<{
     id: string;
     day_number: number;

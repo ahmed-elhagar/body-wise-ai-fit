@@ -67,22 +67,8 @@ const TraineeDetailsDialog = ({ trainee, isOpen, onClose, onMessage }: TraineeDe
               </div>
               <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4 text-gray-500" />
-                <span className="text-sm">
-                  {traineeProfile?.age ? `${traineeProfile.age} years old` : 'Age not specified'}
-                </span>
+                <span className="text-sm">{t('Basic profile information')}</span>
               </div>
-              {traineeProfile?.height && (
-                <div className="flex items-center gap-2">
-                  <Ruler className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm">{traineeProfile.height} cm</span>
-                </div>
-              )}
-              {traineeProfile?.weight && (
-                <div className="flex items-center gap-2">
-                  <Weight className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm">{traineeProfile.weight} kg</span>
-                </div>
-              )}
             </div>
           </div>
 

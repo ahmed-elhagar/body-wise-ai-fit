@@ -1,135 +1,102 @@
 
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Sparkles, MessageSquare, ThumbsUp, HelpCircle } from 'lucide-react';
-import { useSmartReplies } from '@/shared/hooks/useSmartReplies';
-import { cn } from '@/lib/utils';
-
-interface SmartReply {
-  id: string;
-  text: string;
-  category: 'question' | 'feedback' | 'request' | 'acknowledgment';
-  relevanceScore: number;
-}
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Sparkles, Loader2 } from "lucide-react";
+import { useSmartReplies } from "@/features/chat/hooks/useSmartReplies";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface SmartReplySuggestionsProps {
-  lastMessage: string;
-  conversationHistory: Array<{ role: string; content: string }>;
-  onSelectReply: (reply: string) => void;
+  messageContext: string;
+  onSuggestionSelect: (suggestion: string) => void;
   className?: string;
 }
 
 const SmartReplySuggestions = ({ 
-  lastMessage, 
-  conversationHistory, 
-  onSelectReply, 
-  className 
+  messageContext, 
+  onSuggestionSelect, 
+  className = "" 
 }: SmartReplySuggestionsProps) => {
-  const { generateSmartReplies, isGenerating } = useSmartReplies();
-  const [suggestions, setSuggestions] = useState<SmartReply[]>([]);
-  const [isVisible, setIsVisible] = useState(false);
+  const { t } = useLanguage();
+  const { replies, loading, generateReplies, clearReplies } = useSmartReplies();
 
-  useEffect(() => {
-    if (!lastMessage) return;
-
-    const generateSuggestions = async () => {
-      const replies = await generateSmartReplies(lastMessage, conversationHistory);
-      setSuggestions(replies);
-      setIsVisible(replies.length > 0);
-    };
-
-    // Debounce suggestion generation
-    const timeout = setTimeout(generateSuggestions, 1000);
-    return () => clearTimeout(timeout);
-  }, [lastMessage, conversationHistory, generateSmartReplies]);
-
-  const getCategoryIcon = (category: SmartReply['category']) => {
-    switch (category) {
-      case 'question':
-        return <HelpCircle className="w-3 h-3" />;
-      case 'feedback':
-        return <ThumbsUp className="w-3 h-3" />;
-      case 'request':
-        return <MessageSquare className="w-3 h-3" />;
-      case 'acknowledgment':
-        return <Sparkles className="w-3 h-3" />;
-      default:
-        return <MessageSquare className="w-3 h-3" />;
-    }
+  const handleGenerateReplies = async () => {
+    await generateReplies(messageContext);
   };
 
-  const getCategoryColor = (category: SmartReply['category']) => {
-    switch (category) {
-      case 'question':
-        return 'bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200';
-      case 'feedback':
-        return 'bg-green-100 text-green-700 border-green-200 hover:bg-green-200';
-      case 'request':
-        return 'bg-purple-100 text-purple-700 border-purple-200 hover:bg-purple-200';
-      case 'acknowledgment':
-        return 'bg-yellow-100 text-yellow-700 border-yellow-200 hover:bg-yellow-200';
-      default:
-        return 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200';
-    }
-  };
+  if (replies.length === 0 && !loading) {
+    return (
+      <Card className={`p-4 ${className}`}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-purple-500" />
+            <span className="text-sm font-medium">{t('Smart Replies')}</span>
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleGenerateReplies}
+            disabled={loading}
+          >
+            {loading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              t('Generate')
+            )}
+          </Button>
+        </div>
+      </Card>
+    );
+  }
 
-  if (!isVisible || (!isGenerating && suggestions.length === 0)) {
-    return null;
+  if (loading) {
+    return (
+      <Card className={`p-4 ${className}`}>
+        <div className="flex items-center gap-2">
+          <Loader2 className="h-4 w-4 animate-spin text-purple-500" />
+          <span className="text-sm text-gray-600">
+            {t('Generating smart replies...')}
+          </span>
+        </div>
+      </Card>
+    );
   }
 
   return (
-    <div className={cn(
-      "space-y-3 p-4 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl",
-      className
-    )}>
-      <div className="flex items-center gap-2 mb-3">
-        <Sparkles className="w-4 h-4 text-blue-600" />
-        <span className="text-sm font-medium text-blue-900">Smart Reply Suggestions</span>
-        <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700">
-          AI-Powered
-        </Badge>
-      </div>
-
-      {isGenerating ? (
-        <div className="flex items-center gap-2 py-3">
-          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-          <span className="text-sm text-gray-600">Generating suggestions...</span>
+    <Card className={`p-4 ${className}`}>
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-purple-500" />
+          <span className="text-sm font-medium">{t('Smart Replies')}</span>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {suggestions.map((suggestion) => (
-            <Button
-              key={suggestion.id}
-              variant="outline"
-              size="sm"
-              onClick={() => onSelectReply(suggestion.text)}
-              className={cn(
-                "justify-start text-left h-auto py-2 px-3 transition-all duration-200 transform hover:scale-105",
-                getCategoryColor(suggestion.category)
-              )}
-            >
-              <div className="flex items-center gap-2 w-full">
-                {getCategoryIcon(suggestion.category)}
-                <span className="text-sm font-medium truncate flex-1">
-                  {suggestion.text}
-                </span>
-                <Badge 
-                  variant="secondary" 
-                  className="text-xs ml-auto bg-white/50"
-                >
-                  {Math.round(suggestion.relevanceScore * 100)}%
-                </Badge>
-              </div>
-            </Button>
-          ))}
-        </div>
-      )}
-
-      <div className="text-xs text-gray-500 text-center pt-2 border-t border-blue-200">
-        💡 Click any suggestion to use it as your response
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={clearReplies}
+          className="text-xs"
+        >
+          {t('Clear')}
+        </Button>
       </div>
-    </div>
+      
+      <div className="space-y-2">
+        {replies.map((reply, index) => (
+          <Button
+            key={index}
+            variant="outline"
+            size="sm"
+            className="w-full text-left justify-start h-auto p-2 whitespace-normal"
+            onClick={() => onSuggestionSelect(reply.text)}
+          >
+            <div className="flex items-start gap-2">
+              <span className="text-xs bg-purple-100 text-purple-600 px-1 rounded">
+                {reply.tone}
+              </span>
+              <span className="text-sm">{reply.text}</span>
+            </div>
+          </Button>
+        ))}
+      </div>
+    </Card>
   );
 };
 

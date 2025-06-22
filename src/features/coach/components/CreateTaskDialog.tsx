@@ -47,8 +47,7 @@ const CreateTaskDialog = ({ isOpen, onClose, traineeId, trainees = [] }: CreateT
       traineeId: formData.traineeId || undefined,
       traineeName: undefined,
       dueDate: formData.dueDate,
-      completed: false,
-      createdAt: new Date()
+      completed: false
     });
 
     // Reset form and close

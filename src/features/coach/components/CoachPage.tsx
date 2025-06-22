@@ -1,17 +1,14 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
   Users, 
   MessageSquare, 
-  Target, 
   TrendingUp, 
   Clock,
   CheckCircle2,
-  AlertCircle,
-  Calendar,
   Activity
 } from "lucide-react";
 import { useCoachSystem } from "@/features/coach/hooks/useCoachSystem";
@@ -54,10 +51,6 @@ const CoachPage = () => {
   const pendingTasks = tasks?.filter(task => !task.completed).length || 0;
   const overdueTasks = tasks?.filter(task => 
     !task.completed && task.dueDate && task.dueDate < new Date()
-  ).length || 0;
-
-  const completedProfiles = trainees?.filter(t => 
-    (t.trainee_profile?.profile_completion_score || 0) >= 80
   ).length || 0;
 
   if (!isCoach) {
@@ -224,9 +217,7 @@ const CoachPage = () => {
         </TabsContent>
 
         <TabsContent value="trainees" className="mt-6">
-          <div className="space-y-4">
-            <p>Trainees management will be implemented here</p>
-          </div>
+          <TraineesTab />
         </TabsContent>
 
         <TabsContent value="tasks" className="mt-6">
@@ -234,9 +225,7 @@ const CoachPage = () => {
         </TabsContent>
 
         <TabsContent value="messages" className="mt-6">
-          <div className="space-y-4">
-            <p>Messages management will be implemented here</p>
-          </div>
+          <CoachMessagesTab />
         </TabsContent>
       </Tabs>
 
@@ -246,11 +235,9 @@ const CoachPage = () => {
       />
       
       <CreateTaskDialog 
-        traineeId={undefined}
-        onCreate={(task) => {
-          console.log('Task created:', task);
-          setShowCreateTaskDialog(false);
-        }}
+        isOpen={showCreateTaskDialog}
+        onClose={() => setShowCreateTaskDialog(false)}
+        trainees={trainees || []}
       />
     </div>
   );

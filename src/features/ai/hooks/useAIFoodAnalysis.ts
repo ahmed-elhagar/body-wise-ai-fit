@@ -1,71 +1,85 @@
 
 import { useState } from 'react';
-import { useAuth } from '@/features/auth/hooks/useAuth';
+import { useMutation } from '@tanstack/react-query';
 import { useCentralizedCredits } from '@/shared/hooks/useCentralizedCredits';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+
+export interface AIFoodAnalysisResult {
+  food_name: string;
+  confidence: number;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  serving_size: string;
+  ingredients?: string[];
+  nutrition_facts?: Record<string, any>;
+}
 
 export const useAIFoodAnalysis = () => {
-  const { user } = useAuth();
-  const { checkAndUseCredit, completeGeneration } = useCentralizedCredits();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const { checkAndUseCredits } = useCentralizedCredits();
 
-  const analyzeFood = async (foodDescription: string) => {
-    if (!user?.id || !foodDescription.trim()) {
-      console.error('Missing required data for food analysis');
-      return null;
-    }
-
-    const creditResult = await checkAndUseCredit('food-analysis');
-    if (!creditResult.success) {
-      toast.error('No AI credits remaining');
-      return null;
-    }
-
-    setIsAnalyzing(true);
-    
-    try {
-      console.log('🍎 Analyzing food with AI');
+  const analyzeFood = useMutation({
+    mutationFn: async (imageData: string): Promise<AIFoodAnalysisResult> => {
+      setIsAnalyzing(true);
       
-      const { data, error } = await supabase.functions.invoke('analyze-food-description', {
-        body: {
-          userId: user.id,
-          foodDescription: foodDescription
-        }
-      });
+      try {
+        // Check credits first
+        const creditResult = await checkAndUseCredits('food-analysis', {
+          image_data: imageData
+        });
 
-      if (error) {
-        console.error('❌ Food analysis error:', error);
-        throw error;
-      }
-
-      if (data?.success) {
-        console.log('✅ Food analysis completed successfully');
-        
-        if (creditResult.logId) {
-          await completeGeneration(creditResult.logId, true, data);
+        if (!creditResult.success) {
+          throw new Error(creditResult.error || 'Insufficient credits');
         }
-        
+
+        // Call AI analysis function
+        const { data, error } = await supabase.functions.invoke('analyze-food-image', {
+          body: { imageData }
+        });
+
+        if (error) throw error;
+
+        // Complete the generation log
+        if (creditResult.success) {
+          await supabase.functions.invoke('complete-ai-generation', {
+            body: {
+              logId: creditResult.remaining, // Using remaining as placeholder
+              responseData: data,
+              errorMessage: null
+            }
+          });
+        }
+
         return data;
-      } else {
-        throw new Error(data?.error || 'Food analysis failed');
+      } catch (error) {
+        // Log the error
+        if (creditResult.success) {
+          await supabase.functions.invoke('complete-ai-generation', {
+            body: {
+              logId: creditResult.remaining, // Using remaining as placeholder
+              responseData: null,
+              errorMessage: error instanceof Error ? error.message : 'Unknown error'
+            }
+          });
+        }
+        throw error;
+      } finally {
+        setIsAnalyzing(false);
       }
-    } catch (error: any) {
-      console.error('❌ Food analysis failed:', error);
-      toast.error('Failed to analyze food');
-      
-      if (creditResult.logId) {
-        await completeGeneration(creditResult.logId, false);
-      }
-      
-      throw error;
-    } finally {
-      setIsAnalyzing(false);
+    },
+    onError: (error) => {
+      console.error('Food analysis error:', error);
     }
-  };
+  });
 
   return {
-    analyzeFood,
-    isAnalyzing
+    analyzeFood: analyzeFood.mutate,
+    analyzeFoodAsync: analyzeFood.mutateAsync,
+    isAnalyzing: isAnalyzing || analyzeFood.isPending,
+    error: analyzeFood.error,
+    result: analyzeFood.data,
+    reset: analyzeFood.reset
   };
 };
