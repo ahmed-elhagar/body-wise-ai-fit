@@ -24,24 +24,28 @@ const FoodTracker: React.FC<FoodTrackerProps> = ({
   const [activeTab, setActiveTab] = useState('today');
   
   const { 
-    todayConsumption,
-    todayMealPlan,
-    isLoading,
+    todayConsumption = [],
+    todayMealPlan = [],
+    isLoading = false,
     forceRefresh
   } = useFoodConsumption();
 
-  // Calculate nutrition totals from today's consumption
+  // Calculate nutrition totals from today's consumption with proper null checks
   const consumedTotals = useMemo(() => {
-    if (!todayConsumption) {
+    if (!todayConsumption || !Array.isArray(todayConsumption)) {
       return { calories: 0, protein: 0, carbs: 0, fat: 0 };
     }
 
-    return todayConsumption.reduce((totals, item) => ({
-      calories: totals.calories + (item.calories_consumed || 0),
-      protein: totals.protein + (item.protein_consumed || 0),
-      carbs: totals.carbs + (item.carbs_consumed || 0),
-      fat: totals.fat + (item.fat_consumed || 0)
-    }), { calories: 0, protein: 0, carbs: 0, fat: 0 });
+    return todayConsumption.reduce((totals, item) => {
+      if (!item) return totals;
+      
+      return {
+        calories: totals.calories + (item.calories_consumed || 0),
+        protein: totals.protein + (item.protein_consumed || 0),
+        carbs: totals.carbs + (item.carbs_consumed || 0),
+        fat: totals.fat + (item.fat_consumed || 0)
+      };
+    }, { calories: 0, protein: 0, carbs: 0, fat: 0 });
   }, [todayConsumption]);
 
   // Calculate target calories (simplified calculation)
@@ -117,10 +121,10 @@ const FoodTracker: React.FC<FoodTrackerProps> = ({
         title={t('meals')}
         stats={[{
           label: t('today'),
-          value: `${todayConsumption?.length || 0}/4`,
+          value: `${Array.isArray(todayConsumption) ? todayConsumption.length : 0}/4`,
           color: 'purple' as const,
           change: {
-            value: Math.round(((todayConsumption?.length || 0) / 4) * 100),
+            value: Math.round(((Array.isArray(todayConsumption) ? todayConsumption.length : 0) / 4) * 100),
             isPositive: true
           }
         }]}
