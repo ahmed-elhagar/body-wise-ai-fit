@@ -18,6 +18,8 @@
   "goalProgress": "Goal Progress",
   "workoutsWeek": "Workouts This Week",
   "todayCalories": "Today's Calories",
+  "consumed": "Consumed",
+  "daily_progress": "Daily Progress",
   "quickActions": {
     "title": "Quick Actions",
     "logWeight": "Log Weight",
