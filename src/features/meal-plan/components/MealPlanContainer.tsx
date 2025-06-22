@@ -165,6 +165,7 @@ export const MealPlanContainer: React.FC = () => {
       // Safely convert data with proper type handling
       const convertedMeals: DailyMeal[] = (data || []).map(meal => ({
         ...meal,
+        meal_type: meal.meal_type as "breakfast" | "lunch" | "dinner" | "snack" | "snack1" | "snack2",
         ingredients: Array.isArray(meal.ingredients) 
           ? meal.ingredients.map((ing: any) => ({
               name: ing?.name || 'Unknown',

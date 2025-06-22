@@ -1,108 +1,120 @@
+
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Calendar, Plus, Zap } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { useMealPlanState } from "@/features/meal-plan/hooks";
+import { Apple, Target, TrendingUp } from "lucide-react";
 import { useFoodConsumption } from "@/features/food-tracker/hooks";
-import { NutritionStatsGrid } from "./nutrition/NutritionStatsGrid";
-import { TodayNutritionSummary } from "./nutrition/TodayNutritionSummary";
-import { WeeklyNutritionChart } from "./nutrition/WeeklyNutritionChart";
 
 const NutritionProgressSection = () => {
-  const navigate = useNavigate();
-  const { 
-    currentWeekPlan, 
-    totalCalories, 
-    totalProtein, 
-    targetDayCalories,
-    dailyMeals 
-  } = useMealPlanState();
-  
-  const { todayConsumption } = useFoodConsumption();
+  const { todayConsumption, isLoading } = useFoodConsumption();
 
-  // Calculate nutrition metrics
-  const proteinTarget = Math.round(targetDayCalories * 0.3 / 4); // 30% of calories from protein
-  const mealsPlanned = dailyMeals?.length || 0;
+  const dailyTotals = (todayConsumption || []).reduce(
+    (acc, item) => ({
+      calories: acc.calories + (item.calories_consumed || 0),
+      protein: acc.protein + (item.protein_consumed || 0),
+      carbs: acc.carbs + (item.carbs_consumed || 0),
+      fat: acc.fat + (item.fat_consumed || 0),
+    }),
+    { calories: 0, protein: 0, carbs: 0, fat: 0 }
+  );
+
+  const dailyGoals = {
+    calories: 2000,
+    protein: 150,
+    carbs: 250,
+    fat: 65
+  };
+
+  const progress = {
+    calories: dailyGoals.calories > 0 ? Math.min((dailyTotals.calories / dailyGoals.calories) * 100, 100) : 0,
+    protein: dailyGoals.protein > 0 ? Math.min((dailyTotals.protein / dailyGoals.protein) * 100, 100) : 0,
+    carbs: dailyGoals.carbs > 0 ? Math.min((dailyTotals.carbs / dailyGoals.carbs) * 100, 100) : 0,
+    fat: dailyGoals.fat > 0 ? Math.min((dailyTotals.fat / dailyGoals.fat) * 100, 100) : 0
+  };
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Apple className="h-5 w-5" />
+            Nutrition Progress
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-4">Loading nutrition data...</div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
-    <div className="space-y-6">
-      {/* Nutrition Stats Grid */}
-      <NutritionStatsGrid 
-        totalCalories={totalCalories}
-        targetDayCalories={targetDayCalories}
-        totalProtein={totalProtein}
-        proteinTarget={proteinTarget}
-        mealsPlanned={mealsPlanned}
-        hasWeeklyPlan={!!currentWeekPlan}
-      />
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Apple className="h-5 w-5" />
+          Nutrition Progress
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Calories */}
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-medium">Calories</span>
+            <Badge variant="outline">
+              {Math.round(dailyTotals.calories)} / {dailyGoals.calories}
+            </Badge>
+          </div>
+          <Progress value={progress.calories} className="h-2" />
+        </div>
 
-      {/* Today's Nutrition Overview */}
-      <TodayNutritionSummary 
-        totalCalories={totalCalories}
-        targetDayCalories={targetDayCalories}
-        totalProtein={totalProtein}
-        proteinTarget={proteinTarget}
-        mealsPlanned={mealsPlanned}
-      />
+        {/* Protein */}
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-medium">Protein</span>
+            <Badge variant="outline">
+              {Math.round(dailyTotals.protein)}g / {dailyGoals.protein}g
+            </Badge>
+          </div>
+          <Progress value={progress.protein} className="h-2" />
+        </div>
 
-      {/* Weekly Nutrition Chart */}
-      <WeeklyNutritionChart 
-        totalCalories={totalCalories}
-        targetDayCalories={targetDayCalories}
-        totalProtein={totalProtein}
-      />
+        {/* Carbs */}
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-medium">Carbs</span>
+            <Badge variant="outline">
+              {Math.round(dailyTotals.carbs)}g / {dailyGoals.carbs}g
+            </Badge>
+          </div>
+          <Progress value={progress.carbs} className="h-2" />
+        </div>
 
-      {/* Meal Plan Status */}
-      {currentWeekPlan && (
-        <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-blue-900">
-              <Calendar className="w-5 h-5" />
-              Current Meal Plan
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-blue-700 font-medium">Plan Status</span>
-              <Badge className="bg-blue-600 text-white">Active</Badge>
-            </div>
-            <div className="text-sm text-blue-600">
-              You have an active meal plan with {currentWeekPlan.dailyMeals?.length || 0} meals planned
-            </div>
-          </CardContent>
-        </Card>
-      )}
+        {/* Fat */}
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-medium">Fat</span>
+            <Badge variant="outline">
+              {Math.round(dailyTotals.fat)}g / {dailyGoals.fat}g
+            </Badge>
+          </div>
+          <Progress value={progress.fat} className="h-2" />
+        </div>
 
-      {/* Action Buttons */}
-      <div className="flex gap-3">
-        <Button
-          onClick={() => navigate('/food-tracker')}
-          className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Track Food
-        </Button>
-        
-        <Button
-          variant="outline"
-          onClick={() => navigate('/meal-plan')}
-          className="border-green-300 text-green-700 hover:bg-green-50"
-        >
-          <Calendar className="w-4 h-4 mr-2" />
-          View Meal Plan
-        </Button>
-        
-        <Button
-          variant="outline"
-          onClick={() => navigate('/calorie-checker')}
-          className="border-blue-300 text-blue-700 hover:bg-blue-50"
-        >
-          <Zap className="w-4 h-4 mr-2" />
-          Scan Food
-        </Button>
-      </div>
-    </div>
+        {/* Summary */}
+        <div className="pt-4 border-t">
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <TrendingUp className="h-4 w-4" />
+            <span>
+              {progress.calories >= 90 
+                ? "Great job meeting your nutrition goals!" 
+                : `${Math.round(dailyGoals.calories - dailyTotals.calories)} calories remaining`}
+            </span>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

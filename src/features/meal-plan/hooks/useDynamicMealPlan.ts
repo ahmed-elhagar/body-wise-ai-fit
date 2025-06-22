@@ -10,25 +10,26 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
   const { user } = useAuth();
 
   const targetWeekStart = getWeekStartDate(weekOffset);
+  const targetWeekStartString = format(targetWeekStart, 'yyyy-MM-dd');
 
   console.log('🔍 useDynamicMealPlan: Fetching for week offset:', weekOffset, 'Target date:', targetWeekStart);
 
   const { data: currentWeekPlan, isLoading, error, refetch } = useQuery({
-    queryKey: ['meal-plan', user?.id, weekOffset, targetWeekStart],
+    queryKey: ['meal-plan', user?.id, weekOffset, targetWeekStartString],
     queryFn: async () => {
       if (!user?.id) {
         console.log('❌ No user ID available for meal plan fetch');
         return null;
       }
 
-      console.log('📡 Fetching meal plan for user:', user.id, 'week:', targetWeekStart);
+      console.log('📡 Fetching meal plan for user:', user.id, 'week:', targetWeekStartString);
 
       // First, get the weekly plan using correct table name
       const { data: weeklyPlan, error: weeklyError } = await supabase
         .from('weekly_meal_plans')
         .select('*')
         .eq('user_id', user.id)
-        .eq('week_start_date', targetWeekStart)
+        .eq('week_start_date', targetWeekStartString)
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();

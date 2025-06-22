@@ -89,6 +89,13 @@ const AIChatInterface = () => {
     sender_type: msg.role === 'assistant' ? 'ai' : 'user' as "user" | "ai" | "coach" | "trainee"
   }));
 
+  // Convert messages for SmartReplySuggestions with proper format
+  const smartReplyMessages = messages.map(msg => ({
+    role: msg.role as "user" | "assistant",
+    content: msg.content,
+    timestamp: msg.timestamp?.getTime() || Date.now()
+  }));
+
   return (
     <div className="h-full flex flex-col bg-gradient-to-b from-blue-50/30 to-white">
       {/* Messages Area */}
@@ -194,7 +201,7 @@ const AIChatInterface = () => {
           {/* Smart Reply Suggestions */}
           {hasMessages && lastAssistantMessage && (
             <SmartReplySuggestions
-              conversationHistory={analyticsMessages}
+              conversationHistory={smartReplyMessages}
               onSelectReply={handleSmartReplySelect}
               className="mx-4 mt-4"
             />
