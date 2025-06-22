@@ -11,10 +11,13 @@ export interface AuthUser extends User {
 interface AuthContextType {
   user: AuthUser | null;
   loading: boolean;
+  error?: AuthError | null;
   signUp: (email: string, password: string, metadata?: any) => Promise<{ error?: AuthError; data?: any }>;
   signIn: (email: string, password: string) => Promise<{ error?: AuthError; data?: any }>;
   signOut: () => Promise<{ error?: AuthError }>;
   resetPassword: (email: string) => Promise<{ error?: AuthError }>;
+  retryAuth?: () => void;
+  forceLogout?: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -22,6 +25,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<AuthError | null>(null);
 
   useEffect(() => {
     console.info('AuthProvider - Initializing with enhanced timeout protection');
@@ -33,12 +37,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         
         if (error) {
           console.error('Error getting session:', error);
+          setError(error);
         } else {
           setUser(session?.user as AuthUser || null);
           console.info('Got initial session:', !!session);
+          setError(null);
         }
       } catch (error) {
         console.error('Error in getInitialSession:', error);
+        setError(error as AuthError);
       } finally {
         setLoading(false);
         console.info('Auth setup complete, setting loading to false');
@@ -54,6 +61,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (session?.user) {
           setUser(session.user as AuthUser);
           console.info('User signed in:', session.user.email);
+          setError(null);
         } else {
           setUser(null);
           console.info('User signed out or no session');
@@ -127,14 +135,30 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  const retryAuth = () => {
+    setError(null);
+    setLoading(true);
+    // Trigger auth state refresh
+    supabase.auth.getSession();
+  };
+
+  const forceLogout = async () => {
+    await signOut();
+    setUser(null);
+    setError(null);
+  };
+
   return (
     <AuthContext.Provider value={{
       user,
       loading,
+      error,
       signUp,
       signIn,
       signOut,
-      resetPassword
+      resetPassword,
+      retryAuth,
+      forceLogout
     }}>
       {children}
     </AuthContext.Provider>

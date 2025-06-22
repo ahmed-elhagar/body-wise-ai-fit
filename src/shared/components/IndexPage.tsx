@@ -57,20 +57,24 @@ const Index = () => {
             {error.message || 'Authentication failed. Please try again.'}
           </p>
           <div className="space-y-2">
-            <Button 
-              onClick={retryAuth} 
-              className="w-full bg-red-600 text-white hover:bg-red-700"
-            >
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Retry
-            </Button>
-            <Button 
-              onClick={forceLogout} 
-              variant="outline"
-              className="w-full border-red-600 text-red-600 hover:bg-red-50"
-            >
-              Start Fresh
-            </Button>
+            {retryAuth && (
+              <Button 
+                onClick={retryAuth} 
+                className="w-full bg-red-600 text-white hover:bg-red-700"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Retry
+              </Button>
+            )}
+            {forceLogout && (
+              <Button 
+                onClick={forceLogout} 
+                variant="outline"
+                className="w-full border-red-600 text-red-600 hover:bg-red-50"
+              >
+                Start Fresh
+              </Button>
+            )}
           </div>
         </Card>
       </div>

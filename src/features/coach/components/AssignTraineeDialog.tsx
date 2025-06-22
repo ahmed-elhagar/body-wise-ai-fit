@@ -1,104 +1,73 @@
 
-import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { UserPlus } from "lucide-react";
-import { useCoachSystem } from "@/features/coach/hooks/useCoachSystem";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { UserSearchDropdown } from "./UserSearchDropdown";
+import React, { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { UserPlus } from 'lucide-react';
 
 interface AssignTraineeDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+  onAssign: (traineeId: string, notes?: string) => void;
+  isLoading?: boolean;
 }
 
-const AssignTraineeDialog = ({ open, onOpenChange }: AssignTraineeDialogProps) => {
-  const { assignTrainee, isAssigning } = useCoachSystem();
-  const { language } = useLanguage();
-  const [selectedTraineeId, setSelectedTraineeId] = useState("");
-  const [notes, setNotes] = useState("");
+const AssignTraineeDialog: React.FC<AssignTraineeDialogProps> = ({
+  onAssign,
+  isLoading = false
+}) => {
+  const [open, setOpen] = useState(false);
+  const [traineeId, setTraineeId] = useState('');
+  const [notes, setNotes] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedTraineeId) return;
-
-    assignTrainee(
-      { traineeId: selectedTraineeId, notes: notes.trim() || undefined },
-      {
-        onSuccess: () => {
-          setSelectedTraineeId("");
-          setNotes("");
-          onOpenChange(false);
-        },
-      }
-    );
+  const handleAssign = () => {
+    if (traineeId.trim()) {
+      onAssign(traineeId.trim(), notes.trim() || undefined);
+      setTraineeId('');
+      setNotes('');
+      setOpen(false);
+    }
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button>
+          <UserPlus className="w-4 h-4 mr-2" />
+          Assign Trainee
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
         <DialogHeader>
-          <DialogTitle className="flex items-center">
-            <UserPlus className="h-5 w-5 mr-2" />
-            {language === 'ar' ? 'إضافة متدرب جديد' : 'Add New Trainee'}
-          </DialogTitle>
+          <DialogTitle>Assign New Trainee</DialogTitle>
         </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="trainee-select">
-              {language === 'ar' ? 'اختر المتدرب' : 'Select Trainee'}
-            </Label>
-            <UserSearchDropdown
-              value={selectedTraineeId}
-              onValueChange={setSelectedTraineeId}
-              placeholder={language === 'ar' ? 
-                'ابحث واختر متدرب...' : 
-                'Search and select a trainee...'
-              }
-              excludeRoles={['admin', 'coach']}
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="traineeId">Trainee ID</Label>
+            <Input
+              id="traineeId"
+              value={traineeId}
+              onChange={(e) => setTraineeId(e.target.value)}
+              placeholder="Enter trainee ID"
             />
-            <p className="text-xs text-gray-500">
-              {language === 'ar' ? 
-                'يجب أن يكون للمتدرب حساب مُسجل في التطبيق.' :
-                'The trainee must have a registered account in the app.'
-              }
-            </p>
           </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="notes">
-              {language === 'ar' ? 'ملاحظات (اختياري)' : 'Notes (Optional)'}
-            </Label>
-            <Textarea
+          <div>
+            <Label htmlFor="notes">Notes (Optional)</Label>
+            <Input
               id="notes"
-              placeholder={language === 'ar' ? 
-                'أضف أي ملاحظات حول المتدرب...' : 
-                'Add any notes about the trainee...'
-              }
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              rows={3}
+              placeholder="Add notes about this trainee"
             />
           </div>
-
-          <div className="flex justify-end space-x-2">
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={() => onOpenChange(false)}
-              disabled={isAssigning}
-            >
-              {language === 'ar' ? 'إلغاء' : 'Cancel'}
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setOpen(false)}>
+              Cancel
             </Button>
-            <Button type="submit" disabled={isAssigning || !selectedTraineeId}>
-              {isAssigning ? (language === 'ar' ? 'جارٍ الإضافة...' : 'Adding...') : 
-                            (language === 'ar' ? 'إضافة متدرب' : 'Add Trainee')}
+            <Button onClick={handleAssign} disabled={!traineeId.trim() || isLoading}>
+              {isLoading ? 'Assigning...' : 'Assign'}
             </Button>
           </div>
-        </form>
+        </div>
       </DialogContent>
     </Dialog>
   );
