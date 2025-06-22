@@ -1,14 +1,13 @@
 
-import { ProgressDashboard } from "@/features/progress";
+import React from 'react';
+import ProgressDashboard from './ProgressDashboard';
 
-const Progress = () => {
+const ProgressPage = () => {
   return (
-    
-      
-        <ProgressDashboard />
-      
-    
+    <div className="container mx-auto">
+      <ProgressDashboard />
+    </div>
   );
 };
 
-export default Progress;
+export default ProgressPage;
