@@ -3,7 +3,16 @@ import React, { useMemo } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { UnifiedAILoadingDialog } from "@/features/chat/components";
 import { useAILoadingSteps } from "@/features/ai/hooks/useAILoadingSteps";
-import type { AIStep } from "@/features/chat/components/AILoadingSteps";
+
+// Define extended AI step interface to match the hook's expectations
+interface ExtendedAIStep {
+  id: string;
+  label: string;
+  description: string;
+  estimatedDuration: number;
+  completed: boolean;
+  loading: boolean;
+}
 
 interface SnackGenerationProgressProps {
   step: string;
@@ -18,30 +27,38 @@ const SnackGenerationProgress = ({
 }: SnackGenerationProgressProps) => {
   const { t, isRTL } = useLanguage();
 
-  const steps = useMemo((): AIStep[] => [
+  const steps = useMemo((): ExtendedAIStep[] => [
     {
       id: 'analyzing-calories',
       label: t('mealPlan.addSnack.analyzing') || 'Analyzing remaining calories',
       description: 'Calculating optimal snack size for your daily goals',
-      estimatedDuration: 2
+      estimatedDuration: 2,
+      completed: false,
+      loading: false
     },
     {
       id: 'generating-snack',
       label: t('mealPlan.addSnack.generating') || 'Generating AI Snack',
       description: 'Creating the perfect snack for your remaining calories',
-      estimatedDuration: 5
+      estimatedDuration: 5,
+      completed: false,
+      loading: false
     },
     {
       id: 'optimizing-nutrition',
       label: t('mealPlan.addSnack.optimizing') || 'Optimizing nutrition',
       description: 'Ensuring nutritional balance with your existing meals',
-      estimatedDuration: 3
+      estimatedDuration: 3,
+      completed: false,
+      loading: false
     },
     {
       id: 'finalizing-snack',
       label: t('mealPlan.addSnack.finalizing') || 'Finalizing snack',
       description: 'Adding snack to your meal plan',
-      estimatedDuration: 2
+      estimatedDuration: 2,
+      completed: false,
+      loading: false
     }
   ], [t]);
 

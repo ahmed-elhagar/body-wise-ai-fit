@@ -80,7 +80,7 @@ const AIChatInterface = () => {
   const hasMessages = messages.length > 0;
   const lastAssistantMessage = messages.filter(m => m.role === 'assistant').pop()?.content || "";
 
-  // Convert messages for analytics - handle proper type conversion
+  // Convert messages for analytics - properly map to ChatMessage type
   const analyticsMessages: ChatMessage[] = messages.map(msg => ({
     id: msg.id,
     content: msg.content,

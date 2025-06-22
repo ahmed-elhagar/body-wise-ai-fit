@@ -1,3 +1,4 @@
+
 import { BaseService, type QueryResult, type ApiResponse } from '@/shared/services';
 import { supabase } from '@/integrations/supabase/client';
 import type { 
@@ -46,7 +47,7 @@ class FoodTrackerService extends BaseService {
   }
 
   /**
-   * Get food entries for a user
+   * Get food consumption entries for a user
    */
   async getFoodEntries(
     userId: string, 
@@ -58,21 +59,33 @@ class FoodTrackerService extends BaseService {
       'getFoodEntries',
       async () => {
         let query = supabase
-          .from('food_entries')
-          .select('*')
+          .from('food_consumption_log')
+          .select(`
+            id,
+            user_id,
+            food_item_id,
+            quantity_g,
+            calories_consumed,
+            protein_consumed,
+            carbs_consumed,
+            fat_consumed,
+            meal_type,
+            consumed_at,
+            food_items (
+              name
+            )
+          `)
           .eq('user_id', userId)
-          .order('created_at', { ascending: false });
+          .order('consumed_at', { ascending: false });
 
         if (filters.date) {
-          query = query.eq('date', filters.date);
+          const startDate = `${filters.date}T00:00:00`;
+          const endDate = `${filters.date}T23:59:59`;
+          query = query.gte('consumed_at', startDate).lte('consumed_at', endDate);
         }
 
         if (filters.mealType) {
           query = query.eq('meal_type', filters.mealType);
-        }
-
-        if (filters.searchTerm) {
-          query = query.ilike('food_name', `%${filters.searchTerm}%`);
         }
 
         if (filters.limit) {
@@ -83,7 +96,25 @@ class FoodTrackerService extends BaseService {
           query = query.range(filters.offset, (filters.offset + (filters.limit || 10)) - 1);
         }
 
-        return await query;
+        const { data, error } = await query;
+        
+        if (error) return { data: null, error };
+
+        // Transform data to match FoodEntry interface
+        const transformedData: FoodEntry[] = (data || []).map(item => ({
+          id: item.id,
+          user_id: item.user_id,
+          food_name: item.food_items?.name || 'Unknown Food',
+          calories: item.calories_consumed || 0,
+          protein: item.protein_consumed || 0,
+          carbs: item.carbs_consumed || 0,
+          fat: item.fat_consumed || 0,
+          meal_type: item.meal_type || 'snack',
+          quantity: item.quantity_g || 0,
+          created_at: item.consumed_at || new Date().toISOString()
+        }));
+
+        return { data: transformedData, error: null };
       },
       cacheKey
     );
@@ -92,17 +123,63 @@ class FoodTrackerService extends BaseService {
   }
 
   /**
-   * Add a new food entry
+   * Add a new food consumption entry
    */
-  async addFoodEntry(foodEntry: Omit<FoodEntry, 'id' | 'created_at' | 'updated_at'>): Promise<ApiResponse<FoodEntry>> {
+  async addFoodEntry(foodEntry: Omit<FoodEntry, 'id' | 'created_at'>): Promise<ApiResponse<FoodEntry>> {
     const result = await this.executeQuery<FoodEntry>(
       'addFoodEntry',
       async () => {
-        return await supabase
-          .from('food_entries')
-          .insert([foodEntry])
+        // First create or find the food item
+        const { data: foodItem, error: foodItemError } = await supabase
+          .from('food_items')
+          .insert({
+            name: foodEntry.food_name,
+            calories_per_100g: (foodEntry.calories / foodEntry.quantity) * 100,
+            protein_per_100g: (foodEntry.protein / foodEntry.quantity) * 100,
+            carbs_per_100g: (foodEntry.carbs / foodEntry.quantity) * 100,
+            fat_per_100g: (foodEntry.fat / foodEntry.quantity) * 100,
+            category: 'general'
+          })
           .select()
           .single();
+
+        if (foodItemError) {
+          return { data: null, error: foodItemError };
+        }
+
+        // Then create the consumption log entry
+        const { data, error } = await supabase
+          .from('food_consumption_log')
+          .insert({
+            user_id: foodEntry.user_id,
+            food_item_id: foodItem.id,
+            quantity_g: foodEntry.quantity,
+            calories_consumed: foodEntry.calories,
+            protein_consumed: foodEntry.protein,
+            carbs_consumed: foodEntry.carbs,
+            fat_consumed: foodEntry.fat,
+            meal_type: foodEntry.meal_type,
+            consumed_at: new Date().toISOString()
+          })
+          .select()
+          .single();
+
+        if (error) return { data: null, error };
+
+        const transformedEntry: FoodEntry = {
+          id: data.id,
+          user_id: data.user_id,
+          food_name: foodEntry.food_name,
+          calories: data.calories_consumed,
+          protein: data.protein_consumed,
+          carbs: data.carbs_consumed,
+          fat: data.fat_consumed,
+          meal_type: data.meal_type,
+          quantity: data.quantity_g,
+          created_at: data.consumed_at
+        };
+
+        return { data: transformedEntry, error: null };
       }
     );
 
@@ -113,7 +190,7 @@ class FoodTrackerService extends BaseService {
   }
 
   /**
-   * Update an existing food entry
+   * Update an existing food consumption entry
    */
   async updateFoodEntry(
     entryId: string, 
@@ -122,12 +199,36 @@ class FoodTrackerService extends BaseService {
     const result = await this.executeQuery<FoodEntry>(
       'updateFoodEntry',
       async () => {
-        return await supabase
-          .from('food_entries')
-          .update(updates)
+        const { data, error } = await supabase
+          .from('food_consumption_log')
+          .update({
+            quantity_g: updates.quantity,
+            calories_consumed: updates.calories,
+            protein_consumed: updates.protein,
+            carbs_consumed: updates.carbs,
+            fat_consumed: updates.fat,
+            meal_type: updates.meal_type
+          })
           .eq('id', entryId)
           .select()
           .single();
+
+        if (error) return { data: null, error };
+
+        const transformedEntry: FoodEntry = {
+          id: data.id,
+          user_id: data.user_id,
+          food_name: updates.food_name || 'Unknown Food',
+          calories: data.calories_consumed,
+          protein: data.protein_consumed,
+          carbs: data.carbs_consumed,
+          fat: data.fat_consumed,
+          meal_type: data.meal_type,
+          quantity: data.quantity_g,
+          created_at: data.consumed_at
+        };
+
+        return { data: transformedEntry, error: null };
       }
     );
 
@@ -140,14 +241,14 @@ class FoodTrackerService extends BaseService {
   }
 
   /**
-   * Delete a food entry
+   * Delete a food consumption entry
    */
   async deleteFoodEntry(entryId: string, userId: string): Promise<ApiResponse<void>> {
     const result = await this.executeQuery<void>(
       'deleteFoodEntry',
       async () => {
         const { error } = await supabase
-          .from('food_entries')
+          .from('food_consumption_log')
           .delete()
           .eq('id', entryId);
 
@@ -162,51 +263,6 @@ class FoodTrackerService extends BaseService {
   }
 
   /**
-   * Get nutrition goals for a user
-   */
-  async getNutritionGoals(userId: string): Promise<ApiResponse<NutritionGoals>> {
-    const cacheKey = this.generateCacheKey('goals', userId);
-    
-    const result = await this.executeQuery<NutritionGoals>(
-      'getNutritionGoals',
-      async () => {
-        return await supabase
-          .from('nutrition_goals')
-          .select('*')
-          .eq('user_id', userId)
-          .single();
-      },
-      cacheKey
-    );
-
-    return this.toApiResponse(result, 'Nutrition goals retrieved successfully');
-  }
-
-  /**
-   * Update nutrition goals for a user
-   */
-  async updateNutritionGoals(
-    userId: string, 
-    goals: Omit<NutritionGoals, 'user_id'>
-  ): Promise<ApiResponse<NutritionGoals>> {
-    const result = await this.executeQuery<NutritionGoals>(
-      'updateNutritionGoals',
-      async () => {
-        return await supabase
-          .from('nutrition_goals')
-          .upsert([{ user_id: userId, ...goals }])
-          .select()
-          .single();
-      }
-    );
-
-    // Clear goals cache
-    this.clearUserCache(userId, 'goals');
-
-    return this.toApiResponse(result, 'Nutrition goals updated successfully');
-  }
-
-  /**
    * Search food database
    */
   async searchFood(query: string, limit = 20): Promise<ApiResponse<FoodSearchResult[]>> {
@@ -215,11 +271,25 @@ class FoodTrackerService extends BaseService {
     const result = await this.executeQuery<FoodSearchResult[]>(
       'searchFood',
       async () => {
-        return await supabase
-          .from('food_database')
+        const { data, error } = await supabase
+          .from('food_items')
           .select('*')
           .or(`name.ilike.%${query}%,brand.ilike.%${query}%`)
           .limit(limit);
+
+        if (error) return { data: null, error };
+
+        const transformedResults: FoodSearchResult[] = (data || []).map(item => ({
+          id: item.id,
+          name: item.name,
+          calories_per_100g: item.calories_per_100g,
+          protein_per_100g: item.protein_per_100g,
+          carbs_per_100g: item.carbs_per_100g,
+          fat_per_100g: item.fat_per_100g,
+          category: item.category
+        }));
+
+        return { data: transformedResults, error: null };
       },
       cacheKey
     );
@@ -232,7 +302,7 @@ class FoodTrackerService extends BaseService {
    */
   async analyzeFoodPhoto(imageBase64: string, userId: string): Promise<ApiResponse<FoodAnalysisResult>> {
     const result = await this.executeFunction<FoodAnalysisResult>(
-      'analyze-food-photo',
+      'analyze-food-image',
       {
         image: imageBase64,
         user_id: userId
@@ -241,144 +311,6 @@ class FoodTrackerService extends BaseService {
     );
 
     return this.toApiResponse(result, 'Food photo analyzed successfully');
-  }
-
-  /**
-   * Get water intake for a user
-   */
-  async getWaterIntake(userId: string, date?: string): Promise<ApiResponse<WaterIntakeRecord>> {
-    const cacheKey = this.generateCacheKey('water', userId, date || 'today');
-    
-    const result = await this.executeQuery<WaterIntakeRecord>(
-      'getWaterIntake',
-      async () => {
-        let query = supabase
-          .from('water_intake')
-          .select('*')
-          .eq('user_id', userId);
-
-        if (date) {
-          query = query.eq('date', date);
-        } else {
-          // Get today's record
-          const today = new Date().toISOString().split('T')[0];
-          query = query.eq('date', today);
-        }
-
-        return await query.single();
-      },
-      cacheKey
-    );
-
-    return this.toApiResponse(result, 'Water intake retrieved successfully');
-  }
-
-  /**
-   * Update water intake
-   */
-  async updateWaterIntake(
-    userId: string, 
-    glasses: number, 
-    date?: string
-  ): Promise<ApiResponse<WaterIntakeRecord>> {
-    const targetDate = date || new Date().toISOString().split('T')[0];
-
-    const result = await this.executeQuery<WaterIntakeRecord>(
-      'updateWaterIntake',
-      async () => {
-        return await supabase
-          .from('water_intake')
-          .upsert([{
-            user_id: userId,
-            glasses_consumed: glasses,
-            date: targetDate
-          }])
-          .select()
-          .single();
-      }
-    );
-
-    // Clear water cache for this user
-    this.clearUserCache(userId, 'water');
-
-    return this.toApiResponse(result, 'Water intake updated successfully');
-  }
-
-  /**
-   * Get daily nutrition summary
-   */
-  async getDailyNutritionSummary(userId: string, date?: string): Promise<ApiResponse<{
-    totalCalories: number;
-    totalProtein: number;
-    totalCarbs: number;
-    totalFat: number;
-    totalFiber: number;
-    mealBreakdown: Record<string, any>;
-    waterIntake: number;
-  }>> {
-    const targetDate = date || new Date().toISOString().split('T')[0];
-    const cacheKey = this.generateCacheKey('summary', userId, targetDate);
-
-    const result = await this.executeQuery(
-      'getDailyNutritionSummary',
-      async () => {
-        // Get food entries for the day
-        const { data: entries, error: entriesError } = await supabase
-          .from('food_entries')
-          .select('*')
-          .eq('user_id', userId)
-          .eq('date', targetDate);
-
-        if (entriesError) {
-          return { data: null, error: entriesError };
-        }
-
-        // Get water intake
-        const { data: waterData } = await supabase
-          .from('water_intake')
-          .select('glasses_consumed')
-          .eq('user_id', userId)
-          .eq('date', targetDate)
-          .single();
-
-        // Calculate totals
-        const totals = (entries || []).reduce((acc, entry) => ({
-          totalCalories: acc.totalCalories + (entry.calories || 0),
-          totalProtein: acc.totalProtein + (entry.protein || 0),
-          totalCarbs: acc.totalCarbs + (entry.carbs || 0),
-          totalFat: acc.totalFat + (entry.fat || 0),
-          totalFiber: acc.totalFiber + (entry.fiber || 0)
-        }), {
-          totalCalories: 0,
-          totalProtein: 0,
-          totalCarbs: 0,
-          totalFat: 0,
-          totalFiber: 0
-        });
-
-        // Group by meal type
-        const mealBreakdown = (entries || []).reduce((acc, entry) => {
-          const mealType = entry.meal_type || 'other';
-          if (!acc[mealType]) {
-            acc[mealType] = [];
-          }
-          acc[mealType].push(entry);
-          return acc;
-        }, {} as Record<string, any>);
-
-        return {
-          data: {
-            ...totals,
-            mealBreakdown,
-            waterIntake: waterData?.glasses_consumed || 0
-          },
-          error: null
-        };
-      },
-      cacheKey
-    );
-
-    return this.toApiResponse(result, 'Daily nutrition summary retrieved successfully');
   }
 
   /**
@@ -419,4 +351,4 @@ class FoodTrackerService extends BaseService {
 
 // Export singleton instance
 export const foodTrackerService = new FoodTrackerService();
-export default foodTrackerService; 
+export default foodTrackerService;
