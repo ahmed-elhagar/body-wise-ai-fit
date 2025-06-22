@@ -1,14 +1,15 @@
-
 import { addWeeks, startOfWeek, format } from 'date-fns';
 import type { DailyMeal } from '@/features/meal-plan/types';
 
-// Cache to prevent excessive recalculation
+// Simplified cache with better memory management
 const weekStartCache = new Map<number, Date>();
 
 export const getWeekStartDate = (offset: number = 0): Date => {
-  // Check cache first
+  // Check cache first to prevent recalculation
   if (weekStartCache.has(offset)) {
-    return weekStartCache.get(offset)!;
+    const cached = weekStartCache.get(offset)!;
+    console.log('📅 Using cached weekStartDate for offset:', offset);
+    return cached;
   }
 
   const today = new Date();
@@ -22,16 +23,17 @@ export const getWeekStartDate = (offset: number = 0): Date => {
   const targetWeek = new Date(currentSaturday);
   targetWeek.setDate(currentSaturday.getDate() + offset * 7);
   
-  // Cache the result
+  // Cache the result with memory management
   weekStartCache.set(offset, targetWeek);
   
-  // Clear cache periodically to prevent memory leaks
-  if (weekStartCache.size > 10) {
-    const oldestKey = Math.min(...weekStartCache.keys());
-    weekStartCache.delete(oldestKey);
+  // Prevent memory leaks by limiting cache size
+  if (weekStartCache.size > 5) {
+    const keys = Array.from(weekStartCache.keys()).sort((a, b) => a - b);
+    const keysToDelete = keys.slice(0, keys.length - 5);
+    keysToDelete.forEach(key => weekStartCache.delete(key));
   }
   
-  console.log('📅 getWeekStartDate calculation (cached):', {
+  console.log('📅 Calculated new weekStartDate:', {
     offset,
     targetWeek: targetWeek.toISOString().split('T')[0],
     cacheSize: weekStartCache.size

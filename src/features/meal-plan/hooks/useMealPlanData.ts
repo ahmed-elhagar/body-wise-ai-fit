@@ -5,6 +5,7 @@ import { useEnhancedErrorHandling } from '@/shared/hooks/useEnhancedErrorHandlin
 import { getWeekStartDate } from '@/utils/mealPlanUtils';
 import { format } from 'date-fns';
 import { fetchMealPlanData } from '../services/mealPlanService';
+import { useMemo } from 'react';
 
 // Re-export types for backward compatibility - use the main types from features
 export type { MealIngredient, DailyMeal, WeeklyMealPlan } from '@/features/meal-plan/types';
@@ -13,8 +14,19 @@ export const useMealPlanData = (weekOffset: number = 0) => {
   const { user } = useAuth();
   const { handleError, handleAPITimeout } = useEnhancedErrorHandling();
 
-  // Create a stable query key to prevent infinite loops
-  const queryKey = ['weekly-meal-plan', user?.id, weekOffset];
+  // Memoize the week start date to prevent excessive recalculation
+  const weekStartDateStr = useMemo(() => {
+    const weekStartDate = getWeekStartDate(weekOffset);
+    return format(weekStartDate, 'yyyy-MM-dd');
+  }, [weekOffset]);
+
+  // Create a stable query key with primitive values only (no objects/functions)
+  const queryKey = useMemo(() => [
+    'weekly-meal-plan', 
+    user?.id || 'anonymous', 
+    weekOffset, 
+    weekStartDateStr
+  ], [user?.id, weekOffset, weekStartDateStr]);
 
   return useQuery({
     queryKey,
@@ -25,10 +37,6 @@ export const useMealPlanData = (weekOffset: number = 0) => {
       }
       
       try {
-        // Calculate date only once and cache it
-        const weekStartDate = getWeekStartDate(weekOffset);
-        const weekStartDateStr = format(weekStartDate, 'yyyy-MM-dd');
-        
         console.log('🔍 Fetching meal plan data:', {
           userId: user.id.substring(0, 8) + '...',
           weekOffset,
