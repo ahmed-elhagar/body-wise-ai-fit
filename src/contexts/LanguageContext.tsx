@@ -24,7 +24,6 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const storedLanguage = localStorage.getItem('preferred-language') as Language;
     if (storedLanguage && ['en', 'ar'].includes(storedLanguage)) {
       setLanguageState(storedLanguage);
-      // Use the imported i18n instance directly
       i18n.changeLanguage(storedLanguage);
     }
   }, []);
@@ -38,7 +37,6 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const changeLanguage = async (lng: Language) => {
     try {
-      // Use the imported i18n instance directly
       await i18n.changeLanguage(lng);
       setLanguageState(lng);
       localStorage.setItem('preferred-language', lng);

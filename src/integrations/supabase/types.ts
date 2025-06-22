@@ -891,9 +891,17 @@ export type Database = {
         Row: {
           basic_info_completed: boolean | null
           basic_info_completed_at: string | null
+          body_shape_completed: boolean | null
+          body_shape_completed_at: string | null
           completed_at: string | null
           completion_percentage: number | null
           current_step: number | null
+          demographics_completed: boolean | null
+          demographics_completed_at: string | null
+          dietary_preferences_completed: boolean | null
+          dietary_preferences_completed_at: string | null
+          fitness_goals_completed: boolean | null
+          fitness_goals_completed_at: string | null
           goals_setup_completed: boolean | null
           goals_setup_completed_at: string | null
           health_assessment_completed: boolean | null
@@ -903,17 +911,29 @@ export type Database = {
           preferences_completed_at: string | null
           profile_review_completed: boolean | null
           profile_review_completed_at: string | null
+          skip_reasons: Json | null
+          skipped_steps: string[] | null
           started_at: string | null
           total_steps: number | null
           updated_at: string | null
           user_id: string
+          welcome_viewed: boolean | null
+          welcome_viewed_at: string | null
         }
         Insert: {
           basic_info_completed?: boolean | null
           basic_info_completed_at?: string | null
+          body_shape_completed?: boolean | null
+          body_shape_completed_at?: string | null
           completed_at?: string | null
           completion_percentage?: number | null
           current_step?: number | null
+          demographics_completed?: boolean | null
+          demographics_completed_at?: string | null
+          dietary_preferences_completed?: boolean | null
+          dietary_preferences_completed_at?: string | null
+          fitness_goals_completed?: boolean | null
+          fitness_goals_completed_at?: string | null
           goals_setup_completed?: boolean | null
           goals_setup_completed_at?: string | null
           health_assessment_completed?: boolean | null
@@ -923,17 +943,29 @@ export type Database = {
           preferences_completed_at?: string | null
           profile_review_completed?: boolean | null
           profile_review_completed_at?: string | null
+          skip_reasons?: Json | null
+          skipped_steps?: string[] | null
           started_at?: string | null
           total_steps?: number | null
           updated_at?: string | null
           user_id: string
+          welcome_viewed?: boolean | null
+          welcome_viewed_at?: string | null
         }
         Update: {
           basic_info_completed?: boolean | null
           basic_info_completed_at?: string | null
+          body_shape_completed?: boolean | null
+          body_shape_completed_at?: string | null
           completed_at?: string | null
           completion_percentage?: number | null
           current_step?: number | null
+          demographics_completed?: boolean | null
+          demographics_completed_at?: string | null
+          dietary_preferences_completed?: boolean | null
+          dietary_preferences_completed_at?: string | null
+          fitness_goals_completed?: boolean | null
+          fitness_goals_completed_at?: string | null
           goals_setup_completed?: boolean | null
           goals_setup_completed_at?: string | null
           health_assessment_completed?: boolean | null
@@ -943,10 +975,14 @@ export type Database = {
           preferences_completed_at?: string | null
           profile_review_completed?: boolean | null
           profile_review_completed_at?: string | null
+          skip_reasons?: Json | null
+          skipped_steps?: string[] | null
           started_at?: string | null
           total_steps?: number | null
           updated_at?: string | null
           user_id?: string
+          welcome_viewed?: boolean | null
+          welcome_viewed_at?: string | null
         }
         Relationships: []
       }
@@ -1600,16 +1636,7 @@ export type Database = {
       }
       get_current_exercise_program: {
         Args: { user_id_param: string }
-        Returns: {
-          id: string
-          program_name: string
-          difficulty_level: string
-          workout_type: string
-          current_week: number
-          week_start_date: string
-          created_at: string
-          daily_workouts_count: number
-        }[]
+        Returns: Json
       }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
@@ -1730,6 +1757,10 @@ export type Database = {
       show_trgm: {
         Args: { "": string }
         Returns: string[]
+      }
+      shuffle_weekly_meals: {
+        Args: { p_user_id: string; p_week_start_date: string }
+        Returns: Json
       }
       update_user_online_status: {
         Args: { user_id: string; is_online: boolean }
