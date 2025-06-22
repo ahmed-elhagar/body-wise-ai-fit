@@ -103,11 +103,13 @@ const AIChatInterface = () => {
     sender_type: msg.role === 'assistant' ? 'ai' : 'user' as "user" | "ai" | "coach" | "trainee"
   }));
 
-  // Convert messages for SmartReplySuggestions with proper format
-  const smartReplyMessages: SmartReplyMessage[] = messages.map(msg => ({
+  // Convert messages for SmartReplySuggestions with proper format including required properties
+  const smartReplyMessages: ChatMessage[] = messages.map(msg => ({
+    id: msg.id || Date.now().toString(),
     role: msg.role as "user" | "assistant",
     content: msg.content,
-    timestamp: msg.timestamp?.getTime() || Date.now()
+    created_at: new Date().toISOString(),
+    sender_type: msg.role === 'assistant' ? 'ai' : 'user' as "user" | "ai" | "coach" | "trainee"
   }));
 
   return (

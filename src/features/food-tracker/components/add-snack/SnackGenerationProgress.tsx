@@ -3,16 +3,7 @@ import React, { useMemo } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { UnifiedAILoadingDialog } from "@/features/chat/components";
 import { useAILoadingSteps } from "@/features/ai/hooks/useAILoadingSteps";
-
-// Define extended AI step interface to match the hook's expectations
-interface ExtendedAIStep {
-  id: string;
-  label: string;
-  description: string;
-  estimatedDuration: number;
-  completed: boolean;
-  loading: boolean;
-}
+import type { ExtendedAIStep } from "@/features/ai/hooks/useAILoadingSteps";
 
 interface SnackGenerationProgressProps {
   step: string;
@@ -30,35 +21,31 @@ const SnackGenerationProgress = ({
   const steps = useMemo((): ExtendedAIStep[] => [
     {
       id: 'analyzing-calories',
-      label: t('mealPlan.addSnack.analyzing') || 'Analyzing remaining calories',
+      title: t('mealPlan.addSnack.analyzing') || 'Analyzing remaining calories',
       description: 'Calculating optimal snack size for your daily goals',
-      estimatedDuration: 2,
-      completed: false,
-      loading: false
+      status: 'pending' as const,
+      estimatedDuration: 2
     },
     {
       id: 'generating-snack',
-      label: t('mealPlan.addSnack.generating') || 'Generating AI Snack',
+      title: t('mealPlan.addSnack.generating') || 'Generating AI Snack',
       description: 'Creating the perfect snack for your remaining calories',
-      estimatedDuration: 5,
-      completed: false,
-      loading: false
+      status: 'pending' as const,
+      estimatedDuration: 5
     },
     {
       id: 'optimizing-nutrition',
-      label: t('mealPlan.addSnack.optimizing') || 'Optimizing nutrition',
+      title: t('mealPlan.addSnack.optimizing') || 'Optimizing nutrition',
       description: 'Ensuring nutritional balance with your existing meals',
-      estimatedDuration: 3,
-      completed: false,
-      loading: false
+      status: 'pending' as const,
+      estimatedDuration: 3
     },
     {
       id: 'finalizing-snack',
-      label: t('mealPlan.addSnack.finalizing') || 'Finalizing snack',
+      title: t('mealPlan.addSnack.finalizing') || 'Finalizing snack',
       description: 'Adding snack to your meal plan',
-      estimatedDuration: 2,
-      completed: false,
-      loading: false
+      status: 'pending' as const,
+      estimatedDuration: 2
     }
   ], [t]);
 

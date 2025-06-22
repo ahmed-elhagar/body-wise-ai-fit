@@ -47,8 +47,8 @@ export const useCentralizedCredits = () => {
         return { success: false, error: error.message };
       }
 
-      // Type assertion for the response data
-      const response = data as CreditCheckResponse;
+      // Type assertion for the response data with proper conversion
+      const response = data as unknown as CreditCheckResponse;
 
       if (!response || !response.success) {
         return { 

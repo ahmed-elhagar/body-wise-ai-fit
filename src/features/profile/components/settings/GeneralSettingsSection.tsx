@@ -15,7 +15,7 @@ import { toast } from "sonner";
 const GeneralSettingsSection = () => {
   const { language, setLanguage } = useLanguage();
   const { profile, updateProfile } = useProfile();
-  const { preferences: userPreferences, updatePreferences, isUpdating } = useUserPreferences();
+  const { preferences: userPreferences, updatePreferences, saving } = useUserPreferences();
   const [isLanguageLoading, setIsLanguageLoading] = useState(false);
   
   const [preferences, setPreferences] = useState({
@@ -78,7 +78,7 @@ const GeneralSettingsSection = () => {
       <Card className="p-6">
         <div className="flex items-center mb-4">
           <Globe className="w-5 h-5 text-fitness-primary mr-2" />
-          <h3 className="text-lg font-semibold text-gray-8brand-neutral-600brand-neutral-600">Language & Region</h3>
+          <h3 className="text-lg font-semibold text-gray-800">Language & Region</h3>
         </div>
         
         <div className="space-y-4">
@@ -117,7 +117,7 @@ const GeneralSettingsSection = () => {
       <Card className="p-6">
         <div className="flex items-center mb-4">
           <Palette className="w-5 h-5 text-fitness-primary mr-2" />
-          <h3 className="text-lg font-semibold text-gray-8brand-neutral-600brand-neutral-600">Appearance</h3>
+          <h3 className="text-lg font-semibold text-gray-800">Appearance</h3>
         </div>
         
         <div>
@@ -142,14 +142,14 @@ const GeneralSettingsSection = () => {
       <Card className="p-6">
         <div className="flex items-center mb-4">
           <Bell className="w-5 h-5 text-fitness-primary mr-2" />
-          <h3 className="text-lg font-semibold text-gray-8brand-neutral-600brand-neutral-600">Notifications</h3>
+          <h3 className="text-lg font-semibold text-gray-800">Notifications</h3>
         </div>
         
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <Label htmlFor="notifications">Push Notifications</Label>
-              <p className="text-sm text-gray-6brand-neutral-600brand-neutral-600">Receive workout and meal reminders</p>
+              <p className="text-sm text-gray-600">Receive workout and meal reminders</p>
             </div>
             <Switch
               id="notifications"
@@ -163,7 +163,7 @@ const GeneralSettingsSection = () => {
           <div className="flex items-center justify-between">
             <div>
               <Label htmlFor="emailUpdates">Email Updates</Label>
-              <p className="text-sm text-gray-6brand-neutral-600brand-neutral-600">Weekly progress reports and tips</p>
+              <p className="text-sm text-gray-600">Weekly progress reports and tips</p>
             </div>
             <Switch
               id="emailUpdates"
@@ -178,13 +178,13 @@ const GeneralSettingsSection = () => {
       <Card className="p-6">
         <div className="flex items-center mb-4">
           <Shield className="w-5 h-5 text-fitness-primary mr-2" />
-          <h3 className="text-lg font-semibold text-gray-8brand-neutral-600brand-neutral-600">Privacy</h3>
+          <h3 className="text-lg font-semibold text-gray-800">Privacy</h3>
         </div>
         
         <div className="flex items-center justify-between">
           <div>
             <Label htmlFor="dataSharing">Anonymous Data Sharing</Label>
-            <p className="text-sm text-gray-6brand-neutral-600brand-neutral-600">Help improve our AI recommendations</p>
+            <p className="text-sm text-gray-600">Help improve our AI recommendations</p>
           </div>
           <Switch
             id="dataSharing"
@@ -198,10 +198,10 @@ const GeneralSettingsSection = () => {
       <div className="flex justify-end">
         <Button 
           onClick={handleSavePreferences}
-          className="bg-fitness-gradient hover:opacity-9brand-neutral-600"
-          disabled={isUpdating}
+          className="bg-fitness-gradient hover:opacity-90"
+          disabled={saving}
         >
-          {isUpdating ? (
+          {saving ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               Saving...
