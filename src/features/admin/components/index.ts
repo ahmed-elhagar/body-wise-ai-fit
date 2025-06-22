@@ -19,3 +19,6 @@ export { default as PaginatedUsersTable } from './PaginatedUsersTable';
 export { default as OptimizedPaginatedUsersTable } from './OptimizedPaginatedUsersTable';
 export { default as EnhancedUsersTable } from './EnhancedUsersTable';
 export { default as UsersTable } from './UsersTable';
+
+// Export MainStatsCards as EnhancedStatsCards for backward compatibility
+export { default as EnhancedStatsCards } from './MainStatsCards';

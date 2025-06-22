@@ -5,19 +5,17 @@ import { Users } from 'lucide-react';
 
 const TraineesTab: React.FC = () => {
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="w-5 h-5" />
-            My Trainees
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-gray-600">No trainees assigned yet.</p>
-        </CardContent>
-      </Card>
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Users className="w-5 h-5" />
+          Trainees Management
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="text-gray-600">Trainees management interface will be implemented here.</p>
+      </CardContent>
+    </Card>
   );
 };
 

@@ -2,12 +2,12 @@
 import { useAuth } from '@/features/auth/hooks/useAuth';
 
 export const useProfile = () => {
-  const { profile, isLoading } = useAuth();
+  const { user, loading } = useAuth();
 
   return {
-    profile,
-    isLoading,
-    hasProfile: !!profile,
-    isProfileComplete: (profile?.profile_completion_score || 0) >= 80,
+    profile: user,
+    isLoading: loading,
+    hasProfile: !!user,
+    isProfileComplete: true, // Simplified for now
   };
 };

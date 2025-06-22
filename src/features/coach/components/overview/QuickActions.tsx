@@ -2,64 +2,47 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { UserPlus, MessageSquare, Calendar, BarChart3 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { UserPlus, MessageSquare, CheckSquare, TrendingUp } from 'lucide-react';
 
 interface QuickActionsProps {
-  onAssignTrainee?: () => void;
-  onSendMessage?: () => void;
-  onScheduleSession?: () => void;
-  onViewAnalytics?: () => void;
+  unreadMessages: number;
+  onAddTrainee: () => void;
+  onViewTasks: () => void;
+  onViewMessages: () => void;
 }
 
 const QuickActions: React.FC<QuickActionsProps> = ({
-  onAssignTrainee,
-  onSendMessage,
-  onScheduleSession,
-  onViewAnalytics
+  unreadMessages,
+  onAddTrainee,
+  onViewTasks,
+  onViewMessages
 }) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Quick Actions</CardTitle>
+        <CardTitle className="text-lg">Quick Actions</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-2 gap-3">
-          <Button
-            variant="outline"
-            onClick={onAssignTrainee}
-            className="flex items-center gap-2"
-          >
-            <UserPlus className="w-4 h-4" />
-            Assign Trainee
-          </Button>
-          
-          <Button
-            variant="outline"
-            onClick={onSendMessage}
-            className="flex items-center gap-2"
-          >
-            <MessageSquare className="w-4 h-4" />
-            Send Message
-          </Button>
-          
-          <Button
-            variant="outline"
-            onClick={onScheduleSession}
-            className="flex items-center gap-2"
-          >
-            <Calendar className="w-4 h-4" />
-            Schedule Session
-          </Button>
-          
-          <Button
-            variant="outline"
-            onClick={onViewAnalytics}
-            className="flex items-center gap-2"
-          >
-            <BarChart3 className="w-4 h-4" />
-            View Analytics
-          </Button>
-        </div>
+      <CardContent className="space-y-3">
+        <Button onClick={onAddTrainee} className="w-full justify-start">
+          <UserPlus className="w-4 h-4 mr-2" />
+          Add Trainee
+        </Button>
+        
+        <Button onClick={onViewMessages} variant="outline" className="w-full justify-start">
+          <MessageSquare className="w-4 h-4 mr-2" />
+          Messages
+          {unreadMessages > 0 && (
+            <Badge variant="destructive" className="ml-auto">
+              {unreadMessages}
+            </Badge>
+          )}
+        </Button>
+        
+        <Button onClick={onViewTasks} variant="outline" className="w-full justify-start">
+          <CheckSquare className="w-4 h-4 mr-2" />
+          View Tasks
+        </Button>
       </CardContent>
     </Card>
   );

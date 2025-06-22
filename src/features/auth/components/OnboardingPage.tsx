@@ -11,7 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 const OnboardingPage: React.FC = () => {
-  const { user, profile } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -72,6 +72,32 @@ const OnboardingPage: React.FC = () => {
       ...prev,
       [field]: value
     }));
+  };
+
+  const updateProfile = async (formData: any) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({
+          onboarding_completed: true,
+          profile_completion_score: 85,
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          age: parseInt(formData.age), // Convert to number
+          gender: formData.gender,
+          height: parseFloat(formData.height), // Convert to number
+          weight: parseFloat(formData.weight), // Convert to number
+          fitness_goal: formData.fitnessGoal,
+          activity_level: formData.activityLevel,
+        })
+        .eq('id', user.id);
+
+      if (error) throw error;
+      
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Error updating profile:', error);
+    }
   };
 
   const renderStepContent = () => {

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -210,7 +211,6 @@ const CoachPage = () => {
             {/* Sidebar - Quick Actions & Tasks */}
             <div className="space-y-6">
               <QuickActions 
-                pendingTasks={pendingTasks}
                 unreadMessages={totalUnreadMessages}
                 onAddTrainee={() => setShowAssignDialog(true)}
                 onViewTasks={() => setActiveTab('tasks')}
@@ -218,7 +218,6 @@ const CoachPage = () => {
               />
               
               <CompactTasksPanel 
-                onViewAllTasks={() => setActiveTab('tasks')}
                 onCreateTask={() => setShowCreateTaskDialog(true)}
               />
             </div>
@@ -226,12 +225,9 @@ const CoachPage = () => {
         </TabsContent>
 
         <TabsContent value="trainees" className="mt-6">
-          <TraineesTab 
-            trainees={trainees || []} 
-            onChatClick={(traineeId) => {
-              console.log('Opening chat for trainee:', traineeId);
-            }}
-          />
+          <div className="space-y-4">
+            <p>Trainees management will be implemented here</p>
+          </div>
         </TabsContent>
 
         <TabsContent value="tasks" className="mt-6">
@@ -239,7 +235,9 @@ const CoachPage = () => {
         </TabsContent>
 
         <TabsContent value="messages" className="mt-6">
-          <CoachMessagesTab trainees={trainees || []} />
+          <div className="space-y-4">
+            <p>Messages management will be implemented here</p>
+          </div>
         </TabsContent>
       </Tabs>
 

@@ -5,8 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Users, UserPlus, Activity, Target, TrendingUp } from "lucide-react";
 import { useCoachSystem } from "@/features/coach/hooks/useCoachSystem";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { AssignTraineeDialog } from "./AssignTraineeDialog";
-import { TraineeCard } from "./TraineeCard";
+import AssignTraineeDialog from "./AssignTraineeDialog";
+import TraineeCard from "./TraineeCard";
 import { useState } from "react";
 
 const CoachDashboard = () => {

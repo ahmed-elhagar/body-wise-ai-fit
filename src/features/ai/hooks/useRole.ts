@@ -2,16 +2,19 @@
 import { useAuth } from '@/features/auth/hooks/useAuth';
 
 export const useRole = () => {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   
-  const isAdmin = profile?.role === 'admin';
-  const isCoach = profile?.role === 'coach';
-  const isUser = profile?.role === 'normal' || !profile?.role;
+  // Get role from user metadata or default to normal
+  const role = user?.user_metadata?.role || 'normal';
+  
+  const isAdmin = role === 'admin';
+  const isCoach = role === 'coach';
+  const isUser = role === 'normal' || !role;
 
   return {
     isAdmin,
     isCoach,
     isUser,
-    role: profile?.role || 'normal',
+    role,
   };
 };

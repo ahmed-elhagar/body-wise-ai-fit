@@ -1,74 +1,48 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui/button';
 import { Users, TrendingUp } from 'lucide-react';
-
-interface TraineeProgress {
-  id: string;
-  name: string;
-  overallProgress: number;
-  workoutCompletion: number;
-  nutritionAdherence: number;
-}
+import { CoachTraineeRelationship } from '@/features/coach/types/coach.types';
 
 interface TraineeProgressOverviewProps {
-  trainees?: TraineeProgress[];
+  trainees: CoachTraineeRelationship[];
+  onViewAllTrainees: () => void;
 }
 
 const TraineeProgressOverview: React.FC<TraineeProgressOverviewProps> = ({
-  trainees = []
+  trainees,
+  onViewAllTrainees
 }) => {
-  if (trainees.length === 0) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="w-5 h-5" />
-            Trainee Progress
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-gray-600">No trainees assigned yet.</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <TrendingUp className="w-5 h-5" />
+          <Users className="w-5 h-5" />
           Trainee Progress Overview
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
           {trainees.slice(0, 3).map((trainee) => (
-            <div key={trainee.id} className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="font-medium">{trainee.name}</span>
-                <span className="text-sm text-gray-600">
-                  {trainee.overallProgress}% overall
-                </span>
+            <div key={trainee.id} className="flex items-center justify-between p-3 border rounded">
+              <div>
+                <p className="font-medium">
+                  {trainee.trainee_profile.first_name} {trainee.trainee_profile.last_name}
+                </p>
+                <p className="text-sm text-gray-600">
+                  Profile: {trainee.trainee_profile.profile_completion_score || 0}% complete
+                </p>
               </div>
-              
-              <div className="space-y-1">
-                <div className="flex justify-between text-xs text-gray-600">
-                  <span>Workouts</span>
-                  <span>{trainee.workoutCompletion}%</span>
-                </div>
-                <Progress value={trainee.workoutCompletion} className="h-2" />
-                
-                <div className="flex justify-between text-xs text-gray-600">
-                  <span>Nutrition</span>
-                  <span>{trainee.nutritionAdherence}%</span>
-                </div>
-                <Progress value={trainee.nutritionAdherence} className="h-2" />
-              </div>
+              <TrendingUp className="w-4 h-4 text-green-500" />
             </div>
           ))}
+          
+          {trainees.length > 3 && (
+            <Button variant="outline" onClick={onViewAllTrainees} className="w-full">
+              View All Trainees ({trainees.length})
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>
