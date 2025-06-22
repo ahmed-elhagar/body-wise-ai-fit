@@ -60,17 +60,13 @@ export const useCentralizedCredits = () => {
   });
 
   const completeGeneration = useMutation({
-    mutationFn: async ({ logId, responseData, errorMessage }: {
+    mutationFn: async (params: {
       logId: string;
       responseData?: any;
       errorMessage?: string;
     }) => {
       const { error } = await supabase.functions.invoke('complete-ai-generation', {
-        body: {
-          logId,
-          responseData,
-          errorMessage
-        }
+        body: params
       });
 
       if (error) throw error;
