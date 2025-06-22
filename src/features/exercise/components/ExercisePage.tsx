@@ -162,78 +162,79 @@ export const ExercisePage: React.FC = () => {
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-4">
             <div>
-              <h1 className="text-3xl font-bold mb-2">Exercise Programs</h1>
+              <div className="flex items-center gap-3 mb-2">
+                <h1 className="text-3xl font-bold">Exercise Programs</h1>
+                {renderMemberBadge()}
+              </div>
               <p className="text-blue-100 text-lg">AI-powered personalized workouts</p>
             </div>
-            {renderMemberBadge()}
           </div>
 
-          <Button 
-            onClick={handleGenerateProgram}
-            disabled={isGenerating || (!isPro && creditsRemaining <= 0)}
-            className="bg-white text-blue-600 hover:bg-gray-50"
-          >
-            {isGenerating ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Generating...
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-4 h-4 mr-2" />
-                AI Program
-              </>
-            )}
-          </Button>
+          <div className="flex items-center gap-3">
+            {/* Week Navigation - Always visible */}
+            <div className="flex items-center gap-3 bg-white/10 rounded-lg px-3 py-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setCurrentWeekOffset(currentWeekOffset - 1)}
+                className="text-white hover:bg-white/10 h-8 w-8 p-0"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <div className="text-center px-2 min-w-[140px]">
+                <div className="font-medium text-sm whitespace-nowrap">
+                  {formatWeekRange(weekStartDate)}
+                </div>
+                <div className="text-xs text-white/70">
+                  {currentWeekOffset === 0 ? 'Current Week' : 
+                   currentWeekOffset > 0 ? `Week +${currentWeekOffset}` : 
+                   `Week ${currentWeekOffset}`}
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setCurrentWeekOffset(currentWeekOffset + 1)}
+                className="text-white hover:bg-white/10 h-8 w-8 p-0"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <Button 
+              onClick={handleGenerateProgram}
+              disabled={isGenerating || (!isPro && creditsRemaining <= 0)}
+              className="bg-gradient-to-r from-white to-gray-50 text-blue-600 hover:from-gray-50 hover:to-gray-100 border-0 shadow-md hover:shadow-lg"
+            >
+              {isGenerating ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  AI Program
+                </>
+              )}
+            </Button>
+          </div>
         </div>
 
         {/* Navigation Controls */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Tabs value={workoutType} onValueChange={(value) => setWorkoutType(value as "home" | "gym")} className="w-auto">
-              <TabsList className="bg-white/10 border-white/20">
-                <TabsTrigger value="home" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/80">
-                  <Home className="h-4 w-4 mr-2" />
-                  Home
-                </TabsTrigger>
-                <TabsTrigger value="gym" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/80">
-                  <Building className="h-4 w-4 mr-2" />
-                  Gym
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-
-            {hasProgram && (
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setCurrentWeekOffset(currentWeekOffset - 1)}
-                  className="text-white hover:bg-white/10"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <div className="text-center px-4">
-                  <div className="font-medium text-sm">
-                    {formatWeekRange(weekStartDate)}
-                  </div>
-                  <div className="text-xs text-white/70">
-                    {currentWeekOffset === 0 ? 'Current Week' : 
-                     currentWeekOffset > 0 ? `Week +${currentWeekOffset}` : 
-                     `Week ${currentWeekOffset}`}
-                  </div>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setCurrentWeekOffset(currentWeekOffset + 1)}
-                  className="text-white hover:bg-white/10"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
-          </div>
+        <div className="flex items-center justify-start">
+          <Tabs value={workoutType} onValueChange={(value) => setWorkoutType(value as "home" | "gym")} className="w-auto">
+            <TabsList className="bg-white/10 border-white/20">
+              <TabsTrigger value="home" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/80">
+                <Home className="h-4 w-4 mr-2" />
+                Home
+              </TabsTrigger>
+              <TabsTrigger value="gym" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/80">
+                <Building className="h-4 w-4 mr-2" />
+                Gym
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
       </div>
 
