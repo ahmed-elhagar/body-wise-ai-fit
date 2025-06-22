@@ -17,15 +17,15 @@ import {
 import { useCoachSystem } from "@/features/coach/hooks/useCoachSystem";
 import { useCoachTasks } from "@/features/coach/hooks/useCoachTasks";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { TraineesTab } from "./TraineesTab";
+import TraineesTab from "./TraineesTab";
 import CoachTasksPanel from "./CoachTasksPanel";
-import { CoachMessagesTab } from "./CoachMessagesTab";
+import CoachMessagesTab from "./CoachMessagesTab";
 import CoachAnalyticsTab from "./CoachAnalyticsTab";
-import { TraineeProgressOverview } from "./overview/TraineeProgressOverview";
-import { QuickActions } from "./overview/QuickActions";
-import { CompactTasksPanel } from "./overview/CompactTasksPanel";
+import TraineeProgressOverview from "./overview/TraineeProgressOverview";
+import QuickActions from "./overview/QuickActions";
+import CompactTasksPanel from "./overview/CompactTasksPanel";
 import AssignTraineeDialog from "./AssignTraineeDialog";
-import { CreateTaskDialog } from "./CreateTaskDialog";
+import CreateTaskDialog from "./CreateTaskDialog";
 
 const CoachPage = () => {
   const { t } = useLanguage();
@@ -230,7 +230,6 @@ const CoachPage = () => {
             trainees={trainees || []} 
             onChatClick={(traineeId) => {
               console.log('Opening chat for trainee:', traineeId);
-              // This will be handled by TraineesTab internally
             }}
           />
         </TabsContent>
@@ -244,10 +243,9 @@ const CoachPage = () => {
         </TabsContent>
       </Tabs>
 
-      {/* Dialogs */}
       <AssignTraineeDialog 
-        open={showAssignDialog}
-        onOpenChange={setShowAssignDialog}
+        isOpen={showAssignDialog}
+        onClose={() => setShowAssignDialog(false)}
       />
       
       <CreateTaskDialog 
