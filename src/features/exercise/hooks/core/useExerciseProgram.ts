@@ -43,9 +43,13 @@ export const useExerciseProgram = () => {
 
   // Fetch current exercise program
   const { data: currentProgram, isLoading, error } = useQuery({
-    queryKey: ['exercise-program', user?.id],
+    queryKey: ['exercise-program', user?.id, currentWeekOffset],
     queryFn: async () => {
       if (!user?.id) return null;
+
+      // Calculate week start date based on offset
+      const weekStart = addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), currentWeekOffset * 7);
+      const weekStartStr = format(weekStart, 'yyyy-MM-dd');
 
       const { data, error } = await supabase
         .from('weekly_exercise_programs')
@@ -58,6 +62,8 @@ export const useExerciseProgram = () => {
         `)
         .eq('user_id', user.id)
         .eq('status', 'active')
+        .gte('week_start_date', weekStartStr)
+        .lt('week_start_date', format(addDays(weekStart, 7), 'yyyy-MM-dd'))
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -77,21 +83,23 @@ export const useExerciseProgram = () => {
     mutationFn: async (preferences: ExercisePreferences) => {
       if (!user?.id) throw new Error('User not authenticated');
 
+      const weekStart = addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), currentWeekOffset * 7);
+
       const { data, error } = await supabase.functions.invoke('generate-exercise-program', {
         body: {
           userData: {
             userId: user.id,
-            age: preferences.age || 30,
-            gender: preferences.gender || 'male',
+            age: preferences.age || profile?.age || 30,
+            gender: preferences.gender || profile?.gender || 'male',
             fitnessLevel: preferences.fitnessLevel || 'beginner',
-            weight: preferences.weight || 70,
-            height: preferences.height || 170,
-            activityLevel: preferences.activityLevel || 'moderate',
+            weight: preferences.weight || profile?.weight || 70,
+            height: preferences.height || profile?.height || 170,
+            activityLevel: preferences.activityLevel || profile?.activity_level || 'moderate',
             goals: preferences.goals || ['general_fitness'],
             language: preferences.language || 'en'
           },
           preferences: {
-            workoutType: preferences.workoutType || 'home',
+            workoutType: preferences.workoutType || workoutType,
             goalType: preferences.goalType || 'general_fitness',
             fitnessLevel: preferences.fitnessLevel || 'beginner',
             availableTime: preferences.availableTime || '30-45 minutes',
@@ -101,7 +109,7 @@ export const useExerciseProgram = () => {
             duration: preferences.duration || '4 weeks',
             workoutDays: preferences.workoutDays || '3-4 days',
             difficulty: preferences.difficulty || 'beginner',
-            weekStartDate: format(startOfWeek(new Date()), 'yyyy-MM-dd')
+            weekStartDate: format(weekStart, 'yyyy-MM-dd')
           }
         }
       });
@@ -121,22 +129,38 @@ export const useExerciseProgram = () => {
 
   // Update exercise completion
   const updateExerciseCompletion = useMutation({
-    mutationFn: async (exerciseId: string, completed: boolean) => {
+    mutationFn: async ({ exerciseId, completed }: { exerciseId: string; completed: boolean }) => {
       const { error } = await supabase
         .from('exercises')
-        .update({ completed })
+        .update({ completed, updated_at: new Date().toISOString() })
         .eq('id', exerciseId);
 
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['exercise-program'] });
+      toast.success('Exercise updated!');
     },
+    onError: (error) => {
+      toast.error(`Failed to update exercise: ${error.message}`);
+    }
   });
 
   // Track exercise performance
   const trackPerformance = useMutation({
-    mutationFn: async (exerciseId: string, sets: number, reps: string, weight?: number, notes?: string) => {
+    mutationFn: async ({ 
+      exerciseId, 
+      sets, 
+      reps, 
+      weight, 
+      notes 
+    }: { 
+      exerciseId: string; 
+      sets: number; 
+      reps: string; 
+      weight?: number; 
+      notes?: string; 
+    }) => {
       if (!user?.id) throw new Error('User not authenticated');
 
       const { data, error } = await supabase.functions.invoke('track-exercise-performance', {
@@ -159,7 +183,7 @@ export const useExerciseProgram = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['exercise-program'] });
-      toast.success('Performance tracked successfully!');
+      toast.success('Progress tracked successfully!');
     },
     onError: (error) => {
       console.error('Error tracking performance:', error);
@@ -167,29 +191,9 @@ export const useExerciseProgram = () => {
     },
   });
 
-  // Get exercise recommendations
-  const { data: recommendations } = useQuery({
-    queryKey: ['exercise-recommendations', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return null;
-
-      const { data, error } = await supabase.functions.invoke('get-exercise-recommendations', {
-        body: { userId: user.id }
-      });
-
-      if (error) {
-        console.error('Error getting recommendations:', error);
-        return null;
-      }
-
-      return data;
-    },
-    enabled: !!user?.id,
-  });
-
   // Exchange exercise
   const exchangeExercise = useMutation({
-    mutationFn: async (exerciseId: string, reason: string) => {
+    mutationFn: async ({ exerciseId, reason }: { exerciseId: string; reason: string }) => {
       if (!user?.id) throw new Error('User not authenticated');
 
       const { data, error } = await supabase.functions.invoke('exchange-exercise', {
@@ -213,7 +217,27 @@ export const useExerciseProgram = () => {
     },
   });
 
-  // Calculate today's exercises
+  // Get exercise recommendations
+  const { data: recommendations } = useQuery({
+    queryKey: ['exercise-recommendations', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+
+      const { data, error } = await supabase.functions.invoke('get-exercise-recommendations', {
+        body: { userId: user.id }
+      });
+
+      if (error) {
+        console.error('Error getting recommendations:', error);
+        return null;
+      }
+
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
+  // Calculate today's exercises - use current day of week
   const todaysExercises = currentProgram?.daily_workouts?.find(
     workout => workout.day_number === new Date().getDay() || 1
   )?.exercises || [];
@@ -224,8 +248,7 @@ export const useExerciseProgram = () => {
 
   // Calculate additional properties
   const isRestDay = todaysExercises.length === 0;
-  const weekStartDate = new Date();
-  weekStartDate.setDate(weekStartDate.getDate() - weekStartDate.getDay() + (currentWeekOffset * 7));
+  const weekStartDate = addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), currentWeekOffset * 7);
   
   const hasProgram = !!currentProgram;
   const isPro = profile?.role === 'pro' || false;
@@ -233,7 +256,7 @@ export const useExerciseProgram = () => {
 
   // Handler functions
   const onGenerateAIProgram = async (preferences: ExercisePreferences) => {
-    return generateProgram.mutate(preferences);
+    return generateProgram.mutateAsync(preferences);
   };
 
   const onRegenerateProgram = async () => {
@@ -245,11 +268,11 @@ export const useExerciseProgram = () => {
       language: 'en'
     };
     
-    return generateProgram.mutate(preferences);
+    return generateProgram.mutateAsync(preferences);
   };
 
   const onExerciseComplete = (exerciseId: string) => {
-    updateExerciseCompletion.mutate(exerciseId, true);
+    updateExerciseCompletion.mutate({ exerciseId, completed: true });
   };
 
   const onExerciseProgressUpdate = async (
@@ -259,14 +282,18 @@ export const useExerciseProgram = () => {
     notes?: string, 
     weight?: number
   ) => {
-    return trackPerformance.mutate(exerciseId, sets, reps, weight, notes);
+    return trackPerformance.mutateAsync({ exerciseId, sets, reps, weight, notes });
+  };
+
+  const onExerciseExchange = (exerciseId: string, reason: string) => {
+    exchangeExercise.mutate({ exerciseId, reason });
   };
 
   return {
     // Core data
     currentProgram,
     isLoading,
-    error,
+    error: error?.message,
     todaysExercises,
     completedExercises,
     totalExercises,
@@ -290,14 +317,13 @@ export const useExerciseProgram = () => {
     creditsRemaining,
     
     // Mutations and handlers
-    generateProgram: generateProgram.mutate,
+    generateProgram: generateProgram.mutateAsync,
     isGenerating: generateProgram.isPending,
     updateExerciseCompletion: (exerciseId: string, completed: boolean) => 
-      updateExerciseCompletion.mutate(exerciseId, completed),
+      updateExerciseCompletion.mutate({ exerciseId, completed }),
     trackPerformance: (exerciseId: string, sets: number, reps: string, weight?: number, notes?: string) =>
-      trackPerformance.mutate(exerciseId, sets, reps, weight, notes),
-    exchangeExercise: (exerciseId: string, reason: string) =>
-      exchangeExercise.mutate(exerciseId, reason),
+      trackPerformance.mutate({ exerciseId, sets, reps, weight, notes }),
+    exchangeExercise: onExerciseExchange,
     onGenerateAIProgram,
     onRegenerateProgram,
     onExerciseComplete,

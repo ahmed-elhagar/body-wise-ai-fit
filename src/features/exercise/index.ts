@@ -6,8 +6,19 @@ export { default as ExerciseCard } from './components/ExerciseCard';
 export { default as AIGenerationDialog } from './components/AIGenerationDialog';
 export { default as ExerciseContainer } from './components/ExerciseContainer';
 
+// New components
+export { ExerciseHeader } from './components/ExerciseHeader';
+export { ExerciseLayout } from './components/ExerciseLayout';
+export { WorkoutTypeSelector } from './components/shared/WorkoutTypeSelector';
+export { EnhancedAIGenerationDialog } from './components/ai/EnhancedAIGenerationDialog';
+export { LoadingState } from './components/loading/LoadingState';
+export { FormAnalysis } from './components/ai/FormAnalysis';
+export { RecoveryMetrics } from './components/recovery/RecoveryMetrics';
+export { ProgressTracker } from './components/progress/ProgressTracker';
+
 // Hooks
 export { useExerciseProgram } from './hooks/core/useExerciseProgram';
+export { useWorkoutSession } from './hooks/core/useWorkoutSession';
 export type { ExercisePreferences } from './hooks/core/useExerciseProgram';
 
 // Types

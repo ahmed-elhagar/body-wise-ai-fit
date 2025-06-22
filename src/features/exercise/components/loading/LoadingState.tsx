@@ -1,22 +1,56 @@
+
 import React from 'react';
 import { Card } from '@/components/ui/card';
-import { Loader2, Dumbbell } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export const LoadingState: React.FC = () => {
   return (
-    <div className="p-6">
-      <Card className="p-8 text-center">
-        <div className="max-w-md mx-auto">
-          <div className="w-16 h-16 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mb-4 mx-auto relative">
-            <Dumbbell className="h-8 w-8 text-white" />
-            <Loader2 className="h-6 w-6 text-white animate-spin absolute -top-2 -right-2" />
+    <div className="space-y-6">
+      {/* Overview Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[1, 2, 3, 4].map((i) => (
+          <Card key={i} className="p-4">
+            <div className="space-y-3">
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-8 w-1/2" />
+              <Skeleton className="h-3 w-full" />
+            </div>
+          </Card>
+        ))}
+      </div>
+
+      {/* Main Content */}
+      <Card className="p-6">
+        <div className="space-y-4">
+          <Skeleton className="h-6 w-1/3" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-3/4" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+            <Skeleton className="h-32" />
+            <Skeleton className="h-32" />
           </div>
-          <h3 className="text-xl font-bold text-gray-900 mb-2">Loading Exercise Program</h3>
-          <p className="text-gray-600">
-            Please wait while we prepare your personalized workout plan...
-          </p>
         </div>
       </Card>
+
+      {/* Exercise List */}
+      <div className="space-y-4">
+        {[1, 2, 3].map((i) => (
+          <Card key={i} className="p-4">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-5 w-1/3" />
+                <Skeleton className="h-4 w-16" />
+              </div>
+              <Skeleton className="h-4 w-full" />
+              <div className="flex gap-2">
+                <Skeleton className="h-6 w-16" />
+                <Skeleton className="h-6 w-16" />
+                <Skeleton className="h-6 w-16" />
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
     </div>
   );
-}; 
+};
