@@ -1,13 +1,9 @@
+
 import React from 'react';
-import ProtectedLayout from '@/components/ProtectedLayout';
 import { MealPlanContainer } from '@/features/meal-plan/components/MealPlanContainer';
 
-const MealPlan = () => {
-  return (
-    <ProtectedLayout>
-      <MealPlanContainer />
-    </ProtectedLayout>
-  );
+const MealPlanPage = () => {
+  return <MealPlanContainer />;
 };
 
-export default MealPlan; 
+export default MealPlanPage;

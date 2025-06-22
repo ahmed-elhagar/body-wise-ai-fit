@@ -19,6 +19,12 @@ import CoachPage from '@/features/coach/components/CoachPage';
 import ProfilePage from '@/features/profile/components/ProfilePage';
 import AdminPage from '@/features/admin/components/AdminPage';
 import FoodTrackerPage from '@/features/food-tracker/components/FoodTrackerPage';
+import ProgressPage from '@/features/progress/components/ProgressPage';
+import WeightTracking from '@/features/progress/components/WeightTracking';
+import GoalsPage from '@/features/goals/components/GoalsPage';
+import SettingsPage from '@/features/profile/components/SettingsPage';
+import ProPage from '@/features/pro/components/ProPage';
+import NotificationsPage from '@/features/notifications/components/NotificationsPage';
 import './App.css';
 
 const queryClient = new QueryClient({
@@ -126,6 +132,36 @@ function AppContent() {
         } 
       />
       <Route 
+        path="/progress" 
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <ProgressPage />
+            </Layout>
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/weight-tracking" 
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <WeightTracking />
+            </Layout>
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/goals" 
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <GoalsPage />
+            </Layout>
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/coach" 
         element={
           <ProtectedRoute>
@@ -146,11 +182,41 @@ function AppContent() {
         } 
       />
       <Route 
+        path="/settings" 
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <SettingsPage />
+            </Layout>
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/admin" 
         element={
           <ProtectedRoute>
             <Layout>
               <AdminPage />
+            </Layout>
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/pro" 
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <ProPage />
+            </Layout>
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/notifications" 
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <NotificationsPage />
             </Layout>
           </ProtectedRoute>
         } 

@@ -9,7 +9,6 @@ import {
   MessageSquare,
   Calendar,
   User,
-  Camera,
   Scale,
   Settings,
   ChefHat,
@@ -18,10 +17,8 @@ import {
   LucideIcon,
   Shield,
   Users,
-  Activity,
-  TrendingUp,
   Apple,
-  Zap,
+  TrendingUp,
   Brain
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -54,7 +51,7 @@ export function AppSidebar() {
 
   const navigationItems: NavigationItem[] = [
     // Dashboard
-    { href: "/dashboard", icon: Home, label: "Dashboard", category: 'dashboard' },
+    { href: "/", icon: Home, label: "Dashboard", category: 'dashboard' },
     
     // Nutrition Management
     { href: "/meal-plan", icon: Utensils, label: "Meal Plans", category: 'nutrition' },
@@ -112,7 +109,7 @@ export function AppSidebar() {
     <div className="w-64 bg-white shadow-2xl border-r border-brand-neutral-200 h-full flex flex-col overflow-hidden">
       {/* Header */}
       <div className="p-6 border-b border-brand-neutral-200 bg-gradient-to-r from-brand-primary-50 to-brand-secondary-50">
-        <Link to="/dashboard" className="flex items-center space-x-3 group">
+        <Link to="/" className="flex items-center space-x-3 group">
           <div className="w-10 h-10 bg-gradient-to-r from-brand-primary-500 to-brand-secondary-500 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform shadow-lg">
             <ChefHat className="h-5 w-5 text-white" />
           </div>
