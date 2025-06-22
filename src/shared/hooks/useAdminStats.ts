@@ -1,47 +1,51 @@
+
 import { useState, useEffect } from 'react';
 
-interface AdminStats {
+interface AdminStatsData {
   totalUsers: number;
-  activeUsers: number;
+  activeSubscriptions: number;
+  activeSessions: number;
   totalGenerations: number;
-  todayGenerations: number;
-  loading: boolean;
-  error: string | null;
+  recentSignups: number;
+  adminCount: number;
+  coachCount: number;
 }
 
-export const useAdminStats = () => {
-  const [stats, setStats] = useState<AdminStats>({
-    totalUsers: 0,
-    activeUsers: 0,
-    totalGenerations: 0,
-    todayGenerations: 0,
-    loading: true,
-    error: null
-  });
+export interface AdminStats {
+  data: AdminStatsData | null;
+  isLoading: boolean;
+  error: Error | null;
+}
+
+export const useAdminStats = (): AdminStats => {
+  const [data, setData] = useState<AdminStatsData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    // Mock data for now - replace with actual API calls
     const fetchStats = async () => {
       try {
-        setStats({
+        // Mock data - replace with actual API call
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        setData({
           totalUsers: 1250,
-          activeUsers: 847,
+          activeSubscriptions: 89,
+          activeSessions: 234,
           totalGenerations: 15420,
-          todayGenerations: 156,
-          loading: false,
-          error: null
+          recentSignups: 23,
+          adminCount: 3,
+          coachCount: 12
         });
-      } catch (error) {
-        setStats(prev => ({
-          ...prev,
-          loading: false,
-          error: error instanceof Error ? error.message : 'Failed to fetch stats'
-        }));
+        setError(null);
+      } catch (err) {
+        setError(err instanceof Error ? err : new Error('Failed to fetch stats'));
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchStats();
   }, []);
 
-  return stats;
+  return { data, isLoading, error };
 };

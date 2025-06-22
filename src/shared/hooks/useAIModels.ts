@@ -1,96 +1,121 @@
+
 import { useState, useEffect } from 'react';
 
-interface AIModel {
+export interface AIModel {
   id: string;
   name: string;
-  version: string;
-  status: 'active' | 'inactive' | 'training';
-  accuracy: number;
-  lastUpdated: string;
-  requestsToday: number;
-  averageResponseTime: number;
+  provider: string;
+  model_id: string;
+  cost_per_1k_tokens: number;
+  max_tokens: number;
+  context_window: number;
+  is_active: boolean;
+  is_default: boolean;
+  description?: string;
+  capabilities?: string[];
 }
 
-interface AIModelsState {
-  models: AIModel[];
-  loading: boolean;
-  error: string | null;
+export interface FeatureModel {
+  id: string;
+  feature_name: string;
+  primary_model_id: string;
+  fallback_model_id?: string;
+  primary_model?: AIModel;
+  fallback_model?: AIModel;
 }
 
 export const useAIModels = () => {
-  const [state, setState] = useState<AIModelsState>({
-    models: [],
-    loading: true,
-    error: null
-  });
+  const [models, setModels] = useState<AIModel[]>([]);
+  const [featureModels, setFeatureModels] = useState<FeatureModel[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
-    const fetchModels = async () => {
-      try {
-        // Mock data - replace with actual API call
-        const mockModels: AIModel[] = [
-          {
-            id: '1',
-            name: 'Meal Plan Generator',
-            version: 'v2.1.0',
-            status: 'active',
-            accuracy: 94.5,
-            lastUpdated: '2024-01-15',
-            requestsToday: 1247,
-            averageResponseTime: 2.3
-          },
-          {
-            id: '2',
-            name: 'Exercise Recommender',
-            version: 'v1.8.2',
-            status: 'active',
-            accuracy: 91.2,
-            lastUpdated: '2024-01-14',
-            requestsToday: 856,
-            averageResponseTime: 1.8
-          },
-          {
-            id: '3',
-            name: 'Nutrition Analyzer',
-            version: 'v1.5.1',
-            status: 'training',
-            accuracy: 87.9,
-            lastUpdated: '2024-01-13',
-            requestsToday: 423,
-            averageResponseTime: 3.1
-          }
-        ];
-
-        setTimeout(() => {
-          setState({
-            models: mockModels,
-            loading: false,
-            error: null
-          });
-        }, 1000);
-      } catch (error) {
-        setState({
-          models: [],
-          loading: false,
-          error: error instanceof Error ? error.message : 'Failed to fetch AI models'
-        });
+    // Mock data for now - replace with actual API calls
+    setModels([
+      {
+        id: '1',
+        name: 'GPT-4o Mini',
+        provider: 'openai',
+        model_id: 'gpt-4o-mini',
+        cost_per_1k_tokens: 0.00015,
+        max_tokens: 16384,
+        context_window: 16384,
+        is_active: true,
+        is_default: true,
+        description: 'Fast and efficient model for most tasks'
       }
-    };
-
-    fetchModels();
+    ]);
+    
+    setFeatureModels([]);
+    setIsLoading(false);
   }, []);
 
-  const updateModelStatus = (modelId: string, status: AIModel['status']) => {
-    setState(prev => ({
-      ...prev,
-      models: prev.models.map(model =>
-        model.id === modelId ? { ...model, status } : model
-      )
-    }));
+  const createModel = (modelData: Partial<AIModel>) => {
+    setIsUpdating(true);
+    const newModel: AIModel = {
+      id: Date.now().toString(),
+      name: modelData.name || '',
+      provider: modelData.provider || 'openai',
+      model_id: modelData.model_id || '',
+      cost_per_1k_tokens: modelData.cost_per_1k_tokens || 0,
+      max_tokens: modelData.max_tokens || 4096,
+      context_window: modelData.context_window || 4096,
+      is_active: modelData.is_active ?? true,
+      is_default: modelData.is_default ?? false,
+      description: modelData.description
+    };
+    
+    setModels(prev => [...prev, newModel]);
+    setIsUpdating(false);
+  };
+
+  const updateModel = (updates: Partial<AIModel> & { id: string }) => {
+    setIsUpdating(true);
+    setModels(prev => prev.map(model => 
+      model.id === updates.id ? { ...model, ...updates } : model
+    ));
+    setIsUpdating(false);
+  };
+
+  const deleteModel = (modelId: string) => {
+    setIsUpdating(true);
+    setModels(prev => prev.filter(model => model.id !== modelId));
+    setIsUpdating(false);
+  };
+
+  const updateFeatureModel = (data: {
+    feature_name: string;
+    primary_model_id: string;
+    fallback_model_id?: string;
+  }) => {
+    setIsUpdating(true);
+    setFeatureModels(prev => {
+      const existing = prev.find(fm => fm.feature_name === data.feature_name);
+      if (existing) {
+        return prev.map(fm => 
+          fm.feature_name === data.feature_name 
+            ? { ...fm, ...data }
+            : fm
+        );
+      } else {
+        return [...prev, {
+          id: Date.now().toString(),
+          ...data
+        }];
+      }
+    });
+    setIsUpdating(false);
   };
 
   return {
-    ...state,
-    updateModelStatus
+    models,
+    featureModels,
+    isLoading,
+    isUpdating,
+    createModel,
+    updateModel,
+    deleteModel,
+    updateFeatureModel
   };
 };

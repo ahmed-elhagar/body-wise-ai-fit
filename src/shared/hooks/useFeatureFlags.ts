@@ -1,39 +1,41 @@
-import { useState, useEffect } from 'react';
 
-interface FeatureFlags {
+import { useState } from 'react';
+
+export interface FeatureFlags {
+  email_confirmation: boolean;
+  life_phase_nutrition: boolean;
   aiCoach: boolean;
   mealPlanGeneration: boolean;
   exerciseTracking: boolean;
   progressAnalytics: boolean;
   socialFeatures: boolean;
-  loading: boolean;
 }
 
 export const useFeatureFlags = () => {
   const [flags, setFlags] = useState<FeatureFlags>({
+    email_confirmation: true,
+    life_phase_nutrition: false,
     aiCoach: true,
     mealPlanGeneration: true,
     exerciseTracking: true,
     progressAnalytics: true,
     socialFeatures: false,
-    loading: true
   });
+  
+  const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    // Mock loading delay
-    const timer = setTimeout(() => {
-      setFlags(prev => ({ ...prev, loading: false }));
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  const toggleFlag = (flag: keyof Omit<FeatureFlags, 'loading'>) => {
+  const toggleFlag = (flag: keyof FeatureFlags) => {
+    setIsLoading(true);
     setFlags(prev => ({
       ...prev,
       [flag]: !prev[flag]
     }));
+    setIsLoading(false);
   };
 
-  return { flags, toggleFlag };
+  return {
+    flags,
+    isLoading,
+    toggleFlag
+  };
 };
