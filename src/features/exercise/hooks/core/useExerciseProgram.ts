@@ -7,7 +7,7 @@ import { useProfile } from '@/features/ai/hooks/useProfile';
 import { useCentralizedCredits } from '@/shared/hooks/useCentralizedCredits';
 import { ExerciseProgram } from '../../types';
 import { format, startOfWeek, addDays } from 'date-fns';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export interface ExercisePreferences {
   age?: number;
@@ -44,14 +44,20 @@ export const useExerciseProgram = () => {
   // Calculate week start date based on offset
   const weekStartDate = addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), currentWeekOffset * 7);
 
-  // Fetch current exercise program with proper week filtering
+  // Fetch current exercise program with proper week filtering and workout type
   const { data: currentProgram, isLoading, error } = useQuery({
-    queryKey: ['exercise-program', user?.id, format(weekStartDate, 'yyyy-MM-dd')],
+    queryKey: ['exercise-program', user?.id, format(weekStartDate, 'yyyy-MM-dd'), workoutType],
     queryFn: async () => {
       if (!user?.id) return null;
 
       const weekStartStr = format(weekStartDate, 'yyyy-MM-dd');
       const weekEndStr = format(addDays(weekStartDate, 6), 'yyyy-MM-dd');
+
+      console.log('Fetching exercise program:', {
+        userId: user.id,
+        weekStartStr,
+        weekType: workoutType
+      });
 
       const { data, error } = await supabase
         .from('weekly_exercise_programs')
@@ -64,6 +70,7 @@ export const useExerciseProgram = () => {
         `)
         .eq('user_id', user.id)
         .eq('status', 'active')
+        .eq('workout_type', workoutType) // Filter by workout type
         .gte('week_start_date', weekStartStr)
         .lte('week_start_date', weekEndStr)
         .order('created_at', { ascending: false })
@@ -75,15 +82,30 @@ export const useExerciseProgram = () => {
         throw error;
       }
 
+      console.log('Exercise program fetched:', data);
       return data as ExerciseProgram | null;
     },
     enabled: !!user?.id,
   });
 
+  // Update workout type effect - refetch when type changes
+  useEffect(() => {
+    if (user?.id) {
+      queryClient.invalidateQueries({ 
+        queryKey: ['exercise-program', user.id, format(weekStartDate, 'yyyy-MM-dd'), workoutType] 
+      });
+    }
+  }, [workoutType, user?.id, weekStartDate, queryClient]);
+
   // Generate AI Exercise Program
   const generateProgram = useMutation({
     mutationFn: async (preferences: ExercisePreferences) => {
       if (!user?.id) throw new Error('User not authenticated');
+
+      console.log('Generating exercise program with preferences:', {
+        workoutType,
+        ...preferences
+      });
 
       const { data, error } = await supabase.functions.invoke('generate-exercise-program', {
         body: {
@@ -99,13 +121,13 @@ export const useExerciseProgram = () => {
             language: preferences.language || 'en'
           },
           preferences: {
-            workoutType: preferences.workoutType || workoutType,
+            workoutType: preferences.workoutType || workoutType, // Use current workout type
             goalType: preferences.goalType || 'general_fitness',
             fitnessLevel: preferences.fitnessLevel || 'beginner',
             availableTime: preferences.availableTime || '30-45 minutes',
             preferredWorkouts: preferences.preferredWorkouts || ['strength', 'cardio'],
             targetMuscleGroups: preferences.targetMuscleGroups || ['full_body'],
-            equipment: preferences.equipment || ['bodyweight'],
+            equipment: preferences.equipment || workoutType === 'gym' ? ['dumbbells', 'barbell', 'machines'] : ['bodyweight'],
             duration: preferences.duration || '4 weeks',
             workoutDays: preferences.workoutDays || '3-4 days',
             difficulty: preferences.difficulty || 'beginner',
