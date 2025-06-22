@@ -11,6 +11,7 @@ export interface AuthUser extends User {
 interface AuthContextType {
   user: AuthUser | null;
   loading: boolean;
+  isLoading: boolean; // Added for compatibility
   error?: AuthError | null;
   signUp: (email: string, password: string, metadata?: any) => Promise<{ error?: AuthError; data?: any }>;
   signIn: (email: string, password: string) => Promise<{ error?: AuthError; data?: any }>;
@@ -152,6 +153,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     <AuthContext.Provider value={{
       user,
       loading,
+      isLoading: loading, // Added for compatibility
       error,
       signUp,
       signIn,
