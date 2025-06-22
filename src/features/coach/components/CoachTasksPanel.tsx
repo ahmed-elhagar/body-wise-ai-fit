@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,26 +30,20 @@ const CoachTasksPanel = ({ trainees, className }: CoachTasksPanelProps) => {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   // Handle dialog close with forced refetch
-  const handleDialogClose = (open: boolean) => {
-    if (!open) {
-      console.log('Dialog closed, forcing data refetch');
-      // Force refetch when dialog closes
-      setTimeout(() => {
-        refetch();
-      }, 200);
-    }
-    setShowCreateDialog(open);
+  const handleDialogClose = () => {
+    setShowCreateDialog(false);
+    setTimeout(() => {
+      refetch();
+    }, 200);
   };
 
   const handleToggleTask = (taskId: string, completed: boolean) => {
-    console.log('Toggling task:', taskId, 'from', completed, 'to', !completed);
     toggleTask({ taskId, completed: !completed });
   };
 
   const handleAddTaskClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log('Add task button clicked');
     setShowCreateDialog(true);
   };
 
@@ -95,8 +90,6 @@ const CoachTasksPanel = ({ trainees, className }: CoachTasksPanelProps) => {
       </Card>
     );
   }
-
-  console.log('Rendering CoachTasksPanel with tasks:', tasks);
 
   return (
     <>
@@ -162,7 +155,6 @@ const CoachTasksPanel = ({ trainees, className }: CoachTasksPanelProps) => {
               <div className="text-center py-8 text-gray-500">
                 <Clock className="h-12 w-12 mx-auto mb-3 opacity-50" />
                 <p>No {filter === 'all' ? '' : filter} tasks found</p>
-                <p className="text-sm mt-1">Total tasks in database: {tasks.length}</p>
                 <Button 
                   variant="outline" 
                   size="sm" 
@@ -250,8 +242,8 @@ const CoachTasksPanel = ({ trainees, className }: CoachTasksPanelProps) => {
       </Card>
 
       <CreateTaskDialog 
-        open={showCreateDialog}
-        onOpenChange={handleDialogClose}
+        isOpen={showCreateDialog}
+        onClose={handleDialogClose}
         trainees={trainees}
       />
     </>

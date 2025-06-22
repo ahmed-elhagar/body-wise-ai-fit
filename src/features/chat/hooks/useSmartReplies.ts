@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 
 interface SmartReply {
   id: string;
@@ -9,97 +9,37 @@ interface SmartReply {
 }
 
 export const useSmartReplies = () => {
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [replies, setReplies] = useState<SmartReply[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const replyTemplates = useMemo(() => ({
-    workout: [
-      "Can you create a workout plan for me?",
-      "What exercises are best for beginners?",
-      "How often should I exercise?",
-      "I need help with my form",
-      "What's a good warm-up routine?"
-    ],
-    nutrition: [
-      "Can you suggest healthy meal ideas?",
-      "How many calories should I eat?",
-      "What are good protein sources?",
-      "I need help with meal planning",
-      "What foods should I avoid?"
-    ],
-    motivation: [
-      "I'm struggling to stay motivated",
-      "How do I build healthy habits?",
-      "I need encouragement",
-      "What keeps you going?",
-      "How do I overcome plateaus?"
-    ],
-    progress: [
-      "How do I track my progress?",
-      "I'm not seeing results",
-      "Should I change my routine?",
-      "How long until I see changes?",
-      "Am I doing this right?"
-    ],
-    general: [
-      "Thank you for the help!",
-      "That's very helpful",
-      "Can you explain more?",
-      "I have another question",
-      "This is exactly what I needed"
-    ]
-  }), []);
-
-  const generateSmartReplies = useCallback(async (
-    lastMessage: string, 
-    conversationHistory: Array<{ role: string; content: string }> = []
-  ): Promise<SmartReply[]> => {
-    setIsGenerating(true);
-    
+  const generateReplies = useCallback(async (messageContext: string) => {
+    setLoading(true);
     try {
-      // Simulate processing time
+      // Mock smart replies generation
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      const generalReplies = [
-        "Thank you!",
-        "That's helpful",
-        "Can you tell me more?",
-        "I understand",
-        "What about...?"
+      const mockReplies: SmartReply[] = [
+        { id: '1', text: 'Thank you!', category: 'acknowledgment', relevanceScore: 0.9 },
+        { id: '2', text: 'Can you tell me more?', category: 'question', relevanceScore: 0.8 },
+        { id: '3', text: 'That\'s helpful', category: 'feedback', relevanceScore: 0.7 },
       ];
-
-      // Generate smart replies with relevance scoring and proper typing
-      const smartReplies: SmartReply[] = generalReplies
-        .slice(0, 6) // Limit to 6 suggestions
-        .map((text, index) => {
-          let category: 'question' | 'feedback' | 'request' | 'acknowledgment';
-          if (index < 3) {
-            category = 'question';
-          } else if (index < 5) {
-            category = 'feedback';
-          } else {
-            category = 'acknowledgment';
-          }
-
-          return {
-            id: `reply-${index}`,
-            text,
-            category,
-            relevanceScore: Math.max(0.9 - (index * 0.1), 0.3)
-          };
-        })
-        .sort((a, b) => b.relevanceScore - a.relevanceScore);
-
-      return smartReplies;
+      
+      setReplies(mockReplies);
     } catch (error) {
       console.error('Error generating smart replies:', error);
-      return [];
     } finally {
-      setIsGenerating(false);
+      setLoading(false);
     }
   }, []);
 
+  const clearReplies = useCallback(() => {
+    setReplies([]);
+  }, []);
+
   return {
-    generateSmartReplies,
-    isGenerating
+    replies,
+    loading,
+    generateReplies,
+    clearReplies
   };
 };

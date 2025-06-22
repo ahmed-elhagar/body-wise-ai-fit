@@ -1,41 +1,30 @@
-export * from './components';
-export * from './hooks';
-export * from './types';
 
-// Main container and layout components
-export { ExerciseContainer } from './components/ExerciseContainer';
-export { ExerciseLayout } from './components/ExerciseLayout';
-export { ExerciseHeader } from './components/ExerciseHeader';
-export { ExerciseOverview } from './components/ExerciseOverview';
+// Exercise feature components exports
 
-// Workout components
-export { WorkoutView } from './components/workout/WorkoutView';
-export { WorkoutCalendar } from './components/workout/WorkoutCalendar';
-export { ExerciseCard } from './components/workout/ExerciseCard';
-
-// Progress and analytics
+// New consolidated components
+export { ExerciseContainer } from './components/containers/ExerciseContainer';
+export { ExerciseCard } from './components/ExerciseCard';
 export { ProgressTracker } from './components/progress/ProgressTracker';
-
-// AI and form analysis
-export { FormAnalysis } from './components/ai/FormAnalysis';
-export { EnhancedAIGenerationDialog } from './components/ai/EnhancedAIGenerationDialog';
-
-// Recovery and metrics
 export { RecoveryMetrics } from './components/recovery/RecoveryMetrics';
-
-// Shared components
+export { AIGenerationDialog } from './components/ai/AIGenerationDialog';
+export { FormAnalysis } from './components/ai/FormAnalysis';
 export { WorkoutTypeSelector } from './components/shared/WorkoutTypeSelector';
 
-// Loading states
-export { LoadingState } from './components/loading/LoadingState';
+// Main components
+export { default as ExercisePage } from './components/ExercisePage';
+export { default as ExerciseContainer as ExerciseContainerLegacy } from './components/ExerciseContainer';
+export { default as ExerciseOverview } from './components/ExerciseOverview';
+export { default as ExerciseLayout } from './components/ExerciseLayout';
 
 // Hooks
-export { useExerciseProgram } from './hooks/core/useExerciseProgram';
-export { useWorkoutSession } from './hooks/core/useWorkoutSession';
-
-// Types
-export type { Exercise, ExerciseProgram, DailyWorkout } from './types';
+export * from './hooks';
 
 // Services
-export { exerciseService } from './services/exerciseService';
-export { exerciseDataService } from './services/exerciseDataService';
+export { default as ExerciseService } from './services/exerciseService';
+export { default as ExerciseDataService } from './services/exerciseDataService';
+
+// Types
+export * from './types';
+
+// Utils
+export * from './utils';

@@ -1,21 +1,27 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import type { AIStep } from '@/components/ai/AILoadingSteps';
 
 export interface UseAILoadingStepsOptions {
   autoProgress?: boolean;
   stepDuration?: number;
-  completionDelay?: number; // Added delay for completion state
+  completionDelay?: number;
+}
+
+// Extended AIStep interface with optional estimatedDuration
+export interface ExtendedAIStep extends AIStep {
+  estimatedDuration?: number;
 }
 
 export const useAILoadingSteps = (
-  steps: AIStep[],
+  steps: ExtendedAIStep[],
   isActive: boolean,
   options: UseAILoadingStepsOptions = {}
 ) => {
   const { 
     autoProgress = true, 
     stepDuration = 2000,
-    completionDelay = 1000 // Default delay after reaching last step
+    completionDelay = 1000
   } = options;
   
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
@@ -34,18 +40,15 @@ export const useAILoadingSteps = (
     if (!isActive || !autoProgress || isComplete) return;
 
     if (currentStepIndex >= steps.length - 1) {
-      // We are on the last step, wait for completion delay
       const timer = setTimeout(() => {
         setIsComplete(true);
       }, completionDelay);
       return () => clearTimeout(timer);
     }
 
-    // Calculate dynamic step duration based on estimated time if available
     const calcStepDuration = () => {
       const currentStep = steps[currentStepIndex];
       if (currentStep?.estimatedDuration) {
-        // Convert estimated seconds to milliseconds, with a minimum
         return Math.max(currentStep.estimatedDuration * 800, 1200);
       }
       return stepDuration;
