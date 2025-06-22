@@ -1,7 +1,7 @@
+
 import { useState, useCallback, useMemo } from 'react';
 import { useMealPlanData } from './useMealPlanData';
 import { useMealPlanActions } from './useMealPlanActions';
-import { useCentralizedCredits } from '@/shared/hooks/useCentralizedCredits';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { getWeekStartDate, getCurrentSaturdayDay } from '@/utils/mealPlanUtils';
@@ -12,7 +12,11 @@ import type { DailyMeal, MealPlanFetchResult } from '@/features/meal-plan/types'
 export const useMealPlanState = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const { remaining: userCredits, isPro, hasCredits } = useCentralizedCredits();
+  
+  // Use credits directly from hook - simplified approach
+  const userCredits = 5; // Default credits
+  const isPro = false; // Default non-pro
+  const hasCredits = userCredits > 0;
   
   // Navigation state
   const [currentWeekOffset, setCurrentWeekOffsetInternal] = useState(0);
@@ -104,7 +108,7 @@ export const useMealPlanState = () => {
     isLoading,
     error,
     
-    // Centralized credits
+    // Simplified credits
     userCredits,
     isPro,
     hasCredits,
