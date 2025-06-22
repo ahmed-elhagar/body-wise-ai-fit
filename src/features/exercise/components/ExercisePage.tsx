@@ -20,7 +20,6 @@ import {
   Target,
   Coins,
   Crown,
-  RefreshCw,
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
@@ -68,6 +67,7 @@ export const ExercisePage: React.FC = () => {
   } = useWorkoutSession();
 
   const [showAIDialog, setShowAIDialog] = useState(false);
+  const [exchangingExerciseId, setExchangingExerciseId] = useState<string | null>(null);
 
   const formatWeekRange = (startDate: Date) => {
     const endDate = addDays(startDate, 6);
@@ -85,13 +85,24 @@ export const ExercisePage: React.FC = () => {
     return days[dayNumber - 1] || 'Day';
   };
 
+  const handleExerciseExchange = async (exerciseId: string, reason: string) => {
+    setExchangingExerciseId(exerciseId);
+    try {
+      await onExerciseExchange(exerciseId, reason);
+    } finally {
+      setExchangingExerciseId(null);
+    }
+  };
+
   if (isLoading) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="container mx-auto p-6 max-w-7xl">
         <div className="animate-pulse space-y-6">
-          <div className="h-20 bg-gray-200 rounded-xl"></div>
-          <div className="h-64 bg-gray-200 rounded-xl"></div>
-          <div className="h-48 bg-gray-200 rounded-xl"></div>
+          <div className="h-32 bg-gray-200 rounded-xl"></div>
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div className="h-96 bg-gray-200 rounded-xl"></div>
+            <div className="lg:col-span-3 h-96 bg-gray-200 rounded-xl"></div>
+          </div>
         </div>
       </div>
     );
@@ -99,39 +110,25 @@ export const ExercisePage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="container mx-auto p-6">
-        <Card className="border-red-200 bg-red-50">
-          <CardContent className="p-8 text-center">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Dumbbell className="w-8 h-8 text-red-600" />
-            </div>
-            <h3 className="text-xl font-semibold text-red-900 mb-2">
-              Error Loading Exercise Program
-            </h3>
-            <p className="text-red-700 mb-4">{error}</p>
-            <Button 
-              onClick={() => window.location.reload()} 
-              variant="outline"
-              className="border-red-300 text-red-700 hover:bg-red-100"
-            >
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Retry
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="container mx-auto p-6 max-w-7xl">
+        <Alert className="border-red-200 bg-red-50">
+          <AlertDescription className="text-red-800">
+            {error}
+          </AlertDescription>
+        </Alert>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 max-w-7xl space-y-6">
       
-      {/* Header Section */}
-      <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl p-6 text-white">
-        <div className="flex items-center justify-between">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl p-6 text-white">
+        <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-3xl font-bold mb-2">Exercise Programs</h1>
-            <p className="text-indigo-100 text-lg">AI-powered personalized workouts</p>
+            <p className="text-blue-100 text-lg">AI-powered personalized workouts</p>
           </div>
 
           <div className="flex items-center gap-4">
@@ -157,12 +154,12 @@ export const ExercisePage: React.FC = () => {
                 {isGenerating ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Regenerating...
+                    Generating...
                   </>
                 ) : (
                   <>
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Regenerate
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    New Program
                   </>
                 )}
               </Button>
@@ -170,7 +167,7 @@ export const ExercisePage: React.FC = () => {
               <Button 
                 onClick={() => setShowAIDialog(true)}
                 disabled={!isPro && creditsRemaining <= 0}
-                className="bg-white text-indigo-600 hover:bg-gray-50"
+                className="bg-white text-blue-600 hover:bg-gray-50"
               >
                 {isGenerating ? (
                   <>
@@ -187,6 +184,53 @@ export const ExercisePage: React.FC = () => {
             )}
           </div>
         </div>
+
+        {/* Navigation Controls */}
+        <div className="flex items-center justify-between">
+          <Tabs value={workoutType} onValueChange={(value) => setWorkoutType(value as "home" | "gym")} className="w-auto">
+            <TabsList className="bg-white/10 border-white/20">
+              <TabsTrigger value="home" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/80">
+                <Home className="h-4 w-4 mr-2" />
+                Home
+              </TabsTrigger>
+              <TabsTrigger value="gym" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/80">
+                <Building className="h-4 w-4 mr-2" />
+                Gym
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+
+          {hasProgram && (
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setCurrentWeekOffset(currentWeekOffset - 1)}
+                className="text-white hover:bg-white/10"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <div className="text-center px-4">
+                <div className="font-medium text-sm">
+                  {formatWeekRange(weekStartDate)}
+                </div>
+                <div className="text-xs text-white/70">
+                  {currentWeekOffset === 0 ? 'Current Week' : 
+                   currentWeekOffset > 0 ? `Week +${currentWeekOffset}` : 
+                   `Week ${currentWeekOffset}`}
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setCurrentWeekOffset(currentWeekOffset + 1)}
+                className="text-white hover:bg-white/10"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Credits Warning */}
@@ -202,52 +246,8 @@ export const ExercisePage: React.FC = () => {
         </Alert>
       )}
 
-      {/* Workout Type Tabs */}
-      <Tabs value={workoutType} onValueChange={(value) => setWorkoutType(value as "home" | "gym")} className="w-full">
-        <div className="flex items-center justify-between mb-6">
-          <TabsList className="grid grid-cols-2 w-80">
-            <TabsTrigger value="home" className="flex items-center gap-2">
-              <Home className="h-4 w-4" />
-              Home Workout
-            </TabsTrigger>
-            <TabsTrigger value="gym" className="flex items-center gap-2">
-              <Building className="h-4 w-4" />
-              Gym Workout
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Week Navigation */}
-          {hasProgram && (
-            <div className="flex items-center gap-3">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentWeekOffset(currentWeekOffset - 1)}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <div className="text-center px-4">
-                <div className="font-medium text-sm">
-                  {formatWeekRange(weekStartDate)}
-                </div>
-                <div className="text-xs text-gray-500">
-                  {currentWeekOffset === 0 ? 'Current Week' : 
-                   currentWeekOffset > 0 ? `Week +${currentWeekOffset}` : 
-                   `Week ${currentWeekOffset}`}
-                </div>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentWeekOffset(currentWeekOffset + 1)}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
-        </div>
-
-        <TabsContent value={workoutType} className="mt-6">
+      <Tabs value={workoutType} className="w-full">
+        <TabsContent value={workoutType} className="mt-0">
           {!hasProgram ? (
             <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
               <CardContent className="p-12 text-center">
@@ -283,13 +283,12 @@ export const ExercisePage: React.FC = () => {
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
               
-              {/* Week Overview Sidebar */}
+              {/* Sidebar */}
               <div className="lg:col-span-1">
                 <Card>
                   <CardHeader className="pb-3">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Calendar className="h-4 w-4 text-indigo-600" />
-                      <span className="text-sm font-medium text-gray-700">Week Overview</span>
+                    <div className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+                      Week Overview
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-2">
@@ -305,9 +304,9 @@ export const ExercisePage: React.FC = () => {
                           onClick={() => setSelectedDayNumber(dayNum)}
                           className={`w-full p-3 rounded-lg text-left transition-all ${
                             isSelected 
-                              ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md' 
+                              ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-md' 
                               : isToday
-                              ? 'bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100'
+                              ? 'bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100'
                               : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
                           }`}
                         >
@@ -328,33 +327,17 @@ export const ExercisePage: React.FC = () => {
                         </button>
                       );
                     })}
-
-                    {/* Program Info */}
-                    <div className="mt-4 pt-4 border-t space-y-2 text-xs">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Type:</span>
-                        <Badge variant="outline" className="text-xs capitalize">
-                          {currentProgram?.workout_type}
-                        </Badge>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Level:</span>
-                        <Badge variant="outline" className="text-xs">
-                          {currentProgram?.difficulty_level}
-                        </Badge>
-                      </div>
-                    </div>
                   </CardContent>
                 </Card>
               </div>
 
-              {/* Main Workout Content */}
+              {/* Main Content */}
               <div className="lg:col-span-3">
                 <Card>
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="flex items-center gap-2">
-                        <Target className="h-5 w-5 text-indigo-600" />
+                        <Target className="h-5 w-5 text-blue-600" />
                         {getDayName(selectedDayNumber)}'s Workout
                       </CardTitle>
                       
@@ -402,7 +385,7 @@ export const ExercisePage: React.FC = () => {
                     ) : (
                       <>
                         {/* Progress */}
-                        <div className="mb-6 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg">
+                        <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg">
                           <div className="flex items-center justify-between mb-2">
                             <span className="text-sm font-medium text-gray-700">Daily Progress</span>
                             <span className="text-sm text-gray-600">
@@ -420,7 +403,8 @@ export const ExercisePage: React.FC = () => {
                               exercise={exercise}
                               onComplete={onExerciseComplete}
                               onTrackProgress={onExerciseProgressUpdate}
-                              onExchange={onExerciseExchange}
+                              onExchange={handleExerciseExchange}
+                              isExchanging={exchangingExerciseId === exercise.id}
                             />
                           ))}
                         </div>
