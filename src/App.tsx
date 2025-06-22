@@ -10,6 +10,7 @@ import { ErrorBoundary } from 'react-error-boundary';
 import ProtectedRoute from '@/features/auth/components/ProtectedRoute';
 import OnboardingContainer from '@/features/auth/components/onboarding/OnboardingContainer';
 import { useAuth } from '@/features/auth/hooks/useAuth';
+import Layout from '@/components/Layout';
 import Dashboard from '@/features/dashboard/components/Dashboard';
 import MealPlanPage from '@/features/meal-plan/components/MealPlanPage';
 import ExercisePage from '@/features/exercise/components/ExercisePage';
@@ -67,7 +68,9 @@ function AppContent() {
         path="/" 
         element={
           <ProtectedRoute>
-            <Dashboard />
+            <Layout>
+              <Dashboard />
+            </Layout>
           </ProtectedRoute>
         } 
       />
@@ -86,7 +89,9 @@ function AppContent() {
         path="/meal-plan" 
         element={
           <ProtectedRoute>
-            <MealPlanPage />
+            <Layout>
+              <MealPlanPage />
+            </Layout>
           </ProtectedRoute>
         } 
       />
@@ -94,7 +99,9 @@ function AppContent() {
         path="/exercise" 
         element={
           <ProtectedRoute>
-            <ExercisePage />
+            <Layout>
+              <ExercisePage />
+            </Layout>
           </ProtectedRoute>
         } 
       />
@@ -102,7 +109,9 @@ function AppContent() {
         path="/chat" 
         element={
           <ProtectedRoute>
-            <ChatPage />
+            <Layout>
+              <ChatPage />
+            </Layout>
           </ProtectedRoute>
         } 
       />
@@ -110,7 +119,9 @@ function AppContent() {
         path="/food-tracker" 
         element={
           <ProtectedRoute>
-            <FoodTrackerPage />
+            <Layout>
+              <FoodTrackerPage />
+            </Layout>
           </ProtectedRoute>
         } 
       />
@@ -118,7 +129,9 @@ function AppContent() {
         path="/coach" 
         element={
           <ProtectedRoute>
-            <CoachPage />
+            <Layout>
+              <CoachPage />
+            </Layout>
           </ProtectedRoute>
         } 
       />
@@ -126,7 +139,9 @@ function AppContent() {
         path="/profile" 
         element={
           <ProtectedRoute>
-            <ProfilePage />
+            <Layout>
+              <ProfilePage />
+            </Layout>
           </ProtectedRoute>
         } 
       />
@@ -134,7 +149,9 @@ function AppContent() {
         path="/admin" 
         element={
           <ProtectedRoute>
-            <AdminPage />
+            <Layout>
+              <AdminPage />
+            </Layout>
           </ProtectedRoute>
         } 
       />

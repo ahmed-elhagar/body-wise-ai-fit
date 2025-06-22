@@ -1,3 +1,4 @@
+
 import { AppSidebar } from "@/shared/components/sidebar/AppSidebar";
 import { useI18n } from "@/shared/hooks/useI18n";
 

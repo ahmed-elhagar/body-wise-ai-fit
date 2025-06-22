@@ -5,11 +5,8 @@ import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useMealPlans } from '@/features/meal-plan/hooks';
 import { useDashboardStats } from '../hooks/useDashboardStats';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
-import { FeatureLayout } from '@/shared/components/design-system';
-import { BarChart3 } from 'lucide-react';
+import DashboardHeader from './DashboardHeader';
 import DashboardStats from './DashboardStats';
-import SimplifiedDashboardHeader from './SimplifiedDashboardHeader';
 import { PersonalizedWelcome } from './PersonalizedWelcome';
 import { SmartRecommendations } from './SmartRecommendations';
 import { QuickActions } from './QuickActions';
@@ -20,9 +17,6 @@ const Dashboard = () => {
   const { stats, isLoading: statsLoading } = useDashboardStats();
   const { mealPlans, isLoading: mealPlansLoading } = useMealPlans();
   const { t } = useTranslation(['dashboard']);
-  const navigate = useNavigate();
-
-  const userName = profile?.first_name || user?.email?.split('@')[0] || 'Friend';
 
   // Real data calculations from actual APIs
   const todayStats = useMemo(() => {
@@ -59,31 +53,31 @@ const Dashboard = () => {
 
   const isLoading = statsLoading || mealPlansLoading;
 
-  // No tabs for dashboard - it's a single overview page
-  const tabs = [];
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
 
   return (
-    <FeatureLayout
-      title=""
-      tabs={tabs}
-      activeTab=""
-      onTabChange={() => {}}
-      isLoading={isLoading}
-      loadingIcon={BarChart3}
-      loadingMessage={t('common:loading.dashboard')}
-      showStatsCards={true}
-      statsCards={<DashboardStats todayStats={todayStats} />}
-    >
-      {/* Custom Header */}
-      <SimplifiedDashboardHeader userName={userName} />
+    <div className="space-y-6">
+      {/* Enhanced Header with Notifications */}
+      <DashboardHeader user={user} profile={profile} />
 
-      {/* Main Content */}
-      <div className="space-y-6">
+      {/* Stats Overview */}
+      <DashboardStats todayStats={todayStats} />
+
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <PersonalizedWelcome />
         <SmartRecommendations />
-        <QuickActions />
       </div>
-    </FeatureLayout>
+
+      {/* Quick Actions */}
+      <QuickActions />
+    </div>
   );
 };
 
