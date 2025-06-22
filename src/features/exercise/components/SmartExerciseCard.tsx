@@ -15,7 +15,10 @@ import {
   Target,
   Clock,
   SkipForward,
-  Loader2
+  Loader2,
+  Plus,
+  Minus,
+  Edit3
 } from 'lucide-react';
 import { Exercise } from '../types';
 
@@ -35,12 +38,16 @@ export const SmartExerciseCard: React.FC<SmartExerciseCardProps> = ({
   isExchanging = false
 }) => {
   const [currentSet, setCurrentSet] = useState(1);
-  const [currentReps, setCurrentReps] = useState('');
+  const [currentReps, setCurrentReps] = useState(exercise.reps || '10');
   const [currentWeight, setCurrentWeight] = useState<number>(0);
   const [restTimer, setRestTimer] = useState(0);
   const [isResting, setIsResting] = useState(false);
-  const [completedSets, setCompletedSets] = useState<number[]>([]);
-  const [isActive, setIsActive] = useState(false);
+  const [completedSets, setCompletedSets] = useState<Array<{
+    setNumber: number;
+    reps: string;
+    weight: number;
+  }>>([]);
+  const [isEditingReps, setIsEditingReps] = useState(false);
   const [isTrackingProgress, setIsTrackingProgress] = useState(false);
 
   const totalSets = exercise.sets || 3;
@@ -59,34 +66,47 @@ export const SmartExerciseCard: React.FC<SmartExerciseCardProps> = ({
     return () => clearInterval(interval);
   }, [isResting, restTimer]);
 
-  const handleSetComplete = async () => {
-    if (!currentReps || isTrackingProgress) return;
+  const handleCompleteSet = async () => {
+    if (isTrackingProgress) return;
 
     try {
       setIsTrackingProgress(true);
       
+      // Add completed set to our local state
+      const newCompletedSet = {
+        setNumber: currentSet,
+        reps: currentReps,
+        weight: currentWeight
+      };
+      
+      setCompletedSets(prev => [...prev, newCompletedSet]);
+      
+      // Track progress in backend
       await onTrackProgress(
         exercise.id, 
         currentSet, 
         currentReps, 
         currentWeight || undefined, 
-        `Set ${currentSet} completed`
+        `Set ${currentSet} of ${totalSets} completed`
       );
 
-      setCompletedSets(prev => [...prev, currentSet]);
-      
       if (currentSet < totalSets) {
+        // Move to next set
         setCurrentSet(prev => prev + 1);
-        setCurrentReps('');
-        setCurrentWeight(0);
-        setRestTimer(restSeconds);
-        setIsResting(true);
+        setCurrentReps(exercise.reps || '10'); // Reset to default
+        setCurrentWeight(currentWeight); // Keep same weight
+        
+        // Start rest timer
+        if (restSeconds > 0) {
+          setRestTimer(restSeconds);
+          setIsResting(true);
+        }
       } else {
-        // All sets complete
+        // All sets complete - complete the exercise
         onComplete(exercise.id);
       }
     } catch (error) {
-      console.error('Error tracking set:', error);
+      console.error('Error completing set:', error);
     } finally {
       setIsTrackingProgress(false);
     }
@@ -97,6 +117,26 @@ export const SmartExerciseCard: React.FC<SmartExerciseCardProps> = ({
     setIsResting(false);
   };
 
+  const handleReset = () => {
+    setCurrentSet(1);
+    setCurrentReps(exercise.reps || '10');
+    setCurrentWeight(0);
+    setCompletedSets([]);
+    setRestTimer(0);
+    setIsResting(false);
+  };
+
+  const adjustReps = (increment: boolean) => {
+    const current = parseInt(currentReps) || 0;
+    const newValue = increment ? current + 1 : Math.max(0, current - 1);
+    setCurrentReps(newValue.toString());
+  };
+
+  const adjustWeight = (increment: boolean) => {
+    const newValue = increment ? currentWeight + 2.5 : Math.max(0, currentWeight - 2.5);
+    setCurrentWeight(newValue);
+  };
+
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -105,14 +145,37 @@ export const SmartExerciseCard: React.FC<SmartExerciseCardProps> = ({
 
   const progressPercentage = (completedSets.length / totalSets) * 100;
 
+  if (exercise.completed) {
+    return (
+      <Card className="bg-green-50 border-green-200">
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <CheckCircle2 className="h-6 w-6 text-green-500" />
+              <div>
+                <CardTitle className="text-lg font-semibold text-green-800">
+                  {exercise.name}
+                </CardTitle>
+                <p className="text-sm text-green-600">Exercise completed!</p>
+              </div>
+            </div>
+            <Button
+              onClick={handleReset}
+              variant="outline"
+              size="sm"
+              className="text-green-700 border-green-300 hover:bg-green-100"
+            >
+              <RotateCcw className="h-4 w-4 mr-2" />
+              Reset
+            </Button>
+          </div>
+        </CardHeader>
+      </Card>
+    );
+  }
+
   return (
-    <Card className={`transition-all duration-200 ${
-      exercise.completed 
-        ? 'bg-green-50 border-green-200' 
-        : isActive 
-        ? 'border-blue-500 shadow-md' 
-        : 'hover:shadow-sm'
-    }`}>
+    <Card className="transition-all duration-200 hover:shadow-md">
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -138,11 +201,8 @@ export const SmartExerciseCard: React.FC<SmartExerciseCardProps> = ({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {exercise.completed && (
-              <CheckCircle2 className="h-6 w-6 text-green-500" />
-            )}
             <Button
-              onClick={() => onExchange(exercise.id, 'User requested alternative')}
+              onClick={() => onExchange(exercise.id, 'User requested alternative exercise')}
               disabled={isExchanging}
               variant="outline"
               size="sm"
@@ -153,6 +213,14 @@ export const SmartExerciseCard: React.FC<SmartExerciseCardProps> = ({
               ) : (
                 <RotateCcw className="h-4 w-4" />
               )}
+            </Button>
+            <Button
+              onClick={handleReset}
+              variant="outline"
+              size="sm"
+              className="text-gray-600 hover:text-gray-800"
+            >
+              Reset
             </Button>
           </div>
         </div>
@@ -175,116 +243,161 @@ export const SmartExerciseCard: React.FC<SmartExerciseCardProps> = ({
           </div>
         )}
 
-        {!exercise.completed && (
-          <>
-            {/* Progress Bar */}
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Progress</span>
-                <span className="font-medium">{completedSets.length}/{totalSets} sets</span>
-              </div>
-              <Progress value={progressPercentage} className="h-2" />
+        {/* Progress Bar */}
+        <div className="space-y-2">
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-600">Progress</span>
+            <span className="font-medium">{completedSets.length}/{totalSets} sets</span>
+          </div>
+          <Progress value={progressPercentage} className="h-2" />
+        </div>
+
+        {/* Completed Sets Summary */}
+        {completedSets.length > 0 && (
+          <div className="space-y-2">
+            <h4 className="text-sm font-medium text-gray-700">Completed Sets:</h4>
+            <div className="flex flex-wrap gap-2">
+              {completedSets.map((set, index) => (
+                <Badge key={index} variant="secondary" className="text-xs">
+                  Set {set.setNumber}: {set.reps} reps {set.weight > 0 && `@ ${set.weight}kg`}
+                </Badge>
+              ))}
             </div>
+          </div>
+        )}
 
-            {/* Rest Timer */}
-            {isResting && (
-              <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-orange-600" />
-                    <span className="text-sm font-medium text-orange-800">Rest Time</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl font-mono font-bold text-orange-600">
-                      {formatTime(restTimer)}
-                    </span>
-                    <Button
-                      onClick={handleSkipRest}
-                      size="sm"
-                      variant="outline"
-                      className="text-orange-600 border-orange-300 hover:bg-orange-100"
-                    >
-                      <SkipForward className="h-4 w-4 mr-1" />
-                      Skip
-                    </Button>
-                  </div>
-                </div>
+        {/* Rest Timer */}
+        {isResting && (
+          <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-orange-600" />
+                <span className="text-sm font-medium text-orange-800">Rest Time</span>
               </div>
-            )}
+              <div className="flex items-center gap-3">
+                <span className="text-2xl font-mono font-bold text-orange-600">
+                  {formatTime(restTimer)}
+                </span>
+                <Button
+                  onClick={handleSkipRest}
+                  size="sm"
+                  variant="outline"
+                  className="text-orange-600 border-orange-300 hover:bg-orange-100"
+                >
+                  <SkipForward className="h-4 w-4 mr-1" />
+                  Skip
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
 
-            {/* Current Set Input */}
-            {!isResting && (
-              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-medium text-blue-900">
-                    Set {currentSet} of {totalSets}
-                  </h4>
+        {/* Current Set Input */}
+        {!isResting && currentSet <= totalSets && (
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="font-medium text-blue-900">
+                Set {currentSet} of {totalSets}
+              </h4>
+              <Badge variant="outline" className="text-blue-700">
+                {completedSets.length} completed
+              </Badge>
+            </div>
+            
+            {/* Reps Input */}
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-medium text-gray-700 block mb-2">
+                  Reps
+                </label>
+                <div className="flex items-center gap-2">
                   <Button
-                    onClick={() => setIsActive(!isActive)}
-                    size="sm"
+                    onClick={() => adjustReps(false)}
                     variant="outline"
-                    className="text-blue-600 border-blue-300"
+                    size="sm"
+                    className="h-8 w-8 p-0"
                   >
-                    {isActive ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                    <Minus className="h-4 w-4" />
                   </Button>
-                </div>
-                
-                <div className="grid grid-cols-3 gap-3 mb-3">
-                  <div>
-                    <label className="text-xs font-medium text-gray-700 block mb-1">
-                      Reps
-                    </label>
+                  {isEditingReps ? (
                     <Input
                       value={currentReps}
                       onChange={(e) => setCurrentReps(e.target.value)}
-                      placeholder={exercise.reps}
-                      className="text-center"
+                      onBlur={() => setIsEditingReps(false)}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') setIsEditingReps(false);
+                      }}
+                      className="text-center w-16 h-8"
+                      autoFocus
                     />
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-gray-700 block mb-1">
-                      Weight (kg)
-                    </label>
-                    <Input
-                      type="number"
-                      value={currentWeight}
-                      onChange={(e) => setCurrentWeight(Number(e.target.value))}
-                      min="0"
-                      step="0.5"
-                      className="text-center"
-                    />
-                  </div>
-                  <div className="flex items-end">
+                  ) : (
                     <Button
-                      onClick={handleSetComplete}
-                      disabled={!currentReps || isTrackingProgress}
-                      className="w-full bg-blue-600 hover:bg-blue-700"
-                      size="sm"
+                      onClick={() => setIsEditingReps(true)}
+                      variant="ghost"
+                      className="h-8 w-16 text-lg font-semibold"
                     >
-                      {isTrackingProgress ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        'Complete Set'
-                      )}
+                      {currentReps}
                     </Button>
-                  </div>
+                  )}
+                  <Button
+                    onClick={() => adjustReps(true)}
+                    variant="outline"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
-            )}
 
-            {/* Complete Exercise Button */}
-            {completedSets.length === totalSets && (
-              <div className="pt-4 border-t">
-                <Button
-                  onClick={() => onComplete(exercise.id)}
-                  className="w-full bg-green-600 hover:bg-green-700"
-                >
-                  <CheckCircle2 className="h-4 w-4 mr-2" />
-                  Complete Exercise
-                </Button>
+              {/* Weight Input */}
+              <div>
+                <label className="text-xs font-medium text-gray-700 block mb-2">
+                  Weight (kg)
+                </label>
+                <div className="flex items-center gap-2">
+                  <Button
+                    onClick={() => adjustWeight(false)}
+                    variant="outline"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  <span className="text-lg font-semibold w-16 text-center">
+                    {currentWeight}
+                  </span>
+                  <Button
+                    onClick={() => adjustWeight(true)}
+                    variant="outline"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
-            )}
-          </>
+
+              <Button
+                onClick={handleCompleteSet}
+                disabled={isTrackingProgress}
+                className="w-full bg-blue-600 hover:bg-blue-700 mt-4"
+                size="lg"
+              >
+                {isTrackingProgress ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="h-4 w-4 mr-2" />
+                    Complete Set {currentSet}
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
         )}
       </CardContent>
     </Card>

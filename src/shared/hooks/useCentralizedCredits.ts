@@ -74,14 +74,10 @@ export const useCentralizedCredits = () => {
     }
   });
 
-  // Legacy support - map old method names to new ones
-  const checkAndUseCredit = checkAndUseCredits.mutateAsync;
-
   return {
     credits,
     isLoading,
     checkAndUseCredits: checkAndUseCredits.mutateAsync,
-    checkAndUseCredit, // Legacy support
     completeGeneration: completeGeneration.mutateAsync
   };
 };
