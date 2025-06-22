@@ -80,14 +80,11 @@ const AIChatInterface = () => {
   const hasMessages = messages.length > 0;
   const lastAssistantMessage = messages.filter(m => m.role === 'assistant').pop()?.content || "";
 
-  // Convert messages for analytics - properly map to ChatMessage type
-  const analyticsMessages: ChatMessage[] = messages.map(msg => ({
-    id: msg.id,
+  // Convert messages for analytics - properly map to expected format
+  const analyticsMessages: { role: "user" | "assistant"; content: string; timestamp?: number; }[] = messages.map(msg => ({
+    role: msg.role as "user" | "assistant",
     content: msg.content,
-    sender_type: msg.role === 'user' ? 'user' : 'ai',
-    created_at: new Date().toISOString(),
-    sender_id: undefined,
-    metadata: undefined
+    timestamp: Date.now()
   }));
 
   return (
