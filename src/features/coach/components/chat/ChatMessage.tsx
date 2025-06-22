@@ -2,7 +2,7 @@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge as BadgeIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import MessageActionsMenu from "@/components/chat/MessageActionsMenu";
+import MessageActionsMenu from "@/features/chat/components/MessageActionsMenu";
 import type { ChatMessage as ChatMessageType } from "@/shared/hooks/useCoachChat";
 
 interface ChatMessageProps {

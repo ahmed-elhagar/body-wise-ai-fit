@@ -11,6 +11,13 @@ export interface CreditCheckResult {
   remaining?: number;
 }
 
+interface CreditCheckResponse {
+  success: boolean;
+  log_id?: string;
+  error?: string;
+  remaining?: number;
+}
+
 export const useCentralizedCredits = () => {
   const { user } = useAuth();
   const [isCheckingCredits, setIsCheckingCredits] = useState(false);
@@ -40,18 +47,21 @@ export const useCentralizedCredits = () => {
         return { success: false, error: error.message };
       }
 
-      if (!data || !data.success) {
+      // Type assertion for the response data
+      const response = data as CreditCheckResponse;
+
+      if (!response || !response.success) {
         return { 
           success: false, 
-          error: data?.error || 'AI generation limit reached',
-          remaining: data?.remaining || 0
+          error: response?.error || 'AI generation limit reached',
+          remaining: response?.remaining || 0
         };
       }
 
       return {
         success: true,
-        logId: data.log_id,
-        remaining: data.remaining
+        logId: response.log_id,
+        remaining: response.remaining
       };
     } catch (error: any) {
       console.error('Credit check failed:', error);

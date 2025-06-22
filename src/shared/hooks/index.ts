@@ -1,3 +1,4 @@
+
 /**
  * Shared Hooks Export
  * 
@@ -6,7 +7,6 @@
 
 // Theme Management
 export { useTheme } from './useTheme';
-export type { ThemeContextType } from './useTheme';
 
 // Layout Management
 export { useFeatureLayout, useWeekNavigation } from './useFeatureLayout';
