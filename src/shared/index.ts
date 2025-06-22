@@ -1,28 +1,14 @@
 
-/**
- * Shared Module Exports
- * 
- * Centralized export of all shared components, hooks, services, and utilities
- */
+// Core hooks
+export { useI18n } from './hooks/useI18n';
+export { useAdmin } from './hooks/useAdmin';
+export { useUserOnlineStatus } from './hooks/useUserOnlineStatus';
+export { useDesignSystem } from './hooks/useDesignSystem';
 
-// Design System Components
-export * from './components/design-system';
-
-// UI Components
-export * from './components';
-
-// Configuration
-export * from './config/design.config';
-export * from './config/theme.config';
-
-// Hooks
-export * from './hooks';
-
-// Services
-export * from './services';
+// Design system components
+export { default as GradientStatsCard } from './components/design-system/GradientStatsCard';
+export { default as ThemeSelector } from './components/design-system/ThemeSelector';
+export { default as DesignSystemDemo } from './components/design-system/DesignSystemDemo';
 
 // Types
-export * from './types';
-
-// Utils
-export * from './utils';
+export type { Theme } from './hooks/useDesignSystem';

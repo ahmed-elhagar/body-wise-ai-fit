@@ -1,300 +1,89 @@
-/**
- * Gradient Stats Card Component
- * 
- * Consistent stats display with gradient backgrounds and animations.
- * Used across all features for displaying key metrics.
- */
 
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
-import { useTheme } from '@/shared/hooks/useTheme';
+import { TrendingUp, TrendingDown } from 'lucide-react';
 
-export interface GradientStatsCardProps {
-  title: string;
+interface StatItem {
+  label: string;
   value: string | number;
-  icon: React.ComponentType<{ className?: string }>;
-  gradient: 'orange' | 'green' | 'blue' | 'purple' | 'primary';
-  trend?: {
+  change?: {
     value: number;
-    direction: 'up' | 'down' | 'neutral';
-    label?: string;
+    isPositive: boolean;
   };
-  suffix?: string;
-  prefix?: string;
-  loading?: boolean;
-  onClick?: () => void;
-  className?: string;
-  size?: 'sm' | 'md' | 'lg';
+  color: 'orange' | 'green' | 'blue' | 'purple';
 }
 
-export const GradientStatsCard: React.FC<GradientStatsCardProps> = ({
-  title,
-  value,
-  icon: Icon,
-  gradient,
-  trend,
-  suffix = '',
-  prefix = '',
-  loading = false,
-  onClick,
-  className = '',
-  size = 'md',
-}) => {
-  const { gradients } = useTheme();
+interface GradientStatsCardProps {
+  title: string;
+  stats: StatItem[];
+  className?: string;
+}
 
-  const sizeConfig = {
-    sm: {
-      card: 'p-4',
-      icon: 'h-6 w-6',
-      value: 'text-xl',
-      title: 'text-xs',
-      trend: 'text-xs',
-    },
-    md: {
-      card: 'p-6',
-      icon: 'h-8 w-8',
-      value: 'text-2xl',
-      title: 'text-sm',
-      trend: 'text-sm',
-    },
-    lg: {
-      card: 'p-8',
-      icon: 'h-10 w-10',
-      value: 'text-3xl',
-      title: 'text-base',
-      trend: 'text-base',
-    },
-  };
-
-  const config = sizeConfig[size];
-
-  const gradientMap = {
-    orange: gradients.orange,
-    green: gradients.green,
-    blue: gradients.blue,
-    purple: gradients.purple,
-    primary: gradients.primary,
-  };
-
-  const colorMap = {
-    orange: {
-      icon: 'text-orange-500',
-      value: 'text-orange-700',
-      title: 'text-orange-600',
-      border: 'border-orange-200',
-    },
-    green: {
-      icon: 'text-green-500',
-      value: 'text-green-700',
-      title: 'text-green-600',
-      border: 'border-green-200',
-    },
-    blue: {
-      icon: 'text-blue-500',
-      value: 'text-blue-700',
-      title: 'text-blue-600',
-      border: 'border-blue-200',
-    },
-    purple: {
-      icon: 'text-purple-500',
-      value: 'text-purple-700',
-      title: 'text-purple-600',
-      border: 'border-purple-200',
-    },
-    primary: {
-      icon: 'text-brand-primary-500',
-      value: 'text-brand-primary-700',
-      title: 'text-brand-primary-600',
-      border: 'border-brand-primary-200',
-    },
-  };
-
-  const colors = colorMap[gradient];
-
-  const getTrendIcon = () => {
-    if (!trend) return null;
-    
-    switch (trend.direction) {
-      case 'up':
-        return <TrendingUp className="h-3 w-3 text-green-500" />;
-      case 'down':
-        return <TrendingDown className="h-3 w-3 text-red-500" />;
-      default:
-        return <Minus className="h-3 w-3 text-gray-500" />;
-    }
-  };
-
-  const getTrendColor = () => {
-    if (!trend) return '';
-    
-    switch (trend.direction) {
-      case 'up':
-        return 'text-green-600';
-      case 'down':
-        return 'text-red-600';
-      default:
-        return 'text-gray-600';
-    }
-  };
-
-  if (loading) {
-    return (
-      <Card className={`${config.card} bg-gradient-to-br ${gradientMap[gradient]} ${colors.border} shadow-md ${className}`}>
-        <CardContent className="p-0">
-          <div className="animate-pulse space-y-3">
-            <div className="flex items-center justify-between">
-              <div className={`${config.icon} bg-gray-300 rounded`}></div>
-            </div>
-            <div className={`h-6 bg-gray-300 rounded w-3/4`}></div>
-            <div className={`h-4 bg-gray-300 rounded w-1/2`}></div>
-          </div>
-        </CardContent>
-      </Card>
-    );
+const colorVariants = {
+  orange: {
+    gradient: 'from-orange-500 to-red-500',
+    bg: 'bg-orange-50',
+    text: 'text-orange-700',
+    accent: 'text-orange-600'
+  },
+  green: {
+    gradient: 'from-green-500 to-emerald-500',
+    bg: 'bg-green-50',
+    text: 'text-green-700',
+    accent: 'text-green-600'
+  },
+  blue: {
+    gradient: 'from-blue-500 to-cyan-500',
+    bg: 'bg-blue-50',
+    text: 'text-blue-700',
+    accent: 'text-blue-600'
+  },
+  purple: {
+    gradient: 'from-purple-500 to-pink-500',
+    bg: 'bg-purple-50',
+    text: 'text-purple-700',
+    accent: 'text-purple-600'
   }
+};
 
+const GradientStatsCard = ({ title, stats, className = '' }: GradientStatsCardProps) => {
   return (
-    <Card 
-      className={`
-        ${config.card} 
-        bg-gradient-to-br ${gradientMap[gradient]} 
-        ${colors.border} 
-        shadow-md 
-        hover:shadow-lg 
-        transition-all 
-        duration-200 
-        ${onClick ? 'cursor-pointer hover:-translate-y-1' : ''} 
-        ${className}
-      `}
-      onClick={onClick}
-    >
-      <CardContent className="p-0">
-        <div className="flex flex-col space-y-3">
-          {/* Header with Icon */}
-          <div className="flex items-center justify-between">
-            <Icon className={`${config.icon} ${colors.icon}`} />
-            {trend && (
-              <div className={`flex items-center space-x-1 ${config.trend} ${getTrendColor()}`}>
-                {getTrendIcon()}
-                <span className="font-medium">
-                  {trend.value > 0 ? '+' : ''}{trend.value}%
-                </span>
+    <Card className={`overflow-hidden ${className}`}>
+      <div className={`h-2 bg-gradient-to-r ${colorVariants[stats[0]?.color || 'blue'].gradient}`} />
+      <CardContent className="p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {stats.map((stat, index) => {
+            const variant = colorVariants[stat.color];
+            return (
+              <div key={index} className={`p-4 rounded-lg ${variant.bg}`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">{stat.label}</p>
+                    <p className={`text-2xl font-bold ${variant.text}`}>
+                      {stat.value}
+                    </p>
+                  </div>
+                  {stat.change && (
+                    <div className={`flex items-center ${stat.change.isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                      {stat.change.isPositive ? (
+                        <TrendingUp className="h-4 w-4" />
+                      ) : (
+                        <TrendingDown className="h-4 w-4" />
+                      )}
+                      <span className="text-sm font-medium ml-1">
+                        {Math.abs(stat.change.value)}%
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
-            )}
-          </div>
-
-          {/* Value */}
-          <div className={`${config.value} font-bold ${colors.value} leading-none`}>
-            {prefix}{typeof value === 'number' ? value.toLocaleString() : value}{suffix}
-          </div>
-
-          {/* Title */}
-          <p className={`${config.title} ${colors.title} font-medium`}>
-            {title}
-          </p>
-
-          {/* Trend Label */}
-          {trend?.label && (
-            <p className={`text-xs ${getTrendColor()} opacity-75`}>
-              {trend.label}
-            </p>
-          )}
+            );
+          })}
         </div>
       </CardContent>
     </Card>
   );
 };
 
-// Pre-configured stats cards for common use cases
-export const CaloriesStatsCard: React.FC<Omit<GradientStatsCardProps, 'icon' | 'gradient'>> = (props) => {
-  const Flame = React.lazy(() => import('lucide-react').then(mod => ({ default: mod.Flame })));
-  
-  return (
-    <React.Suspense fallback={<div>Loading...</div>}>
-      <GradientStatsCard
-        icon={Flame}
-        gradient="orange"
-        suffix=" kcal"
-        {...props}
-      />
-    </React.Suspense>
-  );
-};
-
-export const WeightStatsCard: React.FC<Omit<GradientStatsCardProps, 'icon' | 'gradient'>> = (props) => {
-  const Scale = React.lazy(() => import('lucide-react').then(mod => ({ default: mod.Scale })));
-  
-  return (
-    <React.Suspense fallback={<div>Loading...</div>}>
-      <GradientStatsCard
-        icon={Scale}
-        gradient="blue"
-        suffix=" kg"
-        {...props}
-      />
-    </React.Suspense>
-  );
-};
-
-export const WorkoutStatsCard: React.FC<Omit<GradientStatsCardProps, 'icon' | 'gradient'>> = (props) => {
-  const Dumbbell = React.lazy(() => import('lucide-react').then(mod => ({ default: mod.Dumbbell })));
-  
-  return (
-    <React.Suspense fallback={<div>Loading...</div>}>
-      <GradientStatsCard
-        icon={Dumbbell}
-        gradient="green"
-        {...props}
-      />
-    </React.Suspense>
-  );
-};
-
-export const GoalStatsCard: React.FC<Omit<GradientStatsCardProps, 'icon' | 'gradient'>> = (props) => {
-  const Target = React.lazy(() => import('lucide-react').then(mod => ({ default: mod.Target })));
-  
-  return (
-    <React.Suspense fallback={<div>Loading...</div>}>
-      <GradientStatsCard
-        icon={Target}
-        gradient="purple"
-        {...props}
-      />
-    </React.Suspense>
-  );
-};
-
-// Stats Grid Component for organized display
-export interface StatsGridProps {
-  cards: React.ReactNode[];
-  columns?: 1 | 2 | 3 | 4;
-  gap?: 'sm' | 'md' | 'lg';
-  className?: string;
-}
-
-export const StatsGrid: React.FC<StatsGridProps> = ({
-  cards,
-  columns = 4,
-  gap = 'md',
-  className = '',
-}) => {
-  const gapMap = {
-    sm: 'gap-3',
-    md: 'gap-4',
-    lg: 'gap-6',
-  };
-
-  const columnMap = {
-    1: 'grid-cols-1',
-    2: 'grid-cols-1 md:grid-cols-2',
-    3: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
-    4: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4',
-  };
-
-  return (
-    <div className={`grid ${columnMap[columns]} ${gapMap[gap]} ${className}`}>
-      {cards}
-    </div>
-  );
-};
+export default GradientStatsCard;

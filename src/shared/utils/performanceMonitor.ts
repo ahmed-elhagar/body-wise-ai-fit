@@ -1,263 +1,123 @@
 // Performance Monitoring Utility
 // Track and monitor app performance across features
 
+import React from 'react';
+
 export interface PerformanceMetric {
   name: string;
   value: number;
-  unit: 'ms' | 'bytes' | 'count' | 'percent';
-  feature?: string;
   timestamp: number;
+  category: 'render' | 'api' | 'user-interaction' | 'navigation';
 }
 
-export interface RenderMetric {
-  componentName: string;
-  renderTime: number;
-  propsCount: number;
-  rerenderCount: number;
+export interface PerformanceData {
+  metrics: PerformanceMetric[];
+  summary: {
+    averageRenderTime: number;
+    totalApiCalls: number;
+    errorRate: number;
+  };
 }
 
-export class PerformanceMonitor {
+class PerformanceMonitor {
   private metrics: PerformanceMetric[] = [];
-  private renderMetrics: Map<string, RenderMetric> = new Map();
-  private observers: PerformanceObserver[] = [];
+  private observers: ((data: PerformanceData) => void)[] = [];
 
-  constructor() {
-    this.setupObservers();
-  }
-
-  // Setup performance observers
-  private setupObservers() {
-    if (typeof window === 'undefined' || !window.PerformanceObserver) {
-      return;
-    }
-
-    try {
-      // Long Task Observer
-      const longTaskObserver = new PerformanceObserver((list) => {
-        for (const entry of list.getEntries()) {
-          this.recordMetric({
-            name: 'long_task',
-            value: entry.duration,
-            unit: 'ms',
-            timestamp: entry.startTime
-          });
-        }
-      });
-      longTaskObserver.observe({ entryTypes: ['longtask'] });
-      this.observers.push(longTaskObserver);
-
-      // Largest Contentful Paint Observer
-      const lcpObserver = new PerformanceObserver((list) => {
-        const entries = list.getEntries();
-        const lastEntry = entries[entries.length - 1];
-        if (lastEntry) {
-          this.recordMetric({
-            name: 'largest_contentful_paint',
-            value: lastEntry.startTime,
-            unit: 'ms',
-            timestamp: performance.now()
-          });
-        }
-      });
-      lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
-      this.observers.push(lcpObserver);
-
-      // First Input Delay Observer
-      const fidObserver = new PerformanceObserver((list) => {
-        for (const entry of list.getEntries()) {
-          this.recordMetric({
-            name: 'first_input_delay',
-            value: (entry as any).processingStart - entry.startTime,
-            unit: 'ms',
-            timestamp: entry.startTime
-          });
-        }
-      });
-      fidObserver.observe({ entryTypes: ['first-input'] });
-      this.observers.push(fidObserver);
-
-    } catch (error) {
-      console.warn('Performance observers not fully supported:', error);
-    }
-  }
-
-  // Record a custom metric
-  recordMetric(metric: Omit<PerformanceMetric, 'timestamp'> & { timestamp?: number }) {
-    const fullMetric: PerformanceMetric = {
-      ...metric,
-      timestamp: metric.timestamp || performance.now()
-    };
+  startTimer(name: string): () => void {
+    const startTime = performance.now();
     
-    this.metrics.push(fullMetric);
-    
-    // Keep only last 1000 metrics to prevent memory leaks
-    if (this.metrics.length > 1000) {
-      this.metrics = this.metrics.slice(-1000);
-    }
-
-    // Send to analytics if available
-    this.sendToAnalytics(fullMetric);
-  }
-
-  // Track React component render performance
-  trackComponentRender(componentName: string, renderStart: number, propsCount = 0) {
-    const renderTime = performance.now() - renderStart;
-    
-    const existing = this.renderMetrics.get(componentName);
-    if (existing) {
-      existing.renderTime = (existing.renderTime + renderTime) / 2; // Average
-      existing.rerenderCount++;
-    } else {
-      this.renderMetrics.set(componentName, {
-        componentName,
-        renderTime,
-        propsCount,
-        rerenderCount: 1
-      });
-    }
-
-    this.recordMetric({
-      name: 'component_render',
-      value: renderTime,
-      unit: 'ms',
-      feature: componentName
-    });
-  }
-
-  // Track API call performance
-  trackAPICall(endpoint: string, duration: number, success: boolean) {
-    this.recordMetric({
-      name: success ? 'api_success' : 'api_error',
-      value: duration,
-      unit: 'ms',
-      feature: endpoint
-    });
-  }
-
-  // Track memory usage
-  trackMemoryUsage() {
-    if ('memory' in performance) {
-      const memory = (performance as any).memory;
+    return () => {
+      const endTime = performance.now();
+      const duration = endTime - startTime;
       
-      this.recordMetric({
-        name: 'memory_used',
-        value: memory.usedJSHeapSize,
-        unit: 'bytes'
+      this.addMetric({
+        name,
+        value: duration,
+        timestamp: Date.now(),
+        category: 'render'
       });
-
-      this.recordMetric({
-        name: 'memory_total',
-        value: memory.totalJSHeapSize,
-        unit: 'bytes'
-      });
-
-      this.recordMetric({
-        name: 'memory_limit',
-        value: memory.jsHeapSizeLimit,
-        unit: 'bytes'
-      });
-    }
-  }
-
-  // Track bundle size and loading
-  trackBundleLoad(bundleName: string, size: number, loadTime: number) {
-    this.recordMetric({
-      name: 'bundle_size',
-      value: size,
-      unit: 'bytes',
-      feature: bundleName
-    });
-
-    this.recordMetric({
-      name: 'bundle_load_time',
-      value: loadTime,
-      unit: 'ms',
-      feature: bundleName
-    });
-  }
-
-  // Get performance summary
-  getPerformanceSummary() {
-    const summary = {
-      totalMetrics: this.metrics.length,
-      componentMetrics: Array.from(this.renderMetrics.values()),
-      averageRenderTime: 0,
-      slowestComponents: [] as RenderMetric[],
-      recentMetrics: this.metrics.slice(-10)
     };
-
-    // Calculate average render time
-    const renderTimes = Array.from(this.renderMetrics.values()).map(m => m.renderTime);
-    if (renderTimes.length > 0) {
-      summary.averageRenderTime = renderTimes.reduce((a, b) => a + b, 0) / renderTimes.length;
-    }
-
-    // Find slowest components
-    summary.slowestComponents = Array.from(this.renderMetrics.values())
-      .sort((a, b) => b.renderTime - a.renderTime)
-      .slice(0, 5);
-
-    return summary;
   }
 
-  // Send metrics to analytics service
-  private sendToAnalytics(metric: PerformanceMetric) {
-    // Send to Google Analytics if available
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', 'performance_metric', {
-        metric_name: metric.name,
-        metric_value: metric.value,
-        metric_unit: metric.unit,
-        feature: metric.feature
-      });
+  addMetric(metric: PerformanceMetric): void {
+    this.metrics.push(metric);
+    
+    // Keep only last 100 metrics
+    if (this.metrics.length > 100) {
+      this.metrics = this.metrics.slice(-100);
     }
+    
+    this.notifyObservers();
+  }
 
-    // Send to custom analytics endpoint
-    if (process.env.NODE_ENV === 'production') {
-      // Only send critical metrics in production
-      const criticalMetrics = [
-        'largest_contentful_paint',
-        'first_input_delay',
-        'long_task'
-      ];
+  getMetrics(): PerformanceMetric[] {
+    return [...this.metrics];
+  }
 
-      if (criticalMetrics.includes(metric.name)) {
-        this.sendToCustomAnalytics(metric);
+  getSummary(): PerformanceData['summary'] {
+    const renderMetrics = this.metrics.filter(m => m.category === 'render');
+    const apiMetrics = this.metrics.filter(m => m.category === 'api');
+    
+    return {
+      averageRenderTime: renderMetrics.length > 0 
+        ? renderMetrics.reduce((sum, m) => sum + m.value, 0) / renderMetrics.length 
+        : 0,
+      totalApiCalls: apiMetrics.length,
+      errorRate: 0 // Placeholder for error tracking
+    };
+  }
+
+  subscribe(callback: (data: PerformanceData) => void): () => void {
+    this.observers.push(callback);
+    
+    return () => {
+      const index = this.observers.indexOf(callback);
+      if (index > -1) {
+        this.observers.splice(index, 1);
       }
-    }
+    };
   }
 
-  // Send to custom analytics service
-  private async sendToCustomAnalytics(metric: PerformanceMetric) {
-    try {
-      await fetch('/api/analytics/performance', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(metric)
-      });
-    } catch (error) {
-      console.warn('Failed to send performance metric:', error);
-    }
+  private notifyObservers(): void {
+    const data: PerformanceData = {
+      metrics: this.getMetrics(),
+      summary: this.getSummary()
+    };
+    
+    this.observers.forEach(callback => callback(data));
   }
 
-  // Clear old metrics
-  clearMetrics() {
+  clear(): void {
     this.metrics = [];
-    this.renderMetrics.clear();
-  }
-
-  // Dispose of observers
-  dispose() {
-    this.observers.forEach(observer => observer.disconnect());
-    this.observers = [];
-    this.clearMetrics();
+    this.notifyObservers();
   }
 }
 
-// Singleton instance
 export const performanceMonitor = new PerformanceMonitor();
+
+// React hook for performance monitoring
+export const usePerformanceMonitor = () => {
+  const [data, setData] = React.useState<PerformanceData>({
+    metrics: [],
+    summary: {
+      averageRenderTime: 0,
+      totalApiCalls: 0,
+      errorRate: 0
+    }
+  });
+
+  React.useEffect(() => {
+    const unsubscribe = performanceMonitor.subscribe(setData);
+    return unsubscribe;
+  }, []);
+
+  return {
+    data,
+    startTimer: performanceMonitor.startTimer.bind(performanceMonitor),
+    addMetric: performanceMonitor.addMetric.bind(performanceMonitor),
+    clear: performanceMonitor.clear.bind(performanceMonitor)
+  };
+};
 
 // React Hook for component performance tracking
 export const usePerformanceTracking = (componentName: string) => {
@@ -321,4 +181,4 @@ export const measureFunction = async <T>(
     
     throw error;
   }
-}; 
+};

@@ -1,25 +1,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
-
-// Define the AIStep interface locally since we moved the component
-export interface AIStep {
-  id: string;
-  title: string;
-  description: string;
-  status: 'pending' | 'active' | 'completed' | 'error';
-  estimatedDuration?: number;
-}
-
-export interface UseAILoadingStepsOptions {
-  autoProgress?: boolean;
-  stepDuration?: number;
-  completionDelay?: number;
-}
-
-// Extended AIStep interface with optional estimatedDuration
-export interface ExtendedAIStep extends AIStep {
-  estimatedDuration?: number;
-}
+import type { AIStep, UseAILoadingStepsOptions } from '../types/AIStep';
 
 export const useAILoadingSteps = (
   steps: AIStep[],

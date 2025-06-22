@@ -3,9 +3,7 @@ import React, { useMemo } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { UnifiedAILoadingDialog } from "@/features/chat/components";
 import { useAILoadingSteps } from "@/features/ai/hooks/useAILoadingSteps";
-
-// Import the exact AIStep interface from the chat components
-import type { AIStep } from "@/features/chat/components/AILoadingSteps";
+import type { AIStep } from "@/features/ai/types/AIStep";
 
 interface SnackGenerationProgressProps {
   step: string;
@@ -23,26 +21,34 @@ const SnackGenerationProgress = ({
   const steps = useMemo((): AIStep[] => [
     {
       id: 'analyzing-calories',
+      title: 'Analyzing calories',
       label: 'Analyzing calories',
       description: 'Calculating optimal snack size for your daily goals',
+      status: 'pending',
       estimatedDuration: 2
     },
     {
       id: 'generating-snack',
+      title: 'Generating snack',
       label: 'Generating snack',
       description: 'Creating the perfect snack for your remaining calories',
+      status: 'pending',
       estimatedDuration: 5
     },
     {
       id: 'optimizing-nutrition',
+      title: 'Optimizing nutrition',
       label: 'Optimizing nutrition',
       description: 'Ensuring nutritional balance with your existing meals',
+      status: 'pending',
       estimatedDuration: 3
     },
     {
       id: 'finalizing-snack',
+      title: 'Finalizing snack',
       label: 'Finalizing snack',
       description: 'Adding snack to your meal plan',
+      status: 'pending',
       estimatedDuration: 2
     }
   ], []);
