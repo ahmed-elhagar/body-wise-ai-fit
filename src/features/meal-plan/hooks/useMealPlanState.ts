@@ -7,7 +7,6 @@ import { useAuth } from '@/features/auth/hooks/useAuth';
 import { getWeekStartDate, getCurrentSaturdayDay } from '@/utils/mealPlanUtils';
 import { useMealPlanDialogs } from './useMealPlanDialogs';
 import { useMealPlanCalculations } from './useMealPlanCalculations';
-import type { DailyMeal, MealPlanFetchResult } from '@/features/meal-plan/types';
 
 export const useMealPlanState = () => {
   const { user } = useAuth();
@@ -22,9 +21,14 @@ export const useMealPlanState = () => {
   const [currentWeekOffset, setCurrentWeekOffsetInternal] = useState(0);
   const [selectedDayNumber, setSelectedDayNumber] = useState(() => getCurrentSaturdayDay());
   
-  // Memoize week start date calculation to prevent loops
+  // Calculate week start date only when needed, with error handling
   const weekStartDate = useMemo(() => {
-    return getWeekStartDate(currentWeekOffset);
+    try {
+      return getWeekStartDate(currentWeekOffset);
+    } catch (error) {
+      console.error('Error calculating week start date:', error);
+      return new Date();
+    }
   }, [currentWeekOffset]);
 
   // Core meal plan data - use the hook with stable weekOffset
@@ -39,35 +43,40 @@ export const useMealPlanState = () => {
   const refetch = useCallback(async () => {
     console.log('🔄 Enhanced refetch - invalidating all meal plan queries for week offset:', currentWeekOffset);
     
-    // Clear all meal plan related caches
-    await queryClient.invalidateQueries({
-      predicate: (query) => {
-        const queryKey = query.queryKey;
-        return queryKey[0] === 'weekly-meal-plan' || 
-               queryKey[0] === 'optimized-meal-plan' ||
-               queryKey[0] === 'meal-plan';
-      }
-    });
-    
-    // Clear the OptimizedMealPlanService cache
     try {
-      const { OptimizedMealPlanService } = await import('@/features/meal-plan/services/optimizedMealPlanService');
-      OptimizedMealPlanService.clearCache();
-    } catch (e) {
-      console.log('Service cache clear skipped:', e);
+      // Clear all meal plan related caches
+      await queryClient.invalidateQueries({
+        predicate: (query) => {
+          const queryKey = query.queryKey;
+          return queryKey[0] === 'weekly-meal-plan' || 
+                 queryKey[0] === 'optimized-meal-plan' ||
+                 queryKey[0] === 'meal-plan';
+        }
+      });
+      
+      // Clear the OptimizedMealPlanService cache
+      try {
+        const { OptimizedMealPlanService } = await import('@/features/meal-plan/services/optimizedMealPlanService');
+        OptimizedMealPlanService.clearCache();
+      } catch (e) {
+        console.log('Service cache clear skipped:', e);
+      }
+      
+      // Force refetch current data
+      const result = await originalRefetch();
+      
+      // Wait a bit and try again if no data
+      if (!result.data?.weeklyPlan) {
+        console.log('⏳ No data returned, waiting and retrying...');
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        return await originalRefetch();
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error in refetch:', error);
+      throw error;
     }
-    
-    // Force refetch current data
-    const result = await originalRefetch();
-    
-    // Wait a bit and try again if no data
-    if (!result.data?.weeklyPlan) {
-      console.log('⏳ No data returned, waiting and retrying...');
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      return await originalRefetch();
-    }
-    
-    return result;
   }, [queryClient, currentWeekOffset, originalRefetch]);
 
   // Use the new hook for all nutritional calculations

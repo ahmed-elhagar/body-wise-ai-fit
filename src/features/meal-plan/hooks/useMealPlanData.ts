@@ -14,19 +14,22 @@ export const useMealPlanData = (weekOffset: number = 0) => {
   const { user } = useAuth();
   const { handleError, handleAPITimeout } = useEnhancedErrorHandling();
 
-  // Memoize the week start date to prevent excessive recalculation
+  // Calculate week start date string directly and memoize it
   const weekStartDateStr = useMemo(() => {
-    const weekStartDate = getWeekStartDate(weekOffset);
-    return format(weekStartDate, 'yyyy-MM-dd');
+    try {
+      const weekStartDate = getWeekStartDate(weekOffset);
+      return format(weekStartDate, 'yyyy-MM-dd');
+    } catch (error) {
+      console.error('Error calculating week start date:', error);
+      return format(new Date(), 'yyyy-MM-dd');
+    }
   }, [weekOffset]);
 
-  // Create a stable query key with primitive values only (no objects/functions)
-  const queryKey = useMemo(() => [
-    'weekly-meal-plan', 
-    user?.id || 'anonymous', 
-    weekOffset, 
-    weekStartDateStr
-  ], [user?.id, weekOffset, weekStartDateStr]);
+  // Create a simple, stable query key with only primitive values
+  const queryKey = useMemo(() => {
+    const userId = user?.id || 'anonymous';
+    return ['weekly-meal-plan', userId, weekOffset, weekStartDateStr];
+  }, [user?.id, weekOffset, weekStartDateStr]);
 
   return useQuery({
     queryKey,

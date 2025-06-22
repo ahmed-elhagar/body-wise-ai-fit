@@ -1,14 +1,15 @@
+
 import { addWeeks, startOfWeek, format } from 'date-fns';
 import type { DailyMeal } from '@/features/meal-plan/types';
 
-// Simplified cache with better memory management
+// Simple cache with memory management - reduced logging to prevent spam
 const weekStartCache = new Map<number, Date>();
 
 export const getWeekStartDate = (offset: number = 0): Date => {
   // Check cache first to prevent recalculation
   if (weekStartCache.has(offset)) {
     const cached = weekStartCache.get(offset)!;
-    console.log('📅 Using cached weekStartDate for offset:', offset);
+    // Reduced logging to prevent console spam
     return cached;
   }
 
@@ -33,6 +34,7 @@ export const getWeekStartDate = (offset: number = 0): Date => {
     keysToDelete.forEach(key => weekStartCache.delete(key));
   }
   
+  // Only log when actually calculating new dates
   console.log('📅 Calculated new weekStartDate:', {
     offset,
     targetWeek: targetWeek.toISOString().split('T')[0],
