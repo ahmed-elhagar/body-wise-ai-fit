@@ -32,12 +32,13 @@ export const useMealPlanState = () => {
   }, [currentWeekOffset]);
 
   // Core meal plan data - use the hook with stable weekOffset
+  const mealPlanQuery = useMealPlanData(currentWeekOffset);
   const {
     data: currentWeekPlan,
     isLoading,
     error,
     refetch: originalRefetch,
-  } = useMealPlanData(currentWeekOffset);
+  } = mealPlanQuery;
 
   // Enhanced refetch that properly invalidates and refreshes data
   const refetch = useCallback(async () => {
@@ -48,7 +49,8 @@ export const useMealPlanState = () => {
       await queryClient.invalidateQueries({
         predicate: (query) => {
           const queryKey = query.queryKey;
-          return queryKey[0] === 'weekly-meal-plan' || 
+          return queryKey[0] === 'meal-plan-data' || 
+                 queryKey[0] === 'weekly-meal-plan' ||
                  queryKey[0] === 'optimized-meal-plan' ||
                  queryKey[0] === 'meal-plan';
         }
@@ -86,14 +88,6 @@ export const useMealPlanState = () => {
   // Use the dedicated hook for all dialog-related state and handlers
   const dialogs = useMealPlanDialogs();
 
-  // Actions - AI preferences are now taken from the dialogs hook
-  const { handleGenerateAIPlan, isGenerating } = useMealPlanActions(
-    currentWeekPlan,
-    currentWeekOffset,
-    dialogs.aiPreferences,
-    refetch
-  );
-
   // Enhanced week change handler - use useCallback to prevent unnecessary re-renders
   const setCurrentWeekOffset = useCallback((newOffset: number) => {
     console.log('📅 Changing week from', currentWeekOffset, 'to', newOffset);
@@ -102,6 +96,24 @@ export const useMealPlanState = () => {
       setCurrentWeekOffsetInternal(newOffset);
     }
   }, [currentWeekOffset]);
+
+  // Actions - Create a stable reference to avoid circular dependencies
+  const mealPlanActions = useMemo(() => {
+    return {
+      currentWeekPlan,
+      currentWeekOffset,
+      aiPreferences: dialogs.aiPreferences,
+      refetch
+    };
+  }, [currentWeekPlan, currentWeekOffset, dialogs.aiPreferences, refetch]);
+
+  // Use actions hook with stable reference
+  const { handleGenerateAIPlan, isGenerating } = useMealPlanActions(
+    mealPlanActions.currentWeekPlan,
+    mealPlanActions.currentWeekOffset,
+    mealPlanActions.aiPreferences,
+    mealPlanActions.refetch
+  );
 
   return {
     // Data

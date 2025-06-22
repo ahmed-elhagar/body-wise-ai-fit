@@ -15,7 +15,10 @@ export const useMealPlanActions = (
   const { language } = useLanguage();
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const { generateMealPlan, isGenerating, nutritionContext } = useEnhancedMealPlan();
+  
+  // Get enhanced meal plan hook but avoid circular dependencies
+  const enhancedMealPlan = useEnhancedMealPlan();
+  const { generateMealPlan, isGenerating, nutritionContext } = enhancedMealPlan;
 
   // Enhanced AI generation handler with special conditions support
   const handleGenerateAIPlan = useCallback(async () => {
@@ -45,7 +48,7 @@ export const useMealPlanActions = (
         
         // Invalidate all meal plan queries to ensure fresh data
         await queryClient.invalidateQueries({
-          queryKey: ['weekly-meal-plan']
+          queryKey: ['meal-plan-data']
         });
         
         // Wait a bit for the database to be fully updated
