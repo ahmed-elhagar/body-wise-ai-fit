@@ -37,7 +37,7 @@ export const useExerciseProgram = () => {
   const queryClient = useQueryClient();
 
   // State management
-  const [selectedDayNumber, setSelectedDayNumber] = useState(1);
+  const [selectedDayNumber, setSelectedDayNumber] = useState(new Date().getDay() || 7);
   const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
   const [workoutType, setWorkoutType] = useState<"home" | "gym">("home");
 
@@ -46,7 +46,7 @@ export const useExerciseProgram = () => {
 
   // Fetch current exercise program with proper week filtering
   const { data: currentProgram, isLoading, error } = useQuery({
-    queryKey: ['exercise-program', user?.id, currentWeekOffset],
+    queryKey: ['exercise-program', user?.id, format(weekStartDate, 'yyyy-MM-dd')],
     queryFn: async () => {
       if (!user?.id) return null;
 
@@ -218,9 +218,8 @@ export const useExerciseProgram = () => {
   });
 
   // Calculate today's exercises - get current day or selected day exercises
-  const currentDayNumber = selectedDayNumber || new Date().getDay() || 7; // Sunday = 7
   const todaysExercises = currentProgram?.daily_workouts?.find(
-    workout => workout.day_number === currentDayNumber
+    workout => workout.day_number === selectedDayNumber
   )?.exercises || [];
 
   const completedExercises = todaysExercises.filter(ex => ex.completed).length;
@@ -228,7 +227,7 @@ export const useExerciseProgram = () => {
   const progressPercentage = totalExercises > 0 ? (completedExercises / totalExercises) * 100 : 0;
 
   // Calculate additional properties
-  const isRestDay = todaysExercises.length === 0;
+  const isRestDay = to daysExercises.length === 0;
   const hasProgram = !!currentProgram;
   const isPro = profile?.role === 'pro' || false;
   const creditsRemaining = credits;

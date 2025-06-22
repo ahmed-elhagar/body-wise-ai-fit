@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { toast } from 'sonner';
 
-interface CheckAndUseCreditsResponse {
+export interface CheckAndUseCreditsResponse {
   success: boolean;
   logId?: string;
   remaining?: number;
