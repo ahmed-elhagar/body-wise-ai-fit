@@ -56,6 +56,10 @@ function AppContent() {
     );
   }
 
+  const handleOnboardingComplete = () => {
+    window.location.href = '/';
+  };
+
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
@@ -64,7 +68,7 @@ function AppContent() {
         element={
           <ProtectedRoute>
             <OnboardingContainer 
-              onComplete={() => window.location.href = '/'} 
+              onComplete={handleOnboardingComplete}
               isCompleting={false} 
             />
           </ProtectedRoute>

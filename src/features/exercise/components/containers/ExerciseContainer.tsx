@@ -1,167 +1,164 @@
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Calendar, Dumbbell, Target, TrendingUp } from 'lucide-react';
-
-interface ExerciseProgram {
-  id: string;
-  program_name: string;
-  difficulty_level: string;
-  workout_type: string;
-  status: string;
-  week_start_date: string;
-  current_week: number;
-  total_estimated_calories: number;
-  daily_workouts: Array<{
-    id: string;
-    day_number: number;
-    workout_name: string;
-    completed: boolean;
-    estimated_duration: number;
-    estimated_calories: number;
-  }>;
-}
+import React, { useState, useEffect } from 'react';
+import { useExerciseProgram } from '../../hooks/core/useExerciseProgram';
+import { useWorkoutSession } from '../../hooks/core/useWorkoutSession';
+import { ExerciseLayout } from '../ExerciseLayout';
+import { useProfile } from '@/features/ai/hooks/useProfile';
+import { useCentralizedCredits } from '@/shared/hooks/useCentralizedCredits';
+import type { ExerciseProgram, Exercise } from '../../types';
 
 interface ExerciseContainerProps {
-  program?: ExerciseProgram;
-  onGenerateProgram: () => void;
-  onWorkoutTypeChange: (type: string) => void;
-  isGenerating: boolean;
+  className?: string;
 }
 
-export const ExerciseContainer = ({ 
-  program, 
-  onGenerateProgram, 
-  onWorkoutTypeChange,
-  isGenerating 
-}: ExerciseContainerProps) => {
-  const [workoutType, setWorkoutType] = useState<'home' | 'gym'>('home');
+export const ExerciseContainer: React.FC<ExerciseContainerProps> = ({ className }) => {
+  const { profile, isLoading: profileLoading } = useProfile();
+  const { credits } = useCentralizedCredits();
+  
+  const [selectedDayNumber, setSelectedDayNumber] = useState(1);
+  const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
+  const [workoutType, setWorkoutType] = useState<"home" | "gym">("home");
+  const [workoutTimer, setWorkoutTimer] = useState(0);
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
 
-  const handleWorkoutTypeChange = (type: 'home' | 'gym') => {
-    setWorkoutType(type);
-    onWorkoutTypeChange(type);
+  const {
+    currentProgram,
+    todaysExercises,
+    isLoading: programLoading,
+    error: programError,
+    refetch: refetchProgram
+  } = useExerciseProgram(selectedDayNumber, currentWeekOffset);
+
+  const {
+    completeExercise,
+    updateExerciseProgress,
+    isUpdating
+  } = useWorkoutSession();
+
+  // Timer effect
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isTimerRunning) {
+      interval = setInterval(() => {
+        setWorkoutTimer(prev => prev + 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isTimerRunning]);
+
+  const handleDaySelect = (dayNumber: number) => {
+    setSelectedDayNumber(dayNumber);
   };
 
-  if (!program) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Dumbbell className="h-5 w-5" />
-            Exercise Program
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8">
-            <Target className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-            <h3 className="text-lg font-medium mb-2">No Exercise Program</h3>
-            <p className="text-gray-600 mb-4">
-              Generate a personalized exercise program to get started.
-            </p>
-            <div className="flex gap-2 justify-center mb-4">
-              <Button
-                variant={workoutType === 'home' ? 'default' : 'outline'}
-                onClick={() => handleWorkoutTypeChange('home')}
-              >
-                Home Workout
-              </Button>
-              <Button
-                variant={workoutType === 'gym' ? 'default' : 'outline'}
-                onClick={() => handleWorkoutTypeChange('gym')}
-              >
-                Gym Workout
-              </Button>
-            </div>
-            <Button onClick={onGenerateProgram} disabled={isGenerating}>
-              {isGenerating ? 'Generating...' : 'Generate Program'}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  const handleWeekOffsetChange = (offset: number) => {
+    setCurrentWeekOffset(offset);
+  };
 
-  const completedWorkouts = program.daily_workouts.filter(w => w.completed).length;
-  const totalWorkouts = program.daily_workouts.length;
-  const progressPercentage = totalWorkouts > 0 ? (completedWorkouts / totalWorkouts) * 100 : 0;
+  const handleWorkoutTypeChange = (type: "home" | "gym") => {
+    setWorkoutType(type);
+  };
+
+  const handleExerciseComplete = async (exerciseId: string) => {
+    try {
+      await completeExercise(exerciseId);
+      await refetchProgram();
+    } catch (error) {
+      console.error('Failed to complete exercise:', error);
+    }
+  };
+
+  const handleExerciseProgressUpdate = async (
+    exerciseId: string,
+    sets: number,
+    reps: string,
+    notes?: string,
+    weight?: number
+  ) => {
+    try {
+      await updateExerciseProgress(exerciseId, {
+        sets,
+        reps,
+        notes,
+        weight
+      });
+      await refetchProgram();
+    } catch (error) {
+      console.error('Failed to update exercise progress:', error);
+    }
+  };
+
+  const handleStartWorkout = () => {
+    setIsTimerRunning(true);
+  };
+
+  const handlePauseWorkout = () => {
+    setIsTimerRunning(false);
+  };
+
+  const handleShowAIModal = () => {
+    // Handle AI modal display
+    console.log('Show AI modal');
+  };
+
+  const handleRegenerateProgram = async () => {
+    try {
+      await refetchProgram();
+    } catch (error) {
+      console.error('Failed to regenerate program:', error);
+    }
+  };
+
+  // Calculate progress metrics
+  const completedExercises = todaysExercises.filter(ex => ex.completed).length;
+  const totalExercises = todaysExercises.length;
+  const progressPercentage = totalExercises > 0 ? (completedExercises / totalExercises) * 100 : 0;
+
+  // Check if today is a rest day
+  const isRestDay = todaysExercises.length === 0;
+
+  // Calculate week start date
+  const weekStartDate = new Date();
+  weekStartDate.setDate(weekStartDate.getDate() - weekStartDate.getDay() + (currentWeekOffset * 7));
+
+  // Add daily_workouts_count to program if missing
+  const enhancedProgram: ExerciseProgram | undefined = currentProgram ? {
+    ...currentProgram,
+    daily_workouts_count: currentProgram.daily_workouts?.length || 0
+  } : undefined;
+
+  const isPro = profile?.role === 'pro' || false;
 
   return (
-    <div className="space-y-6">
-      {/* Program Overview */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Dumbbell className="h-5 w-5" />
-                {program.program_name}
-              </CardTitle>
-              <div className="flex items-center gap-2 mt-2">
-                <Badge variant="secondary">{program.difficulty_level}</Badge>
-                <Badge variant="outline">{program.workout_type}</Badge>
-                <Badge variant={program.status === 'active' ? 'default' : 'secondary'}>
-                  {program.status}
-                </Badge>
-              </div>
-            </div>
-            <div className="text-right">
-              <p className="text-sm text-gray-600">Week {program.current_week}</p>
-              <p className="text-sm text-gray-600">
-                Started: {new Date(program.week_start_date).toLocaleDateString()}
-              </p>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="flex items-center gap-3">
-              <TrendingUp className="h-8 w-8 text-green-600" />
-              <div>
-                <p className="text-2xl font-bold">{Math.round(progressPercentage)}%</p>
-                <p className="text-sm text-gray-600">Progress</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <Calendar className="h-8 w-8 text-blue-600" />
-              <div>
-                <p className="text-2xl font-bold">{completedWorkouts}/{totalWorkouts}</p>
-                <p className="text-sm text-gray-600">Workouts Done</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <Target className="h-8 w-8 text-orange-600" />
-              <div>
-                <p className="text-2xl font-bold">{program.total_estimated_calories}</p>
-                <p className="text-sm text-gray-600">Est. Calories</p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Daily Workouts */}
-      <div className="grid gap-4">
-        <h3 className="text-lg font-semibold">This Week's Workouts</h3>
-        {program.daily_workouts.map((workout) => (
-          <Card key={workout.id} className={workout.completed ? 'opacity-75' : ''}>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-medium">Day {workout.day_number}: {workout.workout_name}</h4>
-                  <p className="text-sm text-gray-600">
-                    {workout.estimated_duration} min • {workout.estimated_calories} calories
-                  </p>
-                </div>
-                <Badge variant={workout.completed ? 'default' : 'outline'}>
-                  {workout.completed ? 'Completed' : 'Pending'}
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+    <div className={className}>
+      <ExerciseLayout
+        isLoading={programLoading || profileLoading}
+        currentProgram={enhancedProgram}
+        todaysExercises={todaysExercises}
+        completedExercises={completedExercises}
+        totalExercises={totalExercises}
+        progressPercentage={progressPercentage}
+        isRestDay={isRestDay}
+        selectedDayNumber={selectedDayNumber}
+        currentWeekOffset={currentWeekOffset}
+        weekStartDate={weekStartDate}
+        workoutType={workoutType}
+        workoutTimer={workoutTimer}
+        isTimerRunning={isTimerRunning}
+        creditsRemaining={credits}
+        isPro={isPro}
+        profile={profile}
+        hasProgram={!!currentProgram}
+        isGenerating={false}
+        onDaySelect={handleDaySelect}
+        onWeekOffsetChange={handleWeekOffsetChange}
+        onWorkoutTypeChange={handleWorkoutTypeChange}
+        onExerciseComplete={handleExerciseComplete}
+        onExerciseProgressUpdate={handleExerciseProgressUpdate}
+        onStartWorkout={handleStartWorkout}
+        onPauseWorkout={handlePauseWorkout}
+        onShowAIModal={handleShowAIModal}
+        onRegenerateProgram={handleRegenerateProgram}
+      />
     </div>
   );
 };

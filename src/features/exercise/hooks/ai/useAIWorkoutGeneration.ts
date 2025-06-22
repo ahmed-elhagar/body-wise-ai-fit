@@ -1,6 +1,19 @@
 
 import { useState } from 'react';
 
+export interface AIWorkoutRequest {
+  workoutType: 'home' | 'gym';
+  fitnessLevel: 'beginner' | 'intermediate' | 'advanced';
+  goalType: string;
+  preferences: any;
+}
+
+export interface WorkoutGenerationResponse {
+  success: boolean;
+  program: any;
+  error?: string;
+}
+
 export interface FormAnalysisRequest {
   exerciseId: string;
   videoUrl?: string;
@@ -62,6 +75,3 @@ export const useAIWorkoutGeneration = () => {
     isGenerating
   };
 };
-
-// Export the types
-export type { FormAnalysisRequest, FormAnalysisResult, RecoveryMetrics, RecoveryRecommendation };

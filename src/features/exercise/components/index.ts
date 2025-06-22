@@ -1,3 +1,4 @@
+
 // Exercise feature components exports
 
 // New consolidated components
@@ -9,7 +10,12 @@ export { AIGenerationDialog } from './ai/AIGenerationDialog';
 export { FormAnalysis } from './ai/FormAnalysis';
 export { WorkoutTypeSelector } from './shared/WorkoutTypeSelector';
 
-// Existing components
-export { AIExerciseDialog } from "./AIExerciseDialog";
-export { ExerciseAnalyticsContainer } from "./ExerciseAnalyticsContainer";
-export { ExerciseProgramSelector } from "./ExerciseProgramSelector";
+// Default imports
+import AIExerciseDialog from "./AIExerciseDialog";
+import ExerciseAnalyticsContainer from "./ExerciseAnalyticsContainer";
+import ExerciseProgramSelector from "./ExerciseProgramSelector";
+
+// Re-export as named exports
+export { AIExerciseDialog };
+export { ExerciseAnalyticsContainer };
+export { ExerciseProgramSelector };

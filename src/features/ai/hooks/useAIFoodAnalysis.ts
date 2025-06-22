@@ -53,6 +53,10 @@ export const useAIFoodAnalysis = () => {
         return data;
       } catch (error) {
         // Log the error
+        const creditResult = await checkAndUseCredits('food-analysis', {
+          image_data: imageData
+        });
+        
         if (creditResult.logId) {
           await supabase.rpc('complete_ai_generation', {
             log_id_param: creditResult.logId,

@@ -21,6 +21,7 @@ export interface DailyWorkout {
   estimated_calories: number;
   muscle_groups: string[];
   exercises: Exercise[];
+  is_rest_day?: boolean;
 }
 
 export interface Exercise {
@@ -40,6 +41,7 @@ export interface Exercise {
   actual_sets?: number;
   actual_reps?: string;
   notes?: string;
+  category?: string;
 }
 
 export interface WorkoutSession {

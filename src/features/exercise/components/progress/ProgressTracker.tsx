@@ -5,18 +5,32 @@ import { Badge } from "@/components/ui/badge";
 import { TrendingUp, Target, Calendar, Award } from "lucide-react";
 
 interface ProgressTrackerProps {
-  weeklyProgress: number;
-  monthlyProgress: number;
-  streakDays: number;
-  totalWorkouts: number;
+  weeklyProgress?: number;
+  monthlyProgress?: number;
+  streakDays?: number;
+  totalWorkouts?: number;
+  completedExercises?: number;
+  totalExercises?: number;
+  progressPercentage?: number;
+  workoutTimer?: number;
 }
 
 export const ProgressTracker = ({
-  weeklyProgress,
-  monthlyProgress,
-  streakDays,
-  totalWorkouts
+  weeklyProgress = 0,
+  monthlyProgress = 0,
+  streakDays = 0,
+  totalWorkouts = 0,
+  completedExercises = 0,
+  totalExercises = 0,
+  progressPercentage = 0,
+  workoutTimer = 0
 }: ProgressTrackerProps) => {
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
   return (
     <div className="space-y-6">
       <Card>
@@ -43,6 +57,15 @@ export const ProgressTracker = ({
               <span className="text-sm text-gray-600">{monthlyProgress}%</span>
             </div>
             <Progress value={monthlyProgress} className="h-2" />
+          </div>
+
+          {/* Today's Progress */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium">Today's Progress</span>
+              <span className="text-sm text-gray-600">{progressPercentage}%</span>
+            </div>
+            <Progress value={progressPercentage} className="h-2" />
           </div>
 
           {/* Stats Grid */}
