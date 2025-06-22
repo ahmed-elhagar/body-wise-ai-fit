@@ -227,7 +227,7 @@ export const useExerciseProgram = () => {
   const progressPercentage = totalExercises > 0 ? (completedExercises / totalExercises) * 100 : 0;
 
   // Calculate additional properties
-  const isRestDay = to daysExercises.length === 0;
+  const isRestDay = todaysExercises.length === 0;
   const hasProgram = !!currentProgram;
   const isPro = profile?.role === 'pro' || false;
   const creditsRemaining = credits;

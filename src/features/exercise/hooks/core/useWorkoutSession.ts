@@ -1,115 +1,75 @@
 
-import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/features/auth/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 export const useWorkoutSession = () => {
   const { user } = useAuth();
-  const queryClient = useQueryClient();
-  const [activeExerciseId, setActiveExerciseId] = useState<string | null>(null);
   const [workoutTimer, setWorkoutTimer] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
 
-  const completeExercise = useMutation({
-    mutationFn: async ({ exerciseId, completed }: { exerciseId: string; completed: boolean }) => {
-      const { error } = await supabase
-        .from('exercises')
-        .update({ completed, updated_at: new Date().toISOString() })
-        .eq('id', exerciseId);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['exercise-program'] });
-      toast.success('Exercise updated!');
-    },
-    onError: (error) => {
-      toast.error(`Failed to update exercise: ${error.message}`);
+  // Timer effect
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    
+    if (isTimerRunning) {
+      interval = setInterval(() => {
+        setWorkoutTimer(prev => prev + 1);
+      }, 1000);
     }
-  });
-
-  const trackProgress = useMutation({
-    mutationFn: async ({ 
-      exerciseId, 
-      sets, 
-      reps, 
-      weight, 
-      notes 
-    }: { 
-      exerciseId: string; 
-      sets: number; 
-      reps: string; 
-      weight?: number; 
-      notes?: string; 
-    }) => {
-      if (!user?.id) throw new Error('User not authenticated');
-
-      const { data, error } = await supabase.functions.invoke('track-exercise-performance', {
-        body: {
-          exerciseId,
-          userId: user.id,
-          action: 'progress_updated',
-          progressData: {
-            sets_completed: sets,
-            reps_completed: reps,
-            weight_used: weight,
-            notes
-          },
-          timestamp: new Date().toISOString()
-        }
-      });
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['exercise-program'] });
-      toast.success('Progress tracked!');
-    },
-    onError: (error) => {
-      toast.error(`Failed to track progress: ${error.message}`);
-    }
-  });
-
-  const onExerciseComplete = (exerciseId: string) => {
-    completeExercise.mutate({ exerciseId, completed: true });
-  };
-
-  const onExerciseProgressUpdate = async (
-    exerciseId: string, 
-    sets: number, 
-    reps: string, 
-    notes?: string, 
-    weight?: number
-  ) => {
-    return trackProgress.mutateAsync({ exerciseId, sets, reps, weight, notes });
-  };
+    
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [isTimerRunning]);
 
   const onStartWorkout = () => {
     setIsTimerRunning(true);
+    setSessionStartTime(new Date());
+    toast.success('Workout session started!');
   };
 
   const onPauseWorkout = () => {
     setIsTimerRunning(false);
+    toast.info('Workout session paused');
   };
 
-  const onCompleteWorkout = () => {
-    setIsTimerRunning(false);
-    setWorkoutTimer(0);
-    toast.success('Workout completed!');
+  const onCompleteWorkout = async () => {
+    if (!user?.id || !sessionStartTime) return;
+
+    try {
+      // Log workout completion
+      const { error } = await supabase
+        .from('weight_entries')
+        .insert([
+          {
+            user_id: user.id,
+            weight: 0, // This would be updated with actual weight tracking
+            notes: `Workout completed in ${Math.floor(workoutTimer / 60)} minutes`,
+            recorded_at: new Date().toISOString()
+          }
+        ]);
+
+      if (error) throw error;
+
+      setIsTimerRunning(false);
+      setWorkoutTimer(0);
+      setSessionStartTime(null);
+      toast.success('Workout completed successfully!');
+    } catch (error) {
+      console.error('Error completing workout:', error);
+      toast.error('Failed to complete workout');
+    }
   };
 
   return {
-    activeExerciseId,
-    setActiveExerciseId,
     workoutTimer,
-    setWorkoutTimer,
     isTimerRunning,
-    setIsTimerRunning,
-    onExerciseComplete,
-    onExerciseProgressUpdate,
+    sessionStartTime,
     onStartWorkout,
     onPauseWorkout,
     onCompleteWorkout
