@@ -31,69 +31,69 @@ interface MealSearchResultsProps {
 const MealSearchResults = ({ results, isLoading, onSelectMeal }: MealSearchResultsProps) => {
   if (isLoading) {
     return (
-      <Card className="p-8 bg-white/8brand-neutral-600 backdrop-blur-sm border-brand-neutral-600 shadow-lg">
+      <Card className="p-8 bg-white/80 backdrop-blur-sm border-gray-200 shadow-lg">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fitness-primary mx-auto mb-4"></div>
-          <p className="text-gray-6brand-neutral-600brand-neutral-600">Searching meals...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Searching meals...</p>
         </div>
       </Card>
     );
   }
 
-  if (results.length === brand-neutral-600) {
+  if (results.length === 0) {
     return (
-      <Card className="p-8 bg-white/8brand-neutral-600 backdrop-blur-sm border-brand-neutral-600 shadow-lg text-center">
+      <Card className="p-8 bg-white/80 backdrop-blur-sm border-gray-200 shadow-lg text-center">
         <div className="text-6xl mb-4">🔍</div>
-        <h3 className="text-lg font-semibold text-gray-8brand-neutral-600brand-neutral-600 mb-2">No meals found</h3>
-        <p className="text-gray-6brand-neutral-600brand-neutral-600">Try searching with different keywords</p>
+        <h3 className="text-lg font-semibold text-gray-800 mb-2">No meals found</h3>
+        <p className="text-gray-600">Try searching with different keywords</p>
       </Card>
     );
   }
 
   const getCategoryColor = (category: string) => {
     const colors: { [key: string]: string } = {
-      'Breakfast': 'bg-orange-1brand-neutral-600brand-neutral-600 text-orange-8brand-neutral-600brand-neutral-600',
-      'Lunch': 'bg-green-1brand-neutral-600brand-neutral-600 text-green-8brand-neutral-600brand-neutral-600',
-      'Dinner': 'bg-blue-1brand-neutral-600brand-neutral-600 text-blue-8brand-neutral-600brand-neutral-600',
-      'Snack': 'bg-purple-1brand-neutral-600brand-neutral-600 text-purple-8brand-neutral-600brand-neutral-600',
-      'Dessert': 'bg-pink-1brand-neutral-600brand-neutral-600 text-pink-8brand-neutral-600brand-neutral-600',
-      'Beverage': 'bg-cyan-1brand-neutral-600brand-neutral-600 text-cyan-8brand-neutral-600brand-neutral-600'
+      'Breakfast': 'bg-orange-100 text-orange-800',
+      'Lunch': 'bg-green-100 text-green-800',
+      'Dinner': 'bg-blue-100 text-blue-800',
+      'Snack': 'bg-purple-100 text-purple-800',
+      'Dessert': 'bg-pink-100 text-pink-800',
+      'Beverage': 'bg-cyan-100 text-cyan-800'
     };
-    return colors[category] || 'bg-gray-1brand-neutral-600brand-neutral-600 text-gray-8brand-neutral-600brand-neutral-600';
+    return colors[category] || 'bg-gray-100 text-gray-800';
   };
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-8brand-neutral-600brand-neutral-600">
+        <h3 className="text-lg font-semibold text-gray-800">
           Search Results ({results.length} meals found)
         </h3>
       </div>
       
       <div className="grid gap-4">
         {results.map((meal) => (
-          <Card key={meal.id} className="p-6 bg-white/8brand-neutral-600 backdrop-blur-sm border-brand-neutral-600 shadow-lg hover:shadow-xl transition-shadow">
+          <Card key={meal.id} className="p-6 bg-white/80 backdrop-blur-sm border-gray-200 shadow-lg hover:shadow-xl transition-shadow">
             <div className="flex items-start space-x-4">
               <div className="text-4xl">{meal.image}</div>
               
               <div className="flex-1">
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <h4 className="text-lg font-semibold text-gray-8brand-neutral-600brand-neutral-600 mb-1">{meal.name}</h4>
+                    <h4 className="text-lg font-semibold text-gray-800 mb-1">{meal.name}</h4>
                     <div className="flex items-center space-x-2 mb-2">
                       <Badge className={getCategoryColor(meal.category)}>
                         {meal.category}
                       </Badge>
-                      <span className="text-sm text-gray-6brand-neutral-600brand-neutral-600">{meal.servingSize}</span>
+                      <span className="text-sm text-gray-600">{meal.servingSize}</span>
                     </div>
                     {meal.description && (
-                      <p className="text-sm text-gray-6brand-neutral-600brand-neutral-600 mb-3">{meal.description}</p>
+                      <p className="text-sm text-gray-600 mb-3">{meal.description}</p>
                     )}
                   </div>
                   
                   <Button
                     onClick={() => onSelectMeal(meal)}
-                    className="bg-fitness-gradient hover:opacity-9brand-neutral-600 text-white"
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:opacity-90 text-white"
                   >
                     View Details
                   </Button>
@@ -101,41 +101,41 @@ const MealSearchResults = ({ results, isLoading, onSelectMeal }: MealSearchResul
 
                 {/* Nutrition Overview */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                  <div className="bg-red-5brand-neutral-600 p-3 rounded-lg text-center">
+                  <div className="bg-red-50 p-3 rounded-lg text-center">
                     <div className="flex items-center justify-center mb-1">
-                      <Flame className="w-4 h-4 text-red-5brand-neutral-600brand-neutral-600 mr-1" />
-                      <span className="text-sm font-medium text-red-7brand-neutral-600brand-neutral-600">Calories</span>
+                      <Flame className="w-4 h-4 text-red-600 mr-1" />
+                      <span className="text-sm font-medium text-red-700">Calories</span>
                     </div>
-                    <p className="text-lg font-bold text-red-8brand-neutral-600brand-neutral-600">{meal.calories}</p>
+                    <p className="text-lg font-bold text-red-800">{meal.calories}</p>
                   </div>
                   
-                  <div className="bg-blue-5brand-neutral-600 p-3 rounded-lg text-center">
+                  <div className="bg-blue-50 p-3 rounded-lg text-center">
                     <div className="flex items-center justify-center mb-1">
-                      <Dumbbell className="w-4 h-4 text-blue-5brand-neutral-600brand-neutral-600 mr-1" />
-                      <span className="text-sm font-medium text-blue-7brand-neutral-600brand-neutral-600">Protein</span>
+                      <Dumbbell className="w-4 h-4 text-blue-600 mr-1" />
+                      <span className="text-sm font-medium text-blue-700">Protein</span>
                     </div>
-                    <p className="text-lg font-bold text-blue-8brand-neutral-600brand-neutral-600">{meal.protein}g</p>
+                    <p className="text-lg font-bold text-blue-800">{meal.protein}g</p>
                   </div>
                   
-                  <div className="bg-yellow-5brand-neutral-600 p-3 rounded-lg text-center">
+                  <div className="bg-yellow-50 p-3 rounded-lg text-center">
                     <div className="flex items-center justify-center mb-1">
-                      <Wheat className="w-4 h-4 text-yellow-5brand-neutral-600brand-neutral-600 mr-1" />
-                      <span className="text-sm font-medium text-yellow-7brand-neutral-600brand-neutral-600">Carbs</span>
+                      <Wheat className="w-4 h-4 text-yellow-600 mr-1" />
+                      <span className="text-sm font-medium text-yellow-700">Carbs</span>
                     </div>
-                    <p className="text-lg font-bold text-yellow-8brand-neutral-600brand-neutral-600">{meal.carbs}g</p>
+                    <p className="text-lg font-bold text-yellow-800">{meal.carbs}g</p>
                   </div>
                   
-                  <div className="bg-green-5brand-neutral-600 p-3 rounded-lg text-center">
+                  <div className="bg-green-50 p-3 rounded-lg text-center">
                     <div className="flex items-center justify-center mb-1">
-                      <Droplets className="w-4 h-4 text-green-5brand-neutral-600brand-neutral-600 mr-1" />
-                      <span className="text-sm font-medium text-green-7brand-neutral-600brand-neutral-600">Fat</span>
+                      <Droplets className="w-4 h-4 text-green-600 mr-1" />
+                      <span className="text-sm font-medium text-green-700">Fat</span>
                     </div>
-                    <p className="text-lg font-bold text-green-8brand-neutral-600brand-neutral-600">{meal.fat}g</p>
+                    <p className="text-lg font-bold text-green-800">{meal.fat}g</p>
                   </div>
                 </div>
 
                 {/* Additional Info */}
-                <div className="flex items-center space-x-4 text-sm text-gray-6brand-neutral-600brand-neutral-600">
+                <div className="flex items-center space-x-4 text-sm text-gray-600">
                   {meal.cookTime && (
                     <div className="flex items-center">
                       <Clock className="w-4 h-4 mr-1" />

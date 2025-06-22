@@ -17,6 +17,7 @@ export interface FoodPhotoResult {
 
 export const useFoodPhotoIntegration = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<FoodPhotoResult | null>(null);
   const { checkAndUseCredits } = useCentralizedCredits();
 
   const analyzePhoto = useMutation({
@@ -54,6 +55,7 @@ export const useFoodPhotoIntegration = () => {
           }
         };
 
+        setAnalysisResult(mockResult);
         return mockResult;
       } catch (error) {
         console.error('Food photo analysis error:', error);
@@ -71,12 +73,20 @@ export const useFoodPhotoIntegration = () => {
     }
   });
 
+  const logAnalyzedFood = async (food: FoodPhotoResult, quantity: number, mealType: string, notes: string) => {
+    // Mock implementation for now
+    console.log('Logging food:', { food, quantity, mealType, notes });
+    toast.success('Food logged successfully!');
+  };
+
   return {
     analyzePhoto: analyzePhoto.mutate,
     analyzePhotoAsync: analyzePhoto.mutateAsync,
     isAnalyzing: isAnalyzing || analyzePhoto.isPending,
     result: analyzePhoto.data,
+    analysisResult,
     error: analyzePhoto.error,
-    reset: analyzePhoto.reset
+    reset: analyzePhoto.reset,
+    logAnalyzedFood
   };
 };

@@ -6,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 export interface AuthContextType {
   user: User | null;
   loading: boolean;
-  isLoading: boolean; // Add this for compatibility
+  isLoading: boolean; // Added for compatibility
   signOut: () => Promise<void>;
 }
 
@@ -43,7 +43,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     <AuthContext.Provider value={{ 
       user, 
       loading, 
-      isLoading: loading, // Add this for compatibility
+      isLoading: loading, // Added for compatibility
       signOut 
     }}>
       {children}

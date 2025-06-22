@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -80,8 +81,10 @@ const AIChatInterface = () => {
 
   // Convert messages for analytics - handle timestamp conversion
   const analyticsMessages = messages.map(msg => ({
-    role: msg.role,
+    id: msg.id,
     content: msg.content,
+    sender_type: msg.role === 'user' ? 'user' : 'ai',
+    created_at: new Date().toISOString(),
     timestamp: msg.timestamp instanceof Date ? msg.timestamp.getTime() : msg.timestamp
   }));
 
@@ -190,8 +193,7 @@ const AIChatInterface = () => {
           {/* Smart Reply Suggestions */}
           {hasMessages && lastAssistantMessage && (
             <SmartReplySuggestions
-              lastMessage={lastAssistantMessage}
-              conversationHistory={messages}
+              conversationHistory={analyticsMessages}
               onSelectReply={handleSmartReplySelect}
               className="mx-4 mt-4"
             />
