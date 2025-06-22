@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -128,7 +129,15 @@ export const MealPlanContainer: React.FC = () => {
 
       if (error) throw error;
       console.log('Fetched meal plans:', data?.length || 0);
-      setMealPlans((data || []) as WeeklyMealPlan[]);
+      
+      // Safely convert data with proper type handling
+      const convertedPlans: WeeklyMealPlan[] = (data || []).map(plan => ({
+        ...plan,
+        preferences: plan.generation_prompt || {},
+        updated_at: plan.created_at // Use created_at as fallback for updated_at
+      }));
+      
+      setMealPlans(convertedPlans);
     } catch (error) {
       console.error('Error fetching meal plans:', error);
       setMealPlans([]);
@@ -152,7 +161,20 @@ export const MealPlanContainer: React.FC = () => {
 
       if (error) throw error;
       console.log('Fetched daily meals:', data?.length || 0);
-      setDailyMeals((data || []) as DailyMeal[]);
+      
+      // Safely convert data with proper type handling
+      const convertedMeals: DailyMeal[] = (data || []).map(meal => ({
+        ...meal,
+        ingredients: Array.isArray(meal.ingredients) 
+          ? meal.ingredients.map((ing: any) => ({
+              name: ing?.name || 'Unknown',
+              quantity: ing?.quantity || '1',
+              unit: ing?.unit || 'piece'
+            }))
+          : []
+      }));
+      
+      setDailyMeals(convertedMeals);
     } catch (error) {
       console.error('Error fetching daily meals:', error);
       setDailyMeals([]);
@@ -270,7 +292,7 @@ export const MealPlanContainer: React.FC = () => {
   // Calculate remaining calories for snack
   const selectedDayMeals = dailyMeals.filter(meal => meal.day_number === selectedDayNumber);
   const currentDayCalories = selectedDayMeals.reduce((sum, meal) => sum + (meal.calories || 0), 0);
-  const targetDayCalories = profile?.daily_calories || 2000;
+  const targetDayCalories = profile?.weight ? profile.weight * 30 : 2000;
 
   return (
     <>
@@ -334,4 +356,5 @@ export const MealPlanContainer: React.FC = () => {
     </>
   );
 }; 
+
 export default MealPlanContainer;

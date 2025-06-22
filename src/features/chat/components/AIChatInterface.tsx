@@ -86,7 +86,7 @@ const AIChatInterface = () => {
     role: msg.role as "user" | "assistant",
     content: msg.content,
     created_at: new Date().toISOString(),
-    sender_type: msg.role as "user" | "assistant"
+    sender_type: msg.role === 'assistant' ? 'ai' : 'user' as "user" | "ai" | "coach" | "trainee"
   }));
 
   return (

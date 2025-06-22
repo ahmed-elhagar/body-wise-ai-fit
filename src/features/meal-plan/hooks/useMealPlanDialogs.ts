@@ -1,6 +1,19 @@
 
 import { useState } from 'react';
-import type { AIPreferences } from '@/features/meal-plan/types';
+
+// Define AIPreferences type locally since it's not exported
+interface AIPreferences {
+  cuisine: string;
+  complexity: string;
+  dietaryRestrictions: string[];
+  excludedFoods: string[];
+  preferredFoods: string[];
+  mealTypes: string[];
+  maxCookTime: number;
+  servings: number;
+  budgetLevel: string;
+  nutritionFocus: string;
+}
 
 export const useMealPlanDialogs = () => {
   // Dialog states

@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/features/auth/hooks/useAuth';
@@ -7,14 +8,6 @@ import { getWeekStartDate } from '@/utils/mealPlanUtils';
 
 export const useDynamicMealPlan = (weekOffset: number = 0) => {
   const { user } = useAuth();
-
-  // Calculate the target week start date
-  const getTargetWeekStart = () => {
-    const today = new Date();
-    const currentWeekStart = startOfWeek(today, { weekStartsOn: 6 }); // Saturday = 6
-    const targetWeek = addWeeks(currentWeekStart, weekOffset);
-    return format(targetWeek, 'yyyy-MM-dd');
-  };
 
   const targetWeekStart = getWeekStartDate(weekOffset);
 
@@ -32,19 +25,15 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
 
       // First, get the weekly plan using correct table name
       const { data: weeklyPlan, error: weeklyError } = await supabase
-        .from('meal_plans')
+        .from('weekly_meal_plans')
         .select('*')
         .eq('user_id', user.id)
         .eq('week_start_date', targetWeekStart)
         .order('created_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (weeklyError) {
-        if (weeklyError.code === 'PGRST116') {
-          console.log('ℹ️ No meal plan found for this week');
-          return null;
-        }
         console.error('❌ Error fetching weekly plan:', weeklyError);
         throw weeklyError;
       }
@@ -58,8 +47,8 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
       const { data: dailyMeals, error: mealsError } = await supabase
         .from('daily_meals')
         .select('*')
-        .eq('meal_plan_id', weeklyPlan.id)
-        .order('meal_date', { ascending: true })
+        .eq('weekly_plan_id', weeklyPlan.id)
+        .order('day_number', { ascending: true })
         .order('meal_type', { ascending: true });
 
       if (mealsError) {
