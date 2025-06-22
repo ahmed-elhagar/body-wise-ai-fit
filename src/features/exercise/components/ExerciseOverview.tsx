@@ -15,7 +15,7 @@ import {
   Sparkles 
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { ExerciseProgram, DailyWorkout } from '../types';
+import { ExerciseProgram } from '../types';
 
 interface ExerciseOverviewProps {
   currentProgram: ExerciseProgram | null;
@@ -23,7 +23,12 @@ interface ExerciseOverviewProps {
   completedExercises: number;
   totalExercises: number;
   progressPercentage: number;
+  workoutType: "home" | "gym";
   onGenerateProgram: () => void;
+  onShowAIModal: () => void;
+  onExerciseComplete: (exerciseId: string) => void;
+  onDaySelect: (dayNumber: number) => void;
+  hasProgram: boolean;
   isGenerating: boolean;
 }
 
@@ -33,7 +38,12 @@ export const ExerciseOverview: React.FC<ExerciseOverviewProps> = ({
   completedExercises,
   totalExercises,
   progressPercentage,
+  workoutType,
   onGenerateProgram,
+  onShowAIModal,
+  onExerciseComplete,
+  onDaySelect,
+  hasProgram,
   isGenerating
 }) => {
   const todaysWorkout = currentProgram?.daily_workouts?.find(
@@ -55,7 +65,7 @@ export const ExerciseOverview: React.FC<ExerciseOverviewProps> = ({
               Get started with a personalized AI-generated exercise program tailored to your goals and fitness level.
             </p>
             <Button 
-              onClick={onGenerateProgram}
+              onClick={onShowAIModal}
               disabled={isGenerating}
               className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
             >
@@ -204,11 +214,12 @@ export const ExerciseOverview: React.FC<ExerciseOverviewProps> = ({
             {currentProgram.daily_workouts?.map((workout, index) => (
               <div
                 key={workout.id}
-                className={`p-3 rounded-lg text-center ${
+                className={`p-3 rounded-lg text-center cursor-pointer transition-colors ${
                   workout.completed
                     ? 'bg-green-100 text-green-800'
-                    : 'bg-gray-100 text-gray-600'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
+                onClick={() => onDaySelect(workout.day_number)}
               >
                 <div className="text-xs font-medium mb-1">
                   Day {workout.day_number}

@@ -34,7 +34,11 @@ export const ExercisePrograms: React.FC = () => {
     todaysExercises,
     completedExercises,
     totalExercises,
-    progressPercentage
+    progressPercentage,
+    workoutType,
+    hasProgram,
+    onExerciseComplete,
+    onExerciseProgressUpdate
   } = useExerciseProgram();
 
   const [activeTab, setActiveTab] = useState('overview');
@@ -80,6 +84,18 @@ export const ExercisePrograms: React.FC = () => {
     { id: 'recommendations', label: 'AI Tips', icon: Target }
   ];
 
+  const handleExerciseComplete = (exerciseId: string, completed: boolean) => {
+    updateExerciseCompletion(exerciseId, completed);
+  };
+
+  const handleTrackProgress = (exerciseId: string, sets: number, reps: string, weight?: number, notes?: string) => {
+    trackPerformance(exerciseId, sets, reps, weight, notes);
+  };
+
+  const handleExerciseExchange = (exerciseId: string, reason: string) => {
+    exchangeExercise(exerciseId, reason);
+  };
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
@@ -121,7 +137,12 @@ export const ExercisePrograms: React.FC = () => {
             completedExercises={completedExercises}
             totalExercises={totalExercises}
             progressPercentage={progressPercentage}
+            workoutType={workoutType}
             onGenerateProgram={() => setShowAIDialog(true)}
+            onShowAIModal={() => setShowAIDialog(true)}
+            onExerciseComplete={onExerciseComplete}
+            onDaySelect={(dayNumber) => console.log('Day selected:', dayNumber)}
+            hasProgram={hasProgram}
             isGenerating={isGenerating}
           />
         </TabsContent>
@@ -162,9 +183,9 @@ export const ExercisePrograms: React.FC = () => {
                     <ExerciseCard
                       key={exercise.id}
                       exercise={exercise}
-                      onComplete={updateExerciseCompletion}
-                      onTrackProgress={trackPerformance}
-                      onExchange={exchangeExercise}
+                      onComplete={handleExerciseComplete}
+                      onTrackProgress={handleTrackProgress}
+                      onExchange={handleExerciseExchange}
                     />
                   ))}
                 </div>

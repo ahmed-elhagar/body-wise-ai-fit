@@ -3,12 +3,43 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/features/auth/hooks/useAuth';
+import { useProfile } from '@/features/ai/hooks/useProfile';
+import { useCentralizedCredits } from '@/shared/hooks/useCentralizedCredits';
 import { ExerciseProgram } from '../../types';
 import { format, startOfWeek, addDays } from 'date-fns';
+import { useState } from 'react';
+
+export interface ExercisePreferences {
+  age?: number;
+  gender?: string;
+  fitnessLevel?: string;
+  weight?: number;
+  height?: number;
+  activityLevel?: string;
+  goals?: string[];
+  language?: string;
+  workoutType?: string;
+  goalType?: string;
+  availableTime?: string;
+  preferredWorkouts?: string[];
+  targetMuscleGroups?: string[];
+  equipment?: string[];
+  duration?: string;
+  workoutDays?: string;
+  difficulty?: string;
+  weekStartDate?: string;
+}
 
 export const useExerciseProgram = () => {
   const { user } = useAuth();
+  const { profile } = useProfile();
+  const { credits } = useCentralizedCredits();
   const queryClient = useQueryClient();
+
+  // State management
+  const [selectedDayNumber, setSelectedDayNumber] = useState(1);
+  const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
+  const [workoutType, setWorkoutType] = useState<"home" | "gym">("home");
 
   // Fetch current exercise program
   const { data: currentProgram, isLoading, error } = useQuery({
@@ -43,7 +74,7 @@ export const useExerciseProgram = () => {
 
   // Generate AI Exercise Program
   const generateProgram = useMutation({
-    mutationFn: async (preferences: any) => {
+    mutationFn: async (preferences: ExercisePreferences) => {
       if (!user?.id) throw new Error('User not authenticated');
 
       const { data, error } = await supabase.functions.invoke('generate-exercise-program', {
@@ -90,7 +121,7 @@ export const useExerciseProgram = () => {
 
   // Update exercise completion
   const updateExerciseCompletion = useMutation({
-    mutationFn: async ({ exerciseId, completed }: { exerciseId: string; completed: boolean }) => {
+    mutationFn: async (exerciseId: string, completed: boolean) => {
       const { error } = await supabase
         .from('exercises')
         .update({ completed })
@@ -105,25 +136,19 @@ export const useExerciseProgram = () => {
 
   // Track exercise performance
   const trackPerformance = useMutation({
-    mutationFn: async (performanceData: {
-      exerciseId: string;
-      sets: number;
-      reps: string;
-      weight?: number;
-      notes?: string;
-    }) => {
+    mutationFn: async (exerciseId: string, sets: number, reps: string, weight?: number, notes?: string) => {
       if (!user?.id) throw new Error('User not authenticated');
 
       const { data, error } = await supabase.functions.invoke('track-exercise-performance', {
         body: {
-          exerciseId: performanceData.exerciseId,
+          exerciseId,
           userId: user.id,
           action: 'progress_updated',
           progressData: {
-            sets_completed: performanceData.sets,
-            reps_completed: performanceData.reps,
-            weight_used: performanceData.weight,
-            notes: performanceData.notes
+            sets_completed: sets,
+            reps_completed: reps,
+            weight_used: weight,
+            notes
           },
           timestamp: new Date().toISOString()
         }
@@ -164,7 +189,7 @@ export const useExerciseProgram = () => {
 
   // Exchange exercise
   const exchangeExercise = useMutation({
-    mutationFn: async ({ exerciseId, reason }: { exerciseId: string; reason: string }) => {
+    mutationFn: async (exerciseId: string, reason: string) => {
       if (!user?.id) throw new Error('User not authenticated');
 
       const { data, error } = await supabase.functions.invoke('exchange-exercise', {
@@ -197,19 +222,85 @@ export const useExerciseProgram = () => {
   const totalExercises = todaysExercises.length;
   const progressPercentage = totalExercises > 0 ? (completedExercises / totalExercises) * 100 : 0;
 
+  // Calculate additional properties
+  const isRestDay = todaysExercises.length === 0;
+  const weekStartDate = new Date();
+  weekStartDate.setDate(weekStartDate.getDate() - weekStartDate.getDay() + (currentWeekOffset * 7));
+  
+  const hasProgram = !!currentProgram;
+  const isPro = profile?.role === 'pro' || false;
+  const creditsRemaining = credits;
+
+  // Handler functions
+  const onGenerateAIProgram = async (preferences: ExercisePreferences) => {
+    return generateProgram.mutate(preferences);
+  };
+
+  const onRegenerateProgram = async () => {
+    if (!currentProgram) return;
+    
+    const preferences: ExercisePreferences = {
+      workoutType: currentProgram.workout_type as "home" | "gym",
+      fitnessLevel: currentProgram.difficulty_level,
+      language: 'en'
+    };
+    
+    return generateProgram.mutate(preferences);
+  };
+
+  const onExerciseComplete = (exerciseId: string) => {
+    updateExerciseCompletion.mutate(exerciseId, true);
+  };
+
+  const onExerciseProgressUpdate = async (
+    exerciseId: string, 
+    sets: number, 
+    reps: string, 
+    notes?: string, 
+    weight?: number
+  ) => {
+    return trackPerformance.mutate(exerciseId, sets, reps, weight, notes);
+  };
+
   return {
+    // Core data
     currentProgram,
     isLoading,
     error,
-    generateProgram: generateProgram.mutate,
-    isGenerating: generateProgram.isPending,
-    updateExerciseCompletion: updateExerciseCompletion.mutate,
-    trackPerformance: trackPerformance.mutate,
-    exchangeExercise: exchangeExercise.mutate,
-    recommendations,
     todaysExercises,
     completedExercises,
     totalExercises,
-    progressPercentage
+    progressPercentage,
+    recommendations,
+    
+    // State
+    selectedDayNumber,
+    setSelectedDayNumber,
+    currentWeekOffset,
+    setCurrentWeekOffset,
+    workoutType,
+    setWorkoutType,
+    weekStartDate,
+    isRestDay,
+    hasProgram,
+    
+    // User info
+    isPro,
+    profile,
+    creditsRemaining,
+    
+    // Mutations and handlers
+    generateProgram: generateProgram.mutate,
+    isGenerating: generateProgram.isPending,
+    updateExerciseCompletion: (exerciseId: string, completed: boolean) => 
+      updateExerciseCompletion.mutate(exerciseId, completed),
+    trackPerformance: (exerciseId: string, sets: number, reps: string, weight?: number, notes?: string) =>
+      trackPerformance.mutate(exerciseId, sets, reps, weight, notes),
+    exchangeExercise: (exerciseId: string, reason: string) =>
+      exchangeExercise.mutate(exerciseId, reason),
+    onGenerateAIProgram,
+    onRegenerateProgram,
+    onExerciseComplete,
+    onExerciseProgressUpdate
   };
 };

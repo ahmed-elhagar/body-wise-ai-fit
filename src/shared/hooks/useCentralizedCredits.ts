@@ -1,115 +1,34 @@
 
-import { useState, useCallback } from 'react';
-import { useAuth } from '@/features/auth/hooks/useAuth';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-
-export interface CreditCheckResult {
-  success: boolean;
-  logId?: string;
-  error?: string;
-  remaining?: number;
-}
-
-interface CreditCheckResponse {
-  success: boolean;
-  log_id?: string;
-  error?: string;
-  remaining?: number;
-}
+import { useAuth } from '@/features/auth/hooks/useAuth';
 
 export const useCentralizedCredits = () => {
   const { user } = useAuth();
-  const [isCheckingCredits, setIsCheckingCredits] = useState(false);
-  
-  // Default credits for simplified system
-  const credits = 5;
 
-  const checkAndUseCredit = useCallback(async (
-    generationType: string,
-    promptData: any = {}
-  ): Promise<CreditCheckResult> => {
-    if (!user?.id) {
-      return { success: false, error: 'User not authenticated' };
-    }
+  const { data: credits = 0, isLoading } = useQuery({
+    queryKey: ['user-credits', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return 0;
 
-    setIsCheckingCredits(true);
-    
-    try {
-      const { data, error } = await supabase.rpc('check_and_use_ai_generation', {
-        user_id_param: user.id,
-        generation_type_param: generationType,
-        prompt_data_param: promptData
-      });
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('ai_generations_remaining')
+        .eq('id', user.id)
+        .single();
 
       if (error) {
-        console.error('Credit check error:', error);
-        return { success: false, error: error.message };
+        console.error('Error fetching credits:', error);
+        return 0;
       }
 
-      // Type assertion for the response data with proper conversion
-      const response = data as unknown as CreditCheckResponse;
-
-      if (!response || !response.success) {
-        return { 
-          success: false, 
-          error: response?.error || 'AI generation limit reached',
-          remaining: response?.remaining || 0
-        };
-      }
-
-      return {
-        success: true,
-        logId: response.log_id,
-        remaining: response.remaining
-      };
-    } catch (error: any) {
-      console.error('Credit check failed:', error);
-      return { success: false, error: error.message };
-    } finally {
-      setIsCheckingCredits(false);
-    }
-  }, [user?.id]);
-
-  const completeGeneration = useCallback(async (
-    logId: string,
-    success: boolean,
-    responseData: any = {}
-  ) => {
-    if (!logId) return;
-
-    try {
-      const { error } = await supabase.rpc('complete_ai_generation', {
-        log_id_param: logId,
-        response_data_param: responseData,
-        error_message_param: success ? null : 'Generation failed'
-      });
-
-      if (error) {
-        console.error('Failed to complete generation log:', error);
-      }
-    } catch (error) {
-      console.error('Complete generation error:', error);
-    }
-  }, []);
-
-  const checkAndUseCredits = useCallback(async (
-    generationType: string,
-    promptData: any = {}
-  ): Promise<{ success: boolean; logId?: string; error?: string }> => {
-    const result = await checkAndUseCredit(generationType, promptData);
-    return {
-      success: result.success,
-      logId: result.logId,
-      error: result.error
-    };
-  }, [checkAndUseCredit]);
+      return data.ai_generations_remaining || 0;
+    },
+    enabled: !!user?.id,
+  });
 
   return {
-    checkAndUseCredit,
-    checkAndUseCredits,
-    completeGeneration,
-    isCheckingCredits,
-    credits
+    credits,
+    isLoading
   };
 };
