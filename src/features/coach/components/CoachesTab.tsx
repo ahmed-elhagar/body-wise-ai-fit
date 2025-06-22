@@ -59,7 +59,7 @@ const CoachesTab = ({ coaches, onAssignCoach }: CoachesTabProps) => {
           </Card>
         ) : (
           filteredCoaches.map((coach) => (
-            <Car>
+            <Card key={coach.id}>
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
@@ -93,8 +93,8 @@ const CoachesTab = ({ coaches, onAssignCoach }: CoachesTabProps) => {
       </div>
 
       <AssignTraineeDialog
-        open={showAssignDialog}
-        onOpenChange={setShowAssignDialog}
+        isOpen={showAssignDialog}
+        onClose={() => setShowAssignDialog(false)}
         onAssign={(data) => {
           onAssignCoach(data.traineeId, data.notes || '');
           setShowAssignDialog(false);

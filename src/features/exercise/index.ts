@@ -12,7 +12,7 @@ export { WorkoutTypeSelector } from './components/shared/WorkoutTypeSelector';
 
 // Main components
 export { default as ExercisePage } from './components/ExercisePage';
-export { default as ExerciseContainer as ExerciseContainerLegacy } from './components/ExerciseContainer';
+export { default as ExerciseContainerLegacy } from './components/ExerciseContainer';
 export { default as ExerciseOverview } from './components/ExerciseOverview';
 export { default as ExerciseLayout } from './components/ExerciseLayout';
 

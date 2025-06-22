@@ -1,84 +1,128 @@
 
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { User, MessageSquare, Calendar } from 'lucide-react';
-
-interface TraineeProfile {
-  id: string;
-  first_name?: string;
-  last_name?: string;
-  email?: string;
-  fitness_goal?: string;
-}
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { MessageSquare, User, Target, Activity, Calendar } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import type { CoachTraineeRelationship } from "@/features/coach/types/coach.types";
 
 interface TraineeCardProps {
-  trainee: {
-    id: string;
-    assigned_at: string;
-    notes?: string;
-    trainee_profile: TraineeProfile;
-  };
-  onMessage?: (traineeId: string) => void;
-  onViewProgress?: (traineeId: string) => void;
+  trainee: CoachTraineeRelationship;
+  onMessage?: () => void;
+  onViewDetails?: () => void;
 }
 
-const TraineeCard: React.FC<TraineeCardProps> = ({
-  trainee,
-  onMessage,
-  onViewProgress
-}) => {
-  const { trainee_profile: profile } = trainee;
-  const fullName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
+const TraineeCard = ({ trainee, onMessage, onViewDetails }: TraineeCardProps) => {
+  const { t } = useLanguage();
+
+  const getInitials = (firstName?: string, lastName?: string) => {
+    if (!firstName && !lastName) return 'U';
+    return `${firstName?.[0] || ''}${lastName?.[0] || ''}`.toUpperCase();
+  };
+
+  const getCompletionColor = (score: number) => {
+    if (score >= 80) return 'bg-green-100 text-green-800';
+    if (score >= 60) return 'bg-yellow-100 text-yellow-800';
+    return 'bg-red-100 text-red-800';
+  };
+
+  const getActivityColor = (remaining: number) => {
+    if (remaining > 3) return 'bg-green-100 text-green-800';
+    if (remaining > 0) return 'bg-yellow-100 text-yellow-800';
+    return 'bg-red-100 text-red-800';
+  };
+
+  const traineeProfile = trainee.trainee_profile;
+  const fullName = traineeProfile 
+    ? `${traineeProfile.first_name || ''} ${traineeProfile.last_name || ''}`.trim()
+    : 'Unknown User';
+  
+  const profileScore = traineeProfile?.profile_completion_score || 0;
+  const generationsRemaining = traineeProfile?.ai_generations_remaining || 0;
 
   return (
-    <Card>
+    <Card className="h-full hover:shadow-md transition-shadow">
       <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <User className="w-5 h-5" />
-          {fullName || 'Unknown User'}
-        </CardTitle>
-        {profile.fitness_goal && (
-          <Badge variant="secondary" className="w-fit">
-            {profile.fitness_goal}
-          </Badge>
-        )}
+        <div className="flex items-center gap-3">
+          <Avatar className="h-12 w-12">
+            <AvatarFallback className="bg-blue-100 text-blue-600">
+              {getInitials(traineeProfile?.first_name, traineeProfile?.last_name)}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <CardTitle className="text-lg truncate">{fullName}</CardTitle>
+            <p className="text-sm text-gray-600 truncate">{traineeProfile?.email}</p>
+          </div>
+        </div>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <Calendar className="w-4 h-4" />
-            Assigned: {new Date(trainee.assigned_at).toLocaleDateString()}
+      
+      <CardContent className="space-y-4">
+        {/* Profile Completion */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <User className="h-4 w-4 text-gray-500" />
+            <span className="text-sm">{t('Profile')}</span>
           </div>
-          
-          {trainee.notes && (
-            <p className="text-sm text-gray-700 bg-gray-50 p-2 rounded">
-              {trainee.notes}
-            </p>
-          )}
-          
-          <div className="flex gap-2">
-            {onMessage && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => onMessage(trainee.id)}
-                className="flex items-center gap-1"
-              >
-                <MessageSquare className="w-4 h-4" />
-                Message
-              </Button>
-            )}
-            {onViewProgress && (
-              <Button
-                size="sm"
-                onClick={() => onViewProgress(trainee.id)}
-              >
-                View Progress
-              </Button>
-            )}
+          <Badge className={getCompletionColor(profileScore)}>
+            {profileScore}% {t('Complete')}
+          </Badge>
+        </div>
+
+        {/* AI Generations */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Activity className="h-4 w-4 text-gray-500" />
+            <span className="text-sm">{t('AI Credits')}</span>
           </div>
+          <Badge className={getActivityColor(generationsRemaining)}>
+            {generationsRemaining} {t('remaining')}
+          </Badge>
+        </div>
+
+        {/* Fitness Goal */}
+        {traineeProfile?.fitness_goal && (
+          <div className="flex items-center gap-2">
+            <Target className="h-4 w-4 text-gray-500" />
+            <span className="text-sm text-gray-600">{traineeProfile.fitness_goal}</span>
+          </div>
+        )}
+
+        {/* Assignment Date */}
+        <div className="flex items-center gap-2">
+          <Calendar className="h-4 w-4 text-gray-500" />
+          <span className="text-sm text-gray-600">
+            {t('Assigned')}: {new Date(trainee.assigned_at).toLocaleDateString()}
+          </span>
+        </div>
+
+        {/* Notes */}
+        {trainee.notes && (
+          <div className="p-2 bg-gray-50 rounded text-sm">
+            <strong>{t('Notes')}:</strong> {trainee.notes}
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="flex gap-2 pt-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="flex-1"
+            onClick={onMessage}
+          >
+            <MessageSquare className="h-4 w-4 mr-2" />
+            {t('Message')}
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="flex-1"
+            onClick={onViewDetails}
+          >
+            <User className="h-4 w-4 mr-2" />
+            {t('Details')}
+          </Button>
         </div>
       </CardContent>
     </Card>

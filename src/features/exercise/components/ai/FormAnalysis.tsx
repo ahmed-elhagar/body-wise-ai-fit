@@ -1,116 +1,108 @@
-import React from 'react';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { 
-  Camera, 
-  Video, 
-  Shield, 
-  Lightbulb,
-  CheckCircle,
-  AlertTriangle,
-  Dumbbell
-} from 'lucide-react';
-import GradientCard from '@/shared/components/design-system/GradientCard';
-import { Exercise } from '../../types';
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Camera, CheckCircle, AlertTriangle, Info } from "lucide-react";
 
 interface FormAnalysisProps {
-  todaysExercises: Exercise[];
-  activeExerciseId: string | null;
-  revolutionMode?: boolean;
+  exerciseName: string;
+  analysisResult?: {
+    score: number;
+    feedback: string[];
+    improvements: string[];
+  };
+  onAnalyze: () => void;
+  isAnalyzing: boolean;
 }
 
-export const FormAnalysis: React.FC<FormAnalysisProps> = ({
-  todaysExercises,
-  activeExerciseId,
-  revolutionMode = false
-}) => {
-  return (
-    <div className="space-y-6">
-      <GradientCard variant="accent" className="p-6">
-        <div className="flex items-center space-x-3 mb-4">
-          <div className="p-3 bg-white rounded-lg">
-            <Camera className="h-6 w-6 text-amber-600" />
-          </div>
-          <div>
-            <h3 className="text-xl font-bold text-white">AI Form Analysis</h3>
-            <p className="text-white/80">Real-time exercise form correction and safety</p>
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
-            <div className="flex items-center space-x-2 mb-2">
-              <Video className="h-5 w-5 text-white" />
-              <span className="text-white font-medium">Live Analysis</span>
-            </div>
-            <p className="text-white/70 text-sm">Camera-based form tracking</p>
-          </div>
-          <div className="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
-            <div className="flex items-center space-x-2 mb-2">
-              <Shield className="h-5 w-5 text-white" />
-              <span className="text-white font-medium">Safety Alerts</span>
-            </div>
-            <p className="text-white/70 text-sm">Injury prevention warnings</p>
-          </div>
-          <div className="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
-            <div className="flex items-center space-x-2 mb-2">
-              <Lightbulb className="h-5 w-5 text-white" />
-              <span className="text-white font-medium">Form Tips</span>
-            </div>
-            <p className="text-white/70 text-sm">Personalized corrections</p>
-          </div>
-        </div>
-      </GradientCard>
+export const FormAnalysis = ({
+  exerciseName,
+  analysisResult,
+  onAnalyze,
+  isAnalyzing
+}: FormAnalysisProps) => {
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return 'text-green-600';
+    if (score >= 60) return 'text-yellow-600';
+    return 'text-red-600';
+  };
 
-      {todaysExercises.map((exercise, index) => (
-        <Card key={exercise.id} className="p-4">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-amber-100 rounded-lg">
-                <Dumbbell className="h-5 w-5 text-amber-600" />
+  const getScoreBadge = (score: number) => {
+    if (score >= 80) return 'bg-green-100 text-green-800';
+    if (score >= 60) return 'bg-yellow-100 text-yellow-800';
+    return 'bg-red-100 text-red-800';
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Camera className="w-5 h-5" />
+          Form Analysis - {exerciseName}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {!analysisResult ? (
+          <div className="text-center py-6">
+            <Camera className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+            <p className="text-gray-600 mb-4">
+              Record yourself performing this exercise for AI form analysis
+            </p>
+            <Button onClick={onAnalyze} disabled={isAnalyzing}>
+              {isAnalyzing ? 'Analyzing...' : 'Start Analysis'}
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="text-center">
+              <div className={`text-3xl font-bold ${getScoreColor(analysisResult.score)}`}>
+                {analysisResult.score}%
               </div>
-              <div>
-                <h4 className="font-semibold">{exercise.name}</h4>
-                <p className="text-sm text-gray-600">{exercise.sets} sets × {exercise.reps} reps</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Badge className="bg-green-100 text-green-800">
-                Form Score: 94/100
+              <Badge className={getScoreBadge(analysisResult.score)}>
+                Form Score
               </Badge>
-              <Button variant="outline" size="sm">
-                <Video className="h-4 w-4 mr-2" />
-                Analyze
-              </Button>
             </div>
+
+            {analysisResult.feedback.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="font-medium flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  Good Form Points
+                </h4>
+                <ul className="space-y-1">
+                  {analysisResult.feedback.map((item, index) => (
+                    <li key={index} className="text-sm text-gray-600 flex items-start gap-2">
+                      <Info className="w-3 h-3 mt-0.5 text-blue-500" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {analysisResult.improvements.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="font-medium flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-yellow-500" />
+                  Areas for Improvement
+                </h4>
+                <ul className="space-y-1">
+                  {analysisResult.improvements.map((item, index) => (
+                    <li key={index} className="text-sm text-gray-600 flex items-start gap-2">
+                      <AlertTriangle className="w-3 h-3 mt-0.5 text-yellow-500" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <Button onClick={onAnalyze} variant="outline" size="sm" className="w-full">
+              Analyze Again
+            </Button>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-green-50 rounded-lg p-3">
-              <div className="flex items-center space-x-2 mb-1">
-                <CheckCircle className="h-4 w-4 text-green-600" />
-                <span className="text-sm font-medium text-green-800">Good Form</span>
-              </div>
-              <p className="text-xs text-green-700">Proper spine alignment</p>
-            </div>
-            <div className="bg-yellow-50 rounded-lg p-3">
-              <div className="flex items-center space-x-2 mb-1">
-                <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                <span className="text-sm font-medium text-yellow-800">Minor Issue</span>
-              </div>
-              <p className="text-xs text-yellow-700">Slightly fast tempo</p>
-            </div>
-            <div className="bg-blue-50 rounded-lg p-3">
-              <div className="flex items-center space-x-2 mb-1">
-                <Lightbulb className="h-4 w-4 text-blue-600" />
-                <span className="text-sm font-medium text-blue-800">Tip</span>
-              </div>
-              <p className="text-xs text-blue-700">Focus on controlled movement</p>
-            </div>
-          </div>
-        </Card>
-      ))}
-    </div>
+        )}
+      </CardContent>
+    </Card>
   );
-}; 
+};

@@ -1,9 +1,9 @@
 
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { UserPlus, MessageSquare, CheckSquare, TrendingUp } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { UserPlus, MessageSquare, CheckSquare, Calendar } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface QuickActionsProps {
   unreadMessages: number;
@@ -12,36 +12,64 @@ interface QuickActionsProps {
   onViewMessages: () => void;
 }
 
-const QuickActions: React.FC<QuickActionsProps> = ({
-  unreadMessages,
-  onAddTrainee,
-  onViewTasks,
-  onViewMessages
-}) => {
+const QuickActions = ({ 
+  unreadMessages, 
+  onAddTrainee, 
+  onViewTasks, 
+  onViewMessages 
+}: QuickActionsProps) => {
+  const { t } = useLanguage();
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Quick Actions</CardTitle>
+        <CardTitle className="text-lg">{t('Quick Actions')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        <Button onClick={onAddTrainee} className="w-full justify-start">
+        <Button 
+          onClick={onAddTrainee} 
+          className="w-full justify-start"
+          variant="outline"
+        >
           <UserPlus className="w-4 h-4 mr-2" />
-          Add Trainee
+          {t('Add New Trainee')}
         </Button>
-        
-        <Button onClick={onViewMessages} variant="outline" className="w-full justify-start">
-          <MessageSquare className="w-4 h-4 mr-2" />
-          Messages
+
+        <Button 
+          onClick={onViewMessages} 
+          className="w-full justify-between"
+          variant="outline"
+        >
+          <div className="flex items-center">
+            <MessageSquare className="w-4 h-4 mr-2" />
+            {t('View Messages')}
+          </div>
           {unreadMessages > 0 && (
-            <Badge variant="destructive" className="ml-auto">
+            <Badge variant="destructive">
               {unreadMessages}
             </Badge>
           )}
         </Button>
-        
-        <Button onClick={onViewTasks} variant="outline" className="w-full justify-start">
+
+        <Button 
+          onClick={onViewTasks} 
+          className="w-full justify-start"
+          variant="outline"
+        >
           <CheckSquare className="w-4 h-4 mr-2" />
-          View Tasks
+          {t('Manage Tasks')}
+        </Button>
+
+        <Button 
+          className="w-full justify-start"
+          variant="outline"
+          disabled
+        >
+          <Calendar className="w-4 h-4 mr-2" />
+          {t('Schedule Session')}
+          <Badge variant="secondary" className="ml-auto">
+            {t('Soon')}
+          </Badge>
         </Button>
       </CardContent>
     </Card>
