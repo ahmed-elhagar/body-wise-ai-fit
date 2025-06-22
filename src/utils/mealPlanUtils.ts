@@ -1,151 +1,135 @@
 
-import { format, addDays, startOfWeek } from 'date-fns';
-
-export interface MealPlan {
-  id: string;
-  week_start_date: string;
-  user_id: string;
-  total_calories?: number;
-  total_protein?: number;
-  total_carbs?: number;
-  total_fat?: number;
-  created_at: string;
-}
-
-export interface DailyMeal {
-  id: string;
-  weekly_plan_id: string;
-  day_number: number;
-  meal_type: string;
-  name: string;
-  calories?: number;
-  protein?: number;
-  carbs?: number;
-  fat?: number;
-  ingredients?: any;
-  instructions?: string[];
-  prep_time?: number;
-  cook_time?: number;
-  servings?: number;
-  image_url?: string;
-  youtube_search_term?: string;
-  alternatives?: any;
-  recipe_fetched?: boolean;
-  created_at: string;
-}
+import { addWeeks, startOfWeek, format } from 'date-fns';
+import type { DailyMeal } from '@/features/meal-plan/types';
 
 export const getWeekStartDate = (offset: number = 0): Date => {
   const today = new Date();
-  const weekStart = startOfWeek(today, { weekStartsOn: 6 }); // Saturday
-  const targetWeek = addDays(weekStart, offset * 7);
+  
+  // EXACT MATCH with backend: Use Saturday as week start to match backend calculation
+  const dayOfWeek = today.getDay(); // 0 = Sunday, 6 = Saturday
+  const currentSaturday = new Date(today);
+  currentSaturday.setDate(today.getDate() - dayOfWeek + 6); // Go to this week's Saturday
+  
+  // Apply the week offset exactly like backend
+  const targetWeek = new Date(currentSaturday);
+  targetWeek.setDate(currentSaturday.getDate() + offset * 7);
+  
+  console.log('📅 Frontend getWeekStartDate calculation:', {
+    today: today.toISOString().split('T')[0],
+    dayOfWeek,
+    currentSaturday: currentSaturday.toISOString().split('T')[0],
+    offset,
+    targetWeek: targetWeek.toISOString().split('T')[0],
+    targetWeekISO: targetWeek.toISOString()
+  });
+  
   return targetWeek;
+};
+
+export const formatWeekStartDate = (offset: number = 0): string => {
+  return format(getWeekStartDate(offset), 'yyyy-MM-dd');
+};
+
+export const formatWeekRange = (startDate: Date): string => {
+  const endDate = addWeeks(startDate, 1);
+  const startMonth = format(startDate, 'MMM');
+  const startDay = format(startDate, 'd');
+  const endMonth = format(endDate, 'MMM');
+  const endDay = format(endDate, 'd');
+  
+  if (startMonth === endMonth) {
+    return `${startMonth} ${startDay} - ${endDay}`;
+  } else {
+    return `${startMonth} ${startDay} - ${endMonth} ${endDay}`;
+  }
 };
 
 export const getCurrentSaturdayDay = (): number => {
   const today = new Date();
-  const dayOfWeek = today.getDay();
-  // Convert to our day numbering where Saturday (6) = day 1
-  return dayOfWeek === 6 ? 1 : dayOfWeek + 2;
-};
-
-export const formatWeekRange = (weekStartDate: string): string => {
-  const startDate = new Date(weekStartDate);
-  const endDate = addDays(startDate, 6);
-  return `${format(startDate, 'MMM dd')} - ${format(endDate, 'MMM dd')}`;
-};
-
-export const getMealTypeOrder = (mealType: string): number => {
-  const order: Record<string, number> = {
-    breakfast: 1,
-    snack_morning: 2,
-    lunch: 3,
-    snack_afternoon: 4,
-    dinner: 5,
-    snack_evening: 6,
-  };
-  return order[mealType] || 99;
-};
-
-export const groupMealsByDay = (meals: DailyMeal[]) => {
-  const grouped: Record<number, DailyMeal[]> = {};
-  
-  meals.forEach(meal => {
-    if (!grouped[meal.day_number]) {
-      grouped[meal.day_number] = [];
-    }
-    grouped[meal.day_number].push(meal);
-  });
-
-  // Sort meals within each day by meal type
-  Object.keys(grouped).forEach(day => {
-    grouped[parseInt(day)].sort((a, b) => 
-      getMealTypeOrder(a.meal_type) - getMealTypeOrder(b.meal_type)
-    );
-  });
-
-  return grouped;
-};
-
-export const calculateDayTotals = (meals: DailyMeal[]) => {
-  return meals.reduce(
-    (totals, meal) => ({
-      calories: totals.calories + (meal.calories || 0),
-      protein: totals.protein + (meal.protein || 0),
-      carbs: totals.carbs + (meal.carbs || 0),
-      fat: totals.fat + (meal.fat || 0),
-    }),
-    { calories: 0, protein: 0, carbs: 0, fat: 0 }
-  );
-};
-
-export const getDayName = (dayNumber: number): string => {
-  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  return days[dayNumber - 1] || '';
+  // Convert to day number (Saturday = 1, Sunday = 2, ..., Friday = 7)
+  return today.getDay() === 6 ? 1 : today.getDay() + 2;
 };
 
 export const getCategoryForIngredient = (ingredientName: string): string => {
   const ingredient = ingredientName.toLowerCase();
   
-  // Proteins
-  if (ingredient.includes('chicken') || ingredient.includes('beef') || ingredient.includes('fish') || 
-      ingredient.includes('egg') || ingredient.includes('meat') || ingredient.includes('turkey') ||
-      ingredient.includes('salmon') || ingredient.includes('tuna') || ingredient.includes('shrimp')) {
-    return 'Proteins';
+  // Produce
+  if (ingredient.includes('lettuce') || ingredient.includes('tomato') || ingredient.includes('onion') || 
+      ingredient.includes('garlic') || ingredient.includes('pepper') || ingredient.includes('carrot') ||
+      ingredient.includes('celery') || ingredient.includes('spinach') || ingredient.includes('cucumber') ||
+      ingredient.includes('avocado') || ingredient.includes('broccoli') || ingredient.includes('mushroom') ||
+      ingredient.includes('potato') || ingredient.includes('apple') || ingredient.includes('banana') ||
+      ingredient.includes('lemon') || ingredient.includes('lime') || ingredient.includes('orange')) {
+    return 'Produce';
   }
   
-  // Vegetables
-  if (ingredient.includes('tomato') || ingredient.includes('onion') || ingredient.includes('carrot') ||
-      ingredient.includes('lettuce') || ingredient.includes('spinach') || ingredient.includes('pepper') ||
-      ingredient.includes('cucumber') || ingredient.includes('broccoli') || ingredient.includes('potato')) {
-    return 'Vegetables';
-  }
-  
-  // Fruits
-  if (ingredient.includes('apple') || ingredient.includes('banana') || ingredient.includes('orange') ||
-      ingredient.includes('berry') || ingredient.includes('grape') || ingredient.includes('lemon') ||
-      ingredient.includes('lime') || ingredient.includes('avocado')) {
-    return 'Fruits';
-  }
-  
-  // Grains & Carbs
-  if (ingredient.includes('rice') || ingredient.includes('bread') || ingredient.includes('pasta') ||
-      ingredient.includes('oats') || ingredient.includes('quinoa') || ingredient.includes('flour') ||
-      ingredient.includes('cereal')) {
-    return 'Grains & Carbs';
+  // Meat & Seafood
+  if (ingredient.includes('chicken') || ingredient.includes('beef') || ingredient.includes('pork') ||
+      ingredient.includes('fish') || ingredient.includes('salmon') || ingredient.includes('shrimp') ||
+      ingredient.includes('turkey') || ingredient.includes('lamb') || ingredient.includes('tuna')) {
+    return 'Meat & Seafood';
   }
   
   // Dairy
-  if (ingredient.includes('milk') || ingredient.includes('cheese') || ingredient.includes('yogurt') ||
-      ingredient.includes('butter') || ingredient.includes('cream')) {
+  if (ingredient.includes('milk') || ingredient.includes('cheese') || ingredient.includes('butter') ||
+      ingredient.includes('yogurt') || ingredient.includes('cream') || ingredient.includes('egg')) {
     return 'Dairy';
   }
   
+  // Grains & Cereals
+  if (ingredient.includes('rice') || ingredient.includes('pasta') || ingredient.includes('bread') ||
+      ingredient.includes('flour') || ingredient.includes('oats') || ingredient.includes('quinoa') ||
+      ingredient.includes('wheat') || ingredient.includes('barley')) {
+    return 'Grains & Cereals';
+  }
+  
+  // Spices & Herbs
+  if (ingredient.includes('salt') || ingredient.includes('pepper') || ingredient.includes('oregano') ||
+      ingredient.includes('basil') || ingredient.includes('thyme') || ingredient.includes('rosemary') ||
+      ingredient.includes('cumin') || ingredient.includes('paprika') || ingredient.includes('cinnamon') ||
+      ingredient.includes('ginger') || ingredient.includes('turmeric')) {
+    return 'Spices & Herbs';
+  }
+  
   // Pantry
-  if (ingredient.includes('oil') || ingredient.includes('salt') || ingredient.includes('pepper') ||
-      ingredient.includes('spice') || ingredient.includes('sauce') || ingredient.includes('vinegar') ||
-      ingredient.includes('sugar') || ingredient.includes('honey')) {
+  if (ingredient.includes('oil') || ingredient.includes('vinegar') || ingredient.includes('sauce') ||
+      ingredient.includes('stock') || ingredient.includes('broth') || ingredient.includes('sugar') ||
+      ingredient.includes('honey') || ingredient.includes('beans') || ingredient.includes('nuts') ||
+      ingredient.includes('seeds')) {
     return 'Pantry';
   }
   
   return 'Other';
+};
+
+export const processMealData = (meal: any): DailyMeal => {
+  // Safely parse JSON fields
+  const parseJsonField = (field: any, fallback: any = []) => {
+    if (!field) return fallback;
+    if (typeof field === 'string') {
+      try {
+        return JSON.parse(field);
+      } catch {
+        return fallback;
+      }
+    }
+    return Array.isArray(field) ? field : fallback;
+  };
+
+  return {
+    ...meal,
+    ingredients: parseJsonField(meal.ingredients, []),
+    instructions: parseJsonField(meal.instructions, []),
+    alternatives: parseJsonField(meal.alternatives, [])
+  };
+};
+
+export const getDayName = (dayNumber: number, language: string = 'en'): string => {
+  const dayNames = {
+    en: ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+    ar: ['السبت', 'الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة']
+  };
+  
+  const names = dayNames[language as keyof typeof dayNames] || dayNames.en;
+  return names[dayNumber - 1] || names[0];
 };

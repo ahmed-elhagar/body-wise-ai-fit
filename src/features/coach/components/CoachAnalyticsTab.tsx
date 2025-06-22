@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, Users, Target, Calendar, BarChart3 } from "lucide-react";
@@ -7,7 +8,7 @@ interface CoachAnalyticsTabProps {
   trainees: any[];
 }
 
-export const CoachAnalyticsTab = ({ trainees }: CoachAnalyticsTabProps) => {
+const CoachAnalyticsTab = ({ trainees }: CoachAnalyticsTabProps) => {
   const { t } = useLanguage();
 
   // Calculate analytics data
@@ -151,3 +152,5 @@ export const CoachAnalyticsTab = ({ trainees }: CoachAnalyticsTabProps) => {
     </div>
   );
 };
+
+export default CoachAnalyticsTab;

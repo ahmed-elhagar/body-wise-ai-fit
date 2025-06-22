@@ -1,86 +1,84 @@
 
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { TrendingUp, Target, Trophy, Activity, Calendar, Clock } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
-
-interface ProgressOverviewProps {
-  // Component props
-}
+import { TrendingUp, Target, Scale, Calendar } from "lucide-react";
+import { useProfile } from "@/features/profile/hooks/useProfile";
+import { useWeightTracking } from "@/features/dashboard/hooks/useWeightTracking";
+import { useGoals } from "@/features/dashboard/hooks/useGoals";
 
 export const ProgressOverview = () => {
-  const { t } = useLanguage();
+  const { profile } = useProfile();
+  const { goals } = useGoals();
+  const { entries: weightEntries } = useWeightTracking();
 
-  // Mock data - replace with actual data from hooks
-  const mockData = {
-    totalGoals: 5,
-    completedGoals: 2,
-    activeWorkouts: 3,
-    weeklyProgress: 75
-  };
+  // Calculate overall progress metrics
+  const completedGoals = goals.filter(goal => goal.status === 'completed').length;
+  const totalGoals = goals.length;
+  const goalsProgress = totalGoals > 0 ? (completedGoals / totalGoals) * 100 : 0;
+
+  // Weight progress
+  const currentWeight = weightEntries?.[0]?.weight || profile?.weight || 0;
+  const weightEntryCount = weightEntries?.length || 0;
+
+  const progressMetrics = [
+    {
+      title: 'Goals Completion',
+      value: `${completedGoals}/${totalGoals}`,
+      progress: goalsProgress,
+      icon: Target,
+      color: 'blue'
+    },
+    {
+      title: 'Weight Tracking',
+      value: `${currentWeight.toFixed(1)} kg`,
+      progress: Math.min((weightEntryCount / 30) * 100, 100),
+      icon: Scale,
+      color: 'green'
+    },
+    {
+      title: 'Consistency',
+      value: '85%',
+      progress: 85,
+      icon: Calendar,
+      color: 'purple'
+    }
+  ];
 
   return (
-    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-blue-900">
-            <Target className="w-5 h-5" />
-            Goals
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-blue-600 mb-1">
-            {mockData.completedGoals}/{mockData.totalGoals}
-          </div>
-          <div className="text-sm text-blue-600">Completed</div>
-        </CardContent>
-      </Card>
-
-      <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-green-900">
-            <Activity className="w-5 h-5" />
-            Workouts
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-green-600 mb-1">
-            {mockData.activeWorkouts}
-          </div>
-          <div className="text-sm text-green-600">This Week</div>
-        </CardContent>
-      </Card>
-
-      <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-purple-900">
-            <TrendingUp className="w-5 h-5" />
-            Progress
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-purple-600 mb-1">
-            {mockData.weeklyProgress}%
-          </div>
-          <div className="text-sm text-purple-600">Weekly</div>
-        </CardContent>
-      </Card>
-
-      <Card className="bg-gradient-to-br from-orange-50 to-red-50 border-orange-200">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-orange-900">
-            <Trophy className="w-5 h-5" />
-            Achievements
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-orange-600 mb-1">
-            3
-          </div>
-          <div className="text-sm text-orange-600">Earned</div>
-        </CardContent>
-      </Card>
-    </div>
+    <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <TrendingUp className="w-5 h-5 text-blue-600" />
+          Progress Overview
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-6">
+          {progressMetrics.map((metric, index) => {
+            const IconComponent = metric.icon;
+            return (
+              <div key={index} className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <IconComponent className={`w-4 h-4 text-${metric.color}-600`} />
+                    <span className="font-medium text-gray-700">{metric.title}</span>
+                  </div>
+                  <span className="text-sm font-semibold text-gray-600">
+                    {metric.value}
+                  </span>
+                </div>
+                <Progress value={metric.progress} className="h-2" />
+                <div className="text-right">
+                  <span className="text-xs text-gray-500">
+                    {Math.round(metric.progress)}% complete
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
   );
 };

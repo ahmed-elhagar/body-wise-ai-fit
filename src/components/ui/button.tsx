@@ -1,4 +1,3 @@
-
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
@@ -10,17 +9,17 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-gradient-to-r from-fitness-primary-500 to-fitness-primary-600 text-white hover:from-fitness-primary-600 hover:to-fitness-primary-700 hover:shadow-lg hover:shadow-fitness-primary-500/25 active:scale-[0.98] transform",
-        destructive: "bg-gradient-to-r from-error-500 to-error-600 text-white hover:from-error-600 hover:to-error-700 hover:shadow-lg hover:shadow-error-500/25 active:scale-[0.98] transform",
-        outline: "border border-fitness-primary-200 bg-white hover:bg-fitness-primary-50 hover:border-fitness-primary-300 text-fitness-primary-700 hover:text-fitness-primary-800 active:scale-[0.98] transform",
-        secondary: "bg-fitness-neutral-100 text-fitness-neutral-800 hover:bg-fitness-neutral-200 border border-fitness-neutral-200 hover:border-fitness-neutral-300 active:scale-[0.98] transform",
-        ghost: "hover:bg-fitness-primary-50 text-fitness-neutral-600 hover:text-fitness-primary-700 active:scale-[0.98] transform",
-        link: "text-fitness-primary-600 underline-offset-4 hover:underline hover:text-fitness-primary-700",
-        success: "bg-gradient-to-r from-success-500 to-success-600 text-white hover:from-success-600 hover:to-success-700 hover:shadow-lg hover:shadow-success-500/25 active:scale-[0.98] transform",
-        warning: "bg-gradient-to-r from-warning-500 to-warning-600 text-white hover:from-warning-600 hover:to-warning-700 hover:shadow-lg hover:shadow-warning-500/25 active:scale-[0.98] transform",
-        info: "bg-gradient-to-r from-fitness-primary-500 to-fitness-primary-600 text-white hover:from-fitness-primary-600 hover:to-fitness-primary-700 hover:shadow-lg hover:shadow-fitness-primary-500/25 active:scale-[0.98] transform",
-        orange: "bg-gradient-to-r from-fitness-orange-500 to-fitness-orange-600 text-white hover:from-fitness-orange-600 hover:to-fitness-orange-700 hover:shadow-lg hover:shadow-fitness-orange-500/25 active:scale-[0.98] transform",
-        accent: "bg-gradient-to-r from-fitness-primary-500 to-fitness-primary-600 text-white hover:from-fitness-primary-600 hover:to-fitness-primary-700 hover:shadow-lg hover:shadow-fitness-primary-500/25 active:scale-[0.98] transform"
+        default: "bg-gradient-to-r from-brand-primary-500 to-brand-primary-600 text-white hover:from-brand-primary-600 hover:to-brand-primary-700 hover:shadow-lg hover:shadow-brand-primary-500/25 active:scale-[0.98] transform",
+        destructive: "bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 hover:shadow-lg hover:shadow-red-500/25 active:scale-[0.98] transform",
+        outline: "border border-brand-primary-200 bg-white hover:bg-brand-primary-50 hover:border-brand-primary-300 text-brand-primary-700 hover:text-brand-primary-800 active:scale-[0.98] transform",
+        secondary: "bg-brand-neutral-100 text-brand-neutral-800 hover:bg-brand-neutral-200 border border-brand-neutral-200 hover:border-brand-neutral-300 active:scale-[0.98] transform",
+        ghost: "hover:bg-brand-primary-50 text-brand-neutral-600 hover:text-brand-primary-700 active:scale-[0.98] transform bg-transparent",
+        link: "text-brand-primary-600 underline-offset-4 hover:underline hover:text-brand-primary-700 bg-transparent",
+        success: "bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 hover:shadow-lg hover:shadow-green-500/25 active:scale-[0.98] transform",
+        warning: "bg-gradient-to-r from-yellow-500 to-yellow-600 text-white hover:from-yellow-600 hover:to-yellow-700 hover:shadow-lg hover:shadow-yellow-500/25 active:scale-[0.98] transform",
+        info: "bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 hover:shadow-lg hover:shadow-blue-500/25 active:scale-[0.98] transform",
+        orange: "bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700 hover:shadow-lg hover:shadow-orange-500/25 active:scale-[0.98] transform",
+        accent: "bg-gradient-to-r from-brand-secondary-500 to-brand-secondary-600 text-white hover:from-brand-secondary-600 hover:to-brand-secondary-700 hover:shadow-lg hover:shadow-brand-secondary-500/25 active:scale-[0.98] transform"
       },
       size: {
         sm: "h-7 rounded-md px-2.5 text-xs font-medium",

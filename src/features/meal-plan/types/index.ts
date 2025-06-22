@@ -1,5 +1,4 @@
-
-// Meal plan types
+// Centralized types for meal plan feature
 export interface MealIngredient {
   name: string;
   quantity: string;
@@ -7,39 +6,27 @@ export interface MealIngredient {
   category?: string;
 }
 
-export interface NutritionData {
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-}
-
 export interface DailyMeal {
   id: string;
-  weekly_plan_id?: string;
-  day_number?: number;
+  weekly_plan_id: string;
+  day_number: number;
+  meal_type: 'breakfast' | 'lunch' | 'dinner' | 'snack' | 'snack1' | 'snack2';
   name: string;
-  mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack';
-  meal_type?: 'breakfast' | 'lunch' | 'dinner' | 'snack'; // Legacy support
   calories: number;
   protein: number;
   carbs: number;
   fat: number;
   fiber?: number;
   sugar?: number;
-  prepTime?: number;
-  prep_time?: number; // Legacy support
-  cookTime?: number;
-  cook_time?: number; // Legacy support
-  servings?: number;
-  ingredients?: MealIngredient[];
-  instructions?: string[];
-  imageUrl?: string;
-  image_url?: string; // Legacy support
-  recipeFetched: boolean;
-  recipe_fetched?: boolean; // Legacy support
+  prep_time: number;
+  cook_time: number;
+  servings: number;
   youtube_search_term?: string;
-  alternatives?: string[];
+  image_url?: string;
+  recipe_fetched: boolean;
+  ingredients: MealIngredient[];
+  instructions: string[];
+  alternatives: string[];
 }
 
 export interface WeeklyMealPlan {
@@ -50,7 +37,7 @@ export interface WeeklyMealPlan {
   total_protein: number;
   total_carbs: number;
   total_fat: number;
-  preferences?: any;
+  preferences: any;
   created_at: string;
   updated_at: string;
   life_phase_context?: any;
@@ -61,27 +48,32 @@ export interface MealPlanFetchResult {
   dailyMeals: DailyMeal[];
 }
 
-export interface MealPlanState {
-  currentWeekOffset: number;
-  selectedDay: number;
-  isGenerating: boolean;
-  error: string | null;
+export interface MealPlanPreferences {
+  cuisine: string;
+  cookingSkill: string;
+  maxPrepTime: number;
+  equipmentLevel: string;
+  includeSnacks: boolean;
+  weekOffset?: number;
+  culturalAdaptation: boolean;
 }
 
-export interface MealPlanPreferences {
-  duration: string;
-  cuisine: string;
-  maxPrepTime: string;
-  includeSnacks: boolean;
-  mealTypes: string;
+// Legacy compatibility types
+export interface ShoppingItem {
+  name: string;
+  quantity: string;
+  unit: string;
+  category: string;
 }
 
 export interface AddSnackDialogProps {
   isOpen: boolean;
   onClose: () => void;
   selectedDay: number;
-  currentDayCalories: number | null;
-  targetDayCalories: number | null;
+  currentDayCalories?: number;
+  targetDayCalories?: number;
   weeklyPlanId?: string;
-  onSnackAdded?: () => void;
+  onSnackAdded: () => void;
 }
+
+export type ViewMode = 'daily' | 'weekly';

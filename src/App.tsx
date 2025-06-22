@@ -1,100 +1,143 @@
-
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Suspense } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Toaster } from 'sonner';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { LanguageProvider } from '@/contexts/LanguageContext';
-import { useAuth } from '@/hooks/useAuth';
-
-// Pages
-import LandingPage from '@/pages/LandingPage';
-import AuthPage from '@/pages/AuthPage';
-import DashboardPage from '@/pages/DashboardPage';
-import MealPlanPage from '@/pages/MealPlanPage';
-import ExercisePage from '@/pages/ExercisePage';
-import ProfilePage from '@/pages/ProfilePage';
-import CoachPage from '@/pages/CoachPage';
-
-// Components
-import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import { Toaster } from '@/components/ui/sonner';
+import LazyPages from '@/shared/components/LazyPages';
+import { ErrorBoundary } from '@/shared/components/ErrorBoundary';
+import ProtectedLayout from '@/components/ProtectedLayout';
+import SimpleLoadingIndicator from '@/components/ui/simple-loading-indicator';
+import PerformanceDashboard from '@/shared/components/PerformanceDashboard';
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
       retry: 1,
-      refetchOnWindowFocus: false,
     },
   },
 });
 
-// Protected Route Component
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading } = useAuth();
-  
-  if (loading) return <LoadingSpinner />;
-  if (!user) return <Navigate to="/auth" replace />;
-  
-  return <>{children}</>;
-};
+const SuspenseFallback = () => (
+  <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+    <SimpleLoadingIndicator
+      message="Loading Page"
+      description="Please wait while we load the page..."
+      size="lg"
+    />
+  </div>
+);
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <LanguageProvider>
-        <AuthProvider>
-          <Router>
-            <div className="min-h-screen bg-gray-50">
-              <Routes>
-                <Route path="/" element={<LandingPage />} />
-                <Route path="/auth" element={<AuthPage />} />
-                <Route 
-                  path="/dashboard" 
-                  element={
-                    <ProtectedRoute>
-                      <DashboardPage />
-                    </ProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="/meal-plan" 
-                  element={
-                    <ProtectedRoute>
-                      <MealPlanPage />
-                    </ProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="/exercise" 
-                  element={
-                    <ProtectedRoute>
-                      <ExercisePage />
-                    </ProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="/profile" 
-                  element={
-                    <ProtectedRoute>
-                      <ProfilePage />
-                    </ProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="/coach" 
-                  element={
-                    <ProtectedRoute>
-                      <CoachPage />
-                    </ProtectedRoute>
-                  } 
-                />
-              </Routes>
-            </div>
-            <Toaster position="top-right" />
-          </Router>
-        </AuthProvider>
-      </LanguageProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <LanguageProvider>
+          <AuthProvider>
+            <Router>
+              <div className="App">
+                <Suspense fallback={<SuspenseFallback />}>
+                  <Routes>
+                    {/* Public routes - No sidebar */}
+                    <Route path="/" element={<LazyPages.Index />} />
+                    <Route path="/landing" element={<LazyPages.Landing />} />
+                    <Route path="/auth" element={<LazyPages.Auth />} />
+                    <Route path="/signup" element={<LazyPages.UnifiedSignup />} />
+                    <Route path="/onboarding" element={<LazyPages.Onboarding />} />
+                    <Route path="/welcome" element={<LazyPages.Welcome />} />
+
+                    {/* Protected routes - With sidebar */}
+                    <Route path="/dashboard" element={
+                      <ProtectedLayout>
+                        <LazyPages.Dashboard />
+                      </ProtectedLayout>
+                    } />
+                    <Route path="/profile" element={
+                      <ProtectedLayout>
+                        <LazyPages.Profile />
+                      </ProtectedLayout>
+                    } />
+                    <Route path="/meal-plan" element={
+                      <ProtectedLayout>
+                        <LazyPages.MealPlan />
+                      </ProtectedLayout>
+                    } />
+                    <Route path="/exercise" element={
+                      <ProtectedLayout>
+                        <LazyPages.Exercise />
+                      </ProtectedLayout>
+                    } />
+                    <Route path="/food-tracker" element={
+                      <ProtectedLayout>
+                        <LazyPages.FoodTracker />
+                      </ProtectedLayout>
+                    } />
+                    <Route path="/calorie-checker" element={
+                      <ProtectedLayout>
+                        <LazyPages.CalorieChecker />
+                      </ProtectedLayout>
+                    } />
+                    <Route path="/weight-tracking" element={
+                      <ProtectedLayout>
+                        <LazyPages.WeightTracking />
+                      </ProtectedLayout>
+                    } />
+                    <Route path="/goals" element={
+                      <ProtectedLayout>
+                        <LazyPages.Goals />
+                      </ProtectedLayout>
+                    } />
+                    <Route path="/progress/:tab?" element={
+                      <ProtectedLayout>
+                        <LazyPages.Progress />
+                      </ProtectedLayout>
+                    } />
+                    <Route path="/settings" element={
+                      <ProtectedLayout>
+                        <LazyPages.Settings />
+                      </ProtectedLayout>
+                    } />
+                    <Route path="/notifications" element={
+                      <ProtectedLayout>
+                        <LazyPages.Notifications />
+                      </ProtectedLayout>
+                    } />
+                    <Route path="/chat" element={
+                      <ProtectedLayout>
+                        <LazyPages.Chat />
+                      </ProtectedLayout>
+                    } />
+                    <Route path="/pro" element={
+                      <ProtectedLayout>
+                        <LazyPages.Pro />
+                      </ProtectedLayout>
+                    } />
+
+                    {/* Admin & Coach routes - With sidebar and role protection */}
+                    <Route path="/admin" element={
+                      <ProtectedLayout requireRole="admin">
+                        <LazyPages.Admin />
+                      </ProtectedLayout>
+                    } />
+                    <Route path="/coach" element={
+                      <ProtectedLayout requireRole="coach">
+                        <LazyPages.Coach />
+                      </ProtectedLayout>
+                    } />
+
+                    {/* 404 route */}
+                    <Route path="*" element={<LazyPages.NotFound />} />
+                  </Routes>
+                </Suspense>
+                <Toaster />
+                <PerformanceDashboard />
+              </div>
+            </Router>
+          </AuthProvider>
+        </LanguageProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 

@@ -1,41 +1,35 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, History, TrendingUp, ChevronLeft, ChevronRight } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, History, TrendingUp, Clock } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useFoodConsumption } from "@/hooks/useFoodConsumption";
-import VirtualizedMealHistory from "@/components/food-tracker/components/VirtualizedMealHistory";
-import NutritionHeatMap from "@/components/food-tracker/components/NutritionHeatMap";
+import { useFoodConsumption, FoodConsumptionLog } from "@/features/food-tracker/hooks";
 import { format, startOfMonth, endOfMonth, addMonths, subMonths } from "date-fns";
 
 const HistoryTab = () => {
   const { t } = useLanguage();
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [viewMode, setViewMode] = useState<'timeline' | 'calendar'>('timeline');
   
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
   
   const { data: historyData, isLoading } = useFoodConsumption().useHistoryData(monthStart, monthEnd);
 
-  // Group data by date for timeline view
-  const groupedHistory = historyData?.reduce((acc, entry) => {
+  const groupedHistory = (historyData || []).reduce((acc, entry) => {
     const date = format(new Date(entry.consumed_at), 'yyyy-MM-dd');
     if (!acc[date]) {
       acc[date] = [];
     }
     acc[date].push(entry);
     return acc;
-  }, {} as Record<string, typeof historyData>) || {};
+  }, {} as Record<string, FoodConsumptionLog[]>); 
 
-  const groupedArray = Object.entries(groupedHistory)
+  const groupedArray: { date: string; entries: FoodConsumptionLog[] }[] = Object.entries(groupedHistory)
     .map(([date, entries]) => ({ date, entries }))
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-  // Calculate monthly stats
-  const monthlyStats = historyData?.reduce(
+  const monthlyStats = (historyData || []).reduce(
     (acc, entry) => ({
       totalCalories: acc.totalCalories + (entry.calories_consumed || 0),
       totalProtein: acc.totalProtein + (entry.protein_consumed || 0),
@@ -77,23 +71,6 @@ const HistoryTab = () => {
                   Track your eating patterns and progress over time
                 </p>
               </div>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <Button
-                variant={viewMode === 'timeline' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setViewMode('timeline')}
-              >
-                Timeline
-              </Button>
-              <Button
-                variant={viewMode === 'calendar' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setViewMode('calendar')}
-              >
-                Calendar
-              </Button>
             </div>
           </div>
         </CardHeader>
@@ -179,32 +156,31 @@ const HistoryTab = () => {
         </CardContent>
       </Card>
 
-      {/* Content based on view mode */}
-      {viewMode === 'timeline' ? (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <History className="w-5 h-5 text-gray-600" />
-              Daily Food Logs
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <VirtualizedMealHistory groupedHistory={groupedArray} />
-          </CardContent>
-        </Card>
-      ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-gray-600" />
-              Nutrition Calendar
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <NutritionHeatMap data={historyData || []} currentMonth={currentMonth} />
-          </CardContent>
-        </Card>
-      )}
+      {/* Simplified History View */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <History className="w-5 h-5 text-gray-600" />
+            Daily Food Logs
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
+            <Clock className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-500">Enhanced meal history coming soon</p>
+            <p className="text-sm text-gray-400 mt-2">
+              Showing {groupedArray.length} days with food logs this month
+            </p>
+            {historyData && historyData.length > 0 && (
+              <div className="mt-4">
+                <Badge variant="outline" className="text-green-600">
+                  {historyData.length} total entries
+                </Badge>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

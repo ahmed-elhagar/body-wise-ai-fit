@@ -1,3 +1,11 @@
+// Food Tracker Services Exports
+export { default as foodTrackerApi, type FoodEntry, type NutritionGoals, type FoodSearchResult } from './foodTrackerApi';
 
-// Food Tracker feature services exports
-export { foodTrackingService } from './foodTrackingService';
+// New Unified Service Layer
+export { 
+  foodTrackerService as default, 
+  foodTrackerService,
+  type FoodAnalysisResult,
+  type WaterIntakeRecord,
+  type FoodTrackerFilters
+} from './foodTrackerService'; 

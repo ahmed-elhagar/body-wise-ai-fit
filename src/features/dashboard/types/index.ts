@@ -1,13 +1,13 @@
 
-// Dashboard types
+// Dashboard feature types
 export interface DashboardStats {
-  currentWeight?: number;
-  targetWeight?: number;
+  weight: number;
+  bmi: number;
+  fitnessGoal: string;
+  activityLevel: string;
+  weeklyProgress: number;
   caloriesConsumed: number;
   caloriesTarget: number;
-  workoutsCompleted: number;
-  workoutsTarget: number;
-  streak: number;
 }
 
 export interface QuickAction {
@@ -15,15 +15,6 @@ export interface QuickAction {
   title: string;
   description: string;
   icon: string;
-  href: string;
+  route: string;
   color: string;
-  isAvailable: boolean;
-}
-
-export interface RecentActivity {
-  id: string;
-  type: 'meal' | 'workout' | 'weight' | 'goal';
-  description: string;
-  timestamp: string;
-  icon: string;
 }

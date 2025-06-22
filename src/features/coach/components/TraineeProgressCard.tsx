@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -20,7 +21,7 @@ interface TraineeProgressCardProps {
   className?: string;
 }
 
-export const TraineeProgressCard = ({ 
+const TraineeProgressCard = ({ 
   trainee, 
   onChatClick, 
   onProgressClick, 

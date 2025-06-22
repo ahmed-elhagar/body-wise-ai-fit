@@ -13,10 +13,10 @@ interface HealthGoalsCardProps {
 
 const HealthGoalsCard = ({ formData, updateFormData, handleArrayInput }: HealthGoalsCardProps) => {
   return (
-    <Card className="p-4 sm:p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+    <Card className="p-4 sm:p-6 bg-white/8brand-neutral-600 backdrop-blur-sm border-brand-neutral-600 shadow-lg">
       <div className="flex items-center mb-4 sm:mb-6">
         <Target className="w-5 h-5 text-fitness-primary mr-2" />
-        <h3 className="text-lg font-semibold text-gray-800">Health & Goals</h3>
+        <h3 className="text-lg font-semibold text-gray-8brand-neutral-600brand-neutral-600">Health & Goals</h3>
       </div>
       
       <div className="space-y-4">

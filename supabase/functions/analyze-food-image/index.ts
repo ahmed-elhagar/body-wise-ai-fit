@@ -1,3 +1,4 @@
+
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
@@ -67,28 +68,47 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
-    // Use centralized prompt service
-    console.log('🎯 Using centralized prompt service for food analysis');
-    
-    // Import the service dynamically
-    const { AIPromptService } = await import('../../../src/services/aiPromptService.ts');
-    
-    const userLanguage = formData.get('language') as string || 'en';
-    const promptConfig = AIPromptService.getFoodAnalysisPrompt(userLanguage);
+    // Enhanced prompt to match our unified database structure
+    const prompt = `Analyze this food image and return ONLY a JSON object with this exact structure:
 
-    console.log('✅ Generated English-only food analysis prompt with language formatting');
+{
+  "foodItems": [
+    {
+      "name": "exact food name",
+      "category": "protein|vegetables|fruits|grains|dairy|nuts|beverages|snacks|general",
+      "cuisine": "cuisine type",
+      "calories": number_per_100g,
+      "protein": number_per_100g,
+      "carbs": number_per_100g,
+      "fat": number_per_100g,
+      "fiber": number_per_100g,
+      "sugar": number_per_100g,
+      "quantity": "estimated serving description"
+    }
+  ],
+  "overallConfidence": 0.8,
+  "cuisineType": "general",
+  "suggestions": "brief analysis tips"
+}
 
+CRITICAL REQUIREMENTS:
+1. Return ONLY valid JSON, no explanations
+2. All nutrition values must be per 100g
+3. Use exact category names from the list above
+4. Include 1-5 food items maximum
+5. Make realistic nutrition estimates
+6. Confidence should be 0.1-1.0`;
+
+    console.log('🤖 Using multi-provider AI service for food analysis...');
+
+    // Use the enhanced AI service with multiple providers
     const aiService = new AIService(openAIApiKey, anthropicApiKey, googleApiKey);
-    
     const response = await aiService.generate('food_analysis', {
       messages: [
         {
           role: 'user',
           content: [
-            { 
-              type: 'text', 
-              text: promptConfig.systemMessage + '\n\n' + promptConfig.userPrompt + '\n\nResponse format:\n' + promptConfig.responseFormat
-            },
+            { type: 'text', text: prompt },
             {
               type: 'image_url',
               image_url: { url: imageBase64 }
@@ -96,8 +116,8 @@ serve(async (req) => {
           ]
         }
       ],
-      maxTokens: promptConfig.maxTokens || 1000,
-      temperature: promptConfig.temperature || 0.1,
+      maxTokens: 1000,
+      temperature: 0.1,
     });
 
     console.log('✅ AI response received');

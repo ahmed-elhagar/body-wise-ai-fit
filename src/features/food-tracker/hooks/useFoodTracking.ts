@@ -1,12 +1,12 @@
 
-import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/features/auth/hooks/useAuth'; // This global hook is fine
 import { toast } from 'sonner';
-import type { FoodConsumptionLog } from '../types';
 
-interface FoodConsumptionInput {
+export interface FoodConsumption {
+  id: string;
+  user_id: string;
   food_item_id: string;
   quantity_g: number;
   calories_consumed: number;
@@ -16,135 +16,121 @@ interface FoodConsumptionInput {
   meal_type: 'breakfast' | 'lunch' | 'dinner' | 'snack';
   consumed_at: string;
   notes?: string;
+  meal_image_url?: string;
   source: 'manual' | 'ai_analysis' | 'barcode';
+  food_item?: {
+    name: string;
+    brand?: string;
+    calories_per_100g: number;
+    protein_per_100g: number;
+    carbs_per_100g: number;
+    fat_per_100g: number;
+  };
 }
 
 export const useFoodTracking = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const [selectedDate, setSelectedDate] = useState(new Date());
 
-  // Fetch food consumption logs for a specific date
-  const {
-    data: foodLogs = [],
-    isLoading,
-    error,
-    refetch
-  } = useQuery({
-    queryKey: ['food-consumption', user?.id, selectedDate.toDateString()],
+  const { data: foodConsumption, isLoading } = useQuery({
+    queryKey: ['food-consumption', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
-
-      const startOfDay = new Date(selectedDate);
-      startOfDay.setHours(0, 0, 0, 0);
       
-      const endOfDay = new Date(selectedDate);
-      endOfDay.setHours(23, 59, 59, 999);
-
       const { data, error } = await supabase
         .from('food_consumption_log')
         .select(`
           *,
-          food_item:food_items(*)
+          food_item:food_items (
+            name,
+            brand,
+            calories_per_100g,
+            protein_per_100g,
+            carbs_per_100g,
+            fat_per_100g
+          )
         `)
         .eq('user_id', user.id)
-        .gte('consumed_at', startOfDay.toISOString())
-        .lte('consumed_at', endOfDay.toISOString())
-        .order('consumed_at', { ascending: false });
+        .order('consumed_at', { ascending: false })
+        .limit(100);
 
       if (error) throw error;
-      return data as FoodConsumptionLog[];
+      return data as FoodConsumption[];
     },
     enabled: !!user?.id,
   });
 
-  // Add food consumption
-  const addFoodMutation = useMutation({
-    mutationFn: async (foodData: FoodConsumptionInput) => {
-      if (!user?.id) throw new Error('User not authenticated');
-
-      const { data, error } = await supabase
-        .from('food_consumption_log')
-        .insert({
-          user_id: user.id,
-          food_item_id: foodData.food_item_id,
-          quantity_g: foodData.quantity_g,
-          calories_consumed: foodData.calories_consumed,
-          protein_consumed: foodData.protein_consumed,
-          carbs_consumed: foodData.carbs_consumed,
-          fat_consumed: foodData.fat_consumed,
-          meal_type: foodData.meal_type,
-          consumed_at: foodData.consumed_at,
-          notes: foodData.notes,
-          source: foodData.source,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['food-consumption', user?.id]
-      });
-      toast.success('Food added to log successfully');
-    },
-    onError: (error) => {
-      console.error('Error adding food:', error);
-      toast.error('Failed to add food to log');
-    },
-  });
-
-  // Delete food consumption
-  const deleteFoodMutation = useMutation({
-    mutationFn: async (logId: string) => {
+  const addFoodConsumption = useMutation({
+    mutationFn: async (consumption: Omit<FoodConsumption, 'id' | 'user_id'>) => {
       const { error } = await supabase
         .from('food_consumption_log')
-        .delete()
-        .eq('id', logId);
+        .insert({
+          user_id: user?.id,
+          ...consumption,
+        });
 
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['food-consumption', user?.id]
-      });
-      toast.success('Food removed from log');
-    },
-    onError: (error) => {
-      console.error('Error deleting food:', error);
-      toast.error('Failed to remove food from log');
+      queryClient.invalidateQueries({ queryKey: ['food-consumption', user?.id] });
+      toast.success('Food logged successfully!');
     },
   });
 
-  // Calculate nutrition summary
-  const nutritionSummary = foodLogs.reduce(
-    (summary, log) => ({
-      totalCalories: summary.totalCalories + (log.calories_consumed || 0),
-      totalProtein: summary.totalProtein + (log.protein_consumed || 0),
-      totalCarbs: summary.totalCarbs + (log.carbs_consumed || 0),
-      totalFat: summary.totalFat + (log.fat_consumed || 0),
-    }),
-    { totalCalories: 0, totalProtein: 0, totalCarbs: 0, totalFat: 0 }
-  );
+  const getTodaysConsumption = () => {
+    if (!foodConsumption) return [];
+    
+    const today = new Date().toISOString().split('T')[0];
+    return foodConsumption.filter(item => 
+      item.consumed_at.startsWith(today)
+    );
+  };
+
+  const getNutritionSummary = (date?: string) => {
+    const targetDate = date || new Date().toISOString().split('T')[0];
+    const dayConsumption = foodConsumption?.filter(item => 
+      item.consumed_at.startsWith(targetDate)
+    ) || [];
+
+    return {
+      totalCalories: dayConsumption.reduce((sum, item) => sum + item.calories_consumed, 0),
+      totalProtein: dayConsumption.reduce((sum, item) => sum + item.protein_consumed, 0),
+      totalCarbs: dayConsumption.reduce((sum, item) => sum + item.carbs_consumed, 0),
+      totalFat: dayConsumption.reduce((sum, item) => sum + item.fat_consumed, 0),
+      mealBreakdown: {
+        breakfast: dayConsumption.filter(item => item.meal_type === 'breakfast'),
+        lunch: dayConsumption.filter(item => item.meal_type === 'lunch'),
+        dinner: dayConsumption.filter(item => item.meal_type === 'dinner'),
+        snack: dayConsumption.filter(item => item.meal_type === 'snack'),
+      },
+    };
+  };
+
+  const getWeeklyTrend = () => {
+    if (!foodConsumption) return [];
+    
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() - (6 - i));
+      return date.toISOString().split('T')[0];
+    });
+
+    return last7Days.map(date => {
+      const summary = getNutritionSummary(date);
+      return {
+        date,
+        ...summary,
+      };
+    });
+  };
 
   return {
-    // Data
-    foodLogs,
-    nutritionSummary,
-    selectedDate,
-    
-    // State
+    foodConsumption: foodConsumption || [],
     isLoading,
-    error,
-    isAdding: addFoodMutation.isPending,
-    isDeleting: deleteFoodMutation.isPending,
-    
-    // Actions
-    setSelectedDate,
-    addFoodConsumption: addFoodMutation.mutate,
-    deleteFoodConsumption: deleteFoodMutation.mutate,
-    refetch,
+    addFoodConsumption: addFoodConsumption.mutate,
+    isAdding: addFoodConsumption.isPending,
+    getTodaysConsumption,
+    getNutritionSummary,
+    getWeeklyTrend,
   };
 };

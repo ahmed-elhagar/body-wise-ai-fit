@@ -2,8 +2,8 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MessageCircle, TrendingUp } from "lucide-react";
-import EnhancedTraineesTab from "./EnhancedTraineesTab";
-import { useI18n } from "@/hooks/useI18n";
+import { TraineesTab } from "./TraineesTab";
+import { useI18n } from "@/shared/hooks/useI18n";
 
 interface CoachTabsProps {
   trainees: any[];
@@ -38,7 +38,7 @@ export const CoachTabs = ({ trainees, selectedClient, setSelectedClient }: Coach
       </TabsList>
 
       <TabsContent value="clients" className="mt-6">
-        <EnhancedTraineesTab 
+        <TraineesTab 
           trainees={trainees} 
           onChatClick={setSelectedClient}
         />

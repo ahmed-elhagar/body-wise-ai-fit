@@ -13,7 +13,7 @@ import {
   Target
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useAchievements } from "@/hooks/useAchievements";
+import { useAchievements } from "@/shared/hooks/useAchievements";
 
 export const AchievementsSection = () => {
   const navigate = useNavigate();

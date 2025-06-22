@@ -1,78 +1,173 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Clock, AlertCircle } from "lucide-react";
-
-interface Task {
-  id: string;
-  title: string;
-  status: 'pending' | 'completed' | 'overdue';
-  dueDate: string;
-  priority: 'low' | 'medium' | 'high';
-}
+import { Checkbox } from "@/components/ui/checkbox";
+import { 
+  Clock, 
+  AlertTriangle, 
+  Plus,
+  ArrowRight,
+  CheckCircle
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useCoachTasks } from "@/features/coach/hooks/useCoachTasks";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface CompactTasksPanelProps {
-  tasks?: Task[];
-  className?: string;
+  onViewAllTasks: () => void;
+  onCreateTask: () => void;
 }
 
-const CompactTasksPanel = ({ tasks = [], className = "" }: CompactTasksPanelProps) => {
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return <CheckCircle className="h-4 w-4 text-green-600" />;
-      case 'overdue':
-        return <AlertCircle className="h-4 w-4 text-red-600" />;
-      default:
-        return <Clock className="h-4 w-4 text-yellow-600" />;
-    }
-  };
+export const CompactTasksPanel = ({ onViewAllTasks, onCreateTask }: CompactTasksPanelProps) => {
+  const { t } = useLanguage();
+  const { tasks, toggleTask, isToggling } = useCoachTasks();
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high':
-        return 'bg-red-100 text-red-800 border-red-200';
-      case 'medium':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      default:
-        return 'bg-green-100 text-green-800 border-green-200';
-    }
+  const pendingTasks = tasks.filter(t => !t.completed);
+  const overdueTasks = pendingTasks.filter(t => 
+    t.dueDate && t.dueDate < new Date()
+  );
+  const upcomingTasks = pendingTasks.filter(t => 
+    !t.dueDate || t.dueDate >= new Date()
+  ).slice(0, 3);
+
+  const handleToggleTask = (taskId: string, completed: boolean) => {
+    toggleTask({ taskId, completed: !completed });
   };
 
   return (
-    <Card className={className}>
+    <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <CheckCircle className="h-5 w-5" />
-          Tasks Overview
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="w-5 h-5" />
+            {t('Tasks & Reminders')}
+          </CardTitle>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline" onClick={onCreateTask}>
+              <Plus className="w-4 h-4" />
+            </Button>
+            <Button size="sm" variant="ghost" onClick={onViewAllTasks}>
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+        
+        {/* Task Summary */}
+        <div className="flex gap-4 text-sm">
+          <div className="flex items-center gap-1">
+            <Badge variant="secondary">{pendingTasks.length}</Badge>
+            <span className="text-gray-600">{t('pending')}</span>
+          </div>
+          {overdueTasks.length > 0 && (
+            <div className="flex items-center gap-1">
+              <Badge variant="destructive">{overdueTasks.length}</Badge>
+              <span className="text-gray-600">{t('overdue')}</span>
+            </div>
+          )}
+        </div>
       </CardHeader>
+
       <CardContent>
-        {tasks.length === 0 ? (
-          <div className="text-center py-8">
-            <CheckCircle className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500">No tasks assigned</p>
+        {pendingTasks.length === 0 ? (
+          <div className="text-center py-6">
+            <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
+            <p className="text-gray-600 mb-3">{t('All caught up!')}</p>
+            <Button size="sm" onClick={onCreateTask}>
+              <Plus className="w-4 h-4 mr-1" />
+              {t('Add Task')}
+            </Button>
           </div>
         ) : (
           <div className="space-y-3">
-            {tasks.slice(0, 5).map((task) => (
-              <div key={task.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  {getStatusIcon(task.status)}
-                  <div>
-                    <p className="font-medium text-gray-900">{task.title}</p>
-                    <p className="text-sm text-gray-500">Due: {task.dueDate}</p>
+            {/* Overdue Tasks First */}
+            {overdueTasks.slice(0, 2).map(task => {
+              const isOverdue = task.dueDate && task.dueDate < new Date();
+              
+              return (
+                <div
+                  key={task.id}
+                  className={cn(
+                    "flex items-start gap-3 p-3 rounded-lg border transition-colors",
+                    isOverdue ? "border-red-200 bg-red-50" : "bg-white hover:bg-gray-50"
+                  )}
+                >
+                  <Checkbox
+                    checked={task.completed}
+                    onCheckedChange={() => handleToggleTask(task.id, task.completed)}
+                    disabled={isToggling}
+                    className="mt-1"
+                  />
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <h4 className="font-medium text-sm leading-tight">
+                        {task.title}
+                      </h4>
+                      {isOverdue && (
+                        <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" />
+                      )}
+                    </div>
+                    
+                    {task.traineeName && (
+                      <p className="text-xs text-blue-600 mt-1">
+                        {task.traineeName}
+                      </p>
+                    )}
+                    
+                    {task.dueDate && (
+                      <p className={cn(
+                        "text-xs mt-1",
+                        isOverdue ? "text-red-600 font-medium" : "text-gray-500"
+                      )}>
+                        Due: {task.dueDate.toLocaleDateString()}
+                      </p>
+                    )}
                   </div>
                 </div>
-                <Badge className={getPriorityColor(task.priority)}>
-                  {task.priority}
-                </Badge>
+              );
+            })}
+
+            {/* Upcoming Tasks */}
+            {upcomingTasks.map(task => (
+              <div
+                key={task.id}
+                className="flex items-start gap-3 p-3 rounded-lg border bg-white hover:bg-gray-50 transition-colors"
+              >
+                <Checkbox
+                  checked={task.completed}
+                  onCheckedChange={() => handleToggleTask(task.id, task.completed)}
+                  disabled={isToggling}
+                  className="mt-1"
+                />
+                
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-medium text-sm leading-tight">
+                    {task.title}
+                  </h4>
+                  
+                  {task.traineeName && (
+                    <p className="text-xs text-blue-600 mt-1">
+                      {task.traineeName}
+                    </p>
+                  )}
+                  
+                  {task.dueDate && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Due: {task.dueDate.toLocaleDateString()}
+                    </p>
+                  )}
+                </div>
               </div>
             ))}
-            {tasks.length > 5 && (
-              <p className="text-sm text-gray-500 text-center">
-                +{tasks.length - 5} more tasks
-              </p>
+
+            {pendingTasks.length > 5 && (
+              <div className="text-center pt-2">
+                <Button size="sm" variant="ghost" onClick={onViewAllTasks}>
+                  {t('View')} {pendingTasks.length - 5} {t('more tasks')}
+                  <ArrowRight className="w-4 h-4 ml-1" />
+                </Button>
+              </div>
             )}
           </div>
         )}
@@ -80,5 +175,3 @@ const CompactTasksPanel = ({ tasks = [], className = "" }: CompactTasksPanelProp
     </Card>
   );
 };
-
-export default CompactTasksPanel;

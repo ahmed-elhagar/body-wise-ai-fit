@@ -1,5 +1,5 @@
 
-import { useMealPlanState } from "./useMealPlanState";
+import { useMealPlanState } from "@/features/meal-plan/hooks/useMealPlanState";
 
 export const useMealPlanPage = () => {
   const mealPlanState = useMealPlanState();

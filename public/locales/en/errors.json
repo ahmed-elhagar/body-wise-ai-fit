@@ -1,10 +1,11 @@
 
 {
-  "requestTimeout": "Request timed out. Please try again.",
-  "networkError": "Network error occurred. Please check your connection.",
-  "serverError": "Server error occurred. Please try again later.",
-  "validationError": "Invalid input provided.",
-  "authenticationError": "Authentication required. Please log in.",
+  "mealPlanGeneration": "Failed to generate meal plan. Please try again.",
+  "exerciseGeneration": "Failed to generate exercise program. Please try again.",
+  "foodAnalysis": "Failed to analyze food image. Please try again.",
+  "networkError": "Network error. Please check your connection.",
+  "unknownError": "An unexpected error occurred. Please try again.",
+  "authenticationRequired": "Authentication required. Please log in.",
   "insufficientCredits": "Insufficient AI credits. Please upgrade your plan.",
-  "aiGenerationFailed": "AI generation failed. Please try again."
+  "validationError": "Please check your input and try again."
 }

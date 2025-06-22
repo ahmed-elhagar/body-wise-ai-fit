@@ -1,9 +1,15 @@
+// Exercise feature components exports
 
-// Exercise feature components
-export { ExerciseHeader } from './ExerciseHeader';
+// New consolidated components
+export { ExerciseContainer } from './containers/ExerciseContainer';
 export { ExerciseCard } from './ExerciseCard';
-export { ExerciseEmptyState } from './ExerciseEmptyState';
-export { ExerciseErrorState } from './ExerciseErrorState';
-export { ExercisePageLayout } from './ExercisePageLayout';
-export { ExercisePageContainer } from './ExercisePageContainer';
-export { ExerciseListEnhanced } from './ExerciseListEnhanced';
+export { ProgressTracker } from './progress/ProgressTracker';
+export { RecoveryMetrics } from './recovery/RecoveryMetrics';
+export { AIGenerationDialog } from './ai/AIGenerationDialog';
+export { FormAnalysis } from './ai/FormAnalysis';
+export { WorkoutTypeSelector } from './shared/WorkoutTypeSelector';
+
+// Existing components
+export { AIExerciseDialog } from "./AIExerciseDialog";
+export { ExerciseAnalyticsContainer } from "./ExerciseAnalyticsContainer";
+export { ExerciseProgramSelector } from "./ExerciseProgramSelector";

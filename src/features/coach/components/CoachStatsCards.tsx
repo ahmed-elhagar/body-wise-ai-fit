@@ -1,6 +1,7 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, MessageCircle, TrendingUp, Calendar } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import { useI18n } from "@/shared/hooks/useI18n";
 
 interface CoachStatsCardsProps {
   stats: {
@@ -11,7 +12,7 @@ interface CoachStatsCardsProps {
   };
 }
 
-export const CoachStatsCards = ({ stats }: CoachStatsCardsProps) => {
+const CoachStatsCards = ({ stats }: CoachStatsCardsProps) => {
   const { t } = useI18n();
 
   return (
@@ -62,3 +63,5 @@ export const CoachStatsCards = ({ stats }: CoachStatsCardsProps) => {
     </div>
   );
 };
+
+export default CoachStatsCards;

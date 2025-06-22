@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { useCentralizedCredits } from '@/hooks/useCentralizedCredits';
+import { useAuth } from '@/features/auth/hooks/useAuth';
+import { useCentralizedCredits } from '@/shared/hooks/useCentralizedCredits';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { DailyMeal } from '@/features/meal-plan/types';
@@ -71,16 +71,16 @@ export const useMealExchange = () => {
     }
   };
 
-  const exchangeMeal = async (alternative: any, onSuccess?: () => void) => {
-    if (!alternative?.id) {
-      console.error('No alternative selected for exchange');
+  const exchangeMeal = async (alternative: any, originalMealId: string, onSuccess?: () => void) => {
+    if (!alternative || !originalMealId) {
+      console.error('Missing alternative or original meal ID for exchange');
       return false;
     }
 
     setIsLoading(true);
     
     try {
-      console.log('🔄 Exchanging meal');
+      console.log('🔄 Exchanging meal with ID:', originalMealId);
       
       const { error } = await supabase
         .from('daily_meals')
@@ -93,12 +93,15 @@ export const useMealExchange = () => {
           prep_time: alternative.prep_time,
           cook_time: alternative.cook_time,
           ingredients: alternative.ingredients,
-          instructions: alternative.instructions
+          instructions: alternative.instructions,
+          image_url: alternative.image_url,
+          servings: alternative.servings
         })
-        .eq('id', alternative.original_meal_id || alternative.id);
+        .eq('id', originalMealId);
 
       if (error) throw error;
 
+      console.log('✅ Meal exchanged successfully');
       toast.success('Meal exchanged successfully!');
       onSuccess?.();
       return true;
@@ -114,7 +117,7 @@ export const useMealExchange = () => {
   const quickExchange = async (meal: DailyMeal, reason: string, onSuccess?: () => void) => {
     const success = await generateAlternatives(meal, reason);
     if (success && alternatives.length > 0) {
-      return await exchangeMeal(alternatives[0], onSuccess);
+      return await exchangeMeal(alternatives[0], meal.id, onSuccess);
     }
     return false;
   };

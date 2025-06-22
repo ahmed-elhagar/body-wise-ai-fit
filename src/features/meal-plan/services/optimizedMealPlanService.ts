@@ -229,7 +229,6 @@ export class OptimizedMealPlanService {
           weekly_plan_id: meal.weekly_plan_id,
           day_number: meal.day_number,
           meal_type: validatedMealType as DailyMeal['meal_type'],
-          mealType: validatedMealType as DailyMeal['mealType'], // Add required mealType property
           name: meal.name,
           calories: meal.calories || 0,
           protein: meal.protein || 0,
@@ -243,7 +242,6 @@ export class OptimizedMealPlanService {
           youtube_search_term: meal.youtube_search_term,
           image_url: meal.image_url,
           recipe_fetched: meal.recipe_fetched || false,
-          recipeFetched: meal.recipe_fetched || false, // Add required recipeFetched property
           ingredients: this.safeParseArray(meal.ingredients, []).map(ing => ({
             name: typeof ing === 'string' ? ing : ing.name || 'Unknown ingredient',
             quantity: typeof ing === 'string' ? '1' : ing.quantity || '1',

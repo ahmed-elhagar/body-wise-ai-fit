@@ -1,3 +1,4 @@
+
 import { ExerciseProgram, DailyWorkout } from '@/features/exercise/types';
 
 export class ExerciseDataService {

@@ -1,4 +1,5 @@
 
-// Food Tracker feature hooks exports
+export { useFoodConsumption } from './useFoodConsumption';
+export type { FoodConsumptionLog, MealPlanItem } from './useFoodConsumption';
 export { useFoodTracking } from './useFoodTracking';
-export { useFoodSearch } from './useFoodSearch';
+export type { FoodConsumption } from './useFoodTracking';

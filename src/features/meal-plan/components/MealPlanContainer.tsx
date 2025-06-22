@@ -1,252 +1,337 @@
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '@/features/auth/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { MealPlanLayout } from './MealPlanLayout';
+import AIGenerationModal from './AIGenerationModal';
+import { useEnhancedMealPlan } from '../hooks/useEnhancedMealPlan';
+import { useEnhancedMealShuffle } from '../hooks/useEnhancedMealShuffle';
+import { useMealExchange } from '../hooks/useMealExchange';
+import { useMealRecipe } from '../hooks/useMealRecipe';
+import { useEnhancedShoppingListEmail } from '../hooks/useEnhancedShoppingListEmail';
+import type { WeeklyMealPlan, DailyMeal, MealPlanPreferences } from '../types';
+import { format, addDays, startOfWeek } from 'date-fns';
 
-import React, { useState, useRef } from 'react';
-import { useMealPlanState } from '../hooks/useMealPlanState';
-import MealPlanHeader from './MealPlanHeader';
-import { MealPlanContent } from './MealPlanContent';
-import ErrorState from './ErrorState';
-import LoadingState from './LoadingState';
-import { useEnhancedMealShuffle } from '@/hooks/useEnhancedMealShuffle';
-import { Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
-import { MealPlanViewToggle } from './MealPlanViewToggle';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { formatWeekRange, getDayName } from '@/utils/mealPlanUtils';
-import { MealExchangeDialog } from './dialogs/MealExchangeDialog';
-import AIGenerationDialog from './dialogs/AIGenerationDialog';
-import { EnhancedRecipeDialog } from './EnhancedRecipeDialog';
-import EnhancedAddSnackDialog from './dialogs/EnhancedAddSnackDialog';
-import ModernShoppingListDrawer from '@/components/shopping-list/ModernShoppingListDrawer';
-import { MealPlanAILoadingDialog } from './dialogs/MealPlanAILoadingDialog';
-import { format } from 'date-fns';
+// Import missing modal components
+import AddSnackDialog from '@/features/food-tracker/components/AddSnackDialog';
+import { RecipeViewModal } from './modals/RecipeViewModal';
+import { ExchangeMealModal } from './modals/ExchangeMealModal';
 
-const MealPlanContainer = () => {
-  const mealPlanState = useMealPlanState();
+export const MealPlanContainer: React.FC = () => {
+  const { user } = useAuth();
+  const [profile, setProfile] = useState<any>(null);
+  const [mealPlans, setMealPlans] = useState<WeeklyMealPlan[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedDayNumber, setSelectedDayNumber] = useState(1);
+  const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
+  const [completedMeals, setCompletedMeals] = useState<Set<string>>(new Set());
+  const [showAIModal, setShowAIModal] = useState(false);
+  const [selectedMeal, setSelectedMeal] = useState<DailyMeal | null>(null);
+  const [dailyMeals, setDailyMeals] = useState<DailyMeal[]>([]);
+  const [generationProgress, setGenerationProgress] = useState(0);
+
+  // New modal states
+  const [showAddSnackModal, setShowAddSnackModal] = useState(false);
+  const [showRecipeModal, setShowRecipeModal] = useState(false);
+  const [showExchangeModal, setShowExchangeModal] = useState(false);
+
+  // Enhanced hooks
+  const { isGenerating, generateMealPlan, hasCredits } = useEnhancedMealPlan();
   const { shuffleMeals, isShuffling } = useEnhancedMealShuffle();
-  const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
-  
-  // Keep track of the last successfully loaded data to show during transitions
-  const lastLoadedDataRef = useRef(mealPlanState.currentWeekPlan);
+  const { generateAlternatives, exchangeMeal, alternatives, isLoading: isExchanging } = useMealExchange();
+  const { generateRecipe, isGeneratingRecipe } = useMealRecipe();
+  const { sendShoppingListEmail } = useEnhancedShoppingListEmail();
 
-  // Update the ref when we have new data and not loading
-  if (mealPlanState.currentWeekPlan && !mealPlanState.isLoading) {
-    lastLoadedDataRef.current = mealPlanState.currentWeekPlan;
-  }
+  // Get current week's meal plan
+  const getWeekStartDate = (offset: number = 0) => {
+    const today = new Date();
+    const startOfCurrentWeek = startOfWeek(today, { weekStartsOn: 6 });
+    return addDays(startOfCurrentWeek, offset * 7);
+  };
 
-  // Enhanced shuffle handler
-  const handleShuffle = async () => {
-    if (!mealPlanState.currentWeekPlan?.weeklyPlan?.id) {
-      console.error('❌ No weekly plan ID available for shuffle');
+  const weekStartDate = getWeekStartDate(currentWeekOffset);
+  const currentWeekPlan = mealPlans?.find(plan => 
+    plan.week_start_date === format(weekStartDate, 'yyyy-MM-dd')
+  );
+
+  // Initial data fetch
+  useEffect(() => {
+    if (user?.id) {
+      fetchUserProfile();
+      fetchMealPlans();
+    }
+  }, [user?.id]);
+
+  // Fetch daily meals when current week plan changes
+  useEffect(() => {
+    if (currentWeekPlan) {
+      fetchDailyMeals();
+    } else {
+      setDailyMeals([]);
+    }
+  }, [currentWeekPlan]);
+
+  // Refetch data when week offset changes
+  useEffect(() => {
+    if (user?.id) {
+      console.log('Week offset changed to:', currentWeekOffset);
+      fetchMealPlans(); // Refetch meal plans to get data for new week
+    }
+  }, [currentWeekOffset, user?.id]);
+
+  // Progress tracking for generation
+  useEffect(() => {
+    if (isGenerating) {
+      setGenerationProgress(0);
+      const progressInterval = setInterval(() => {
+        setGenerationProgress(prev => {
+          if (prev >= 95) return prev;
+          return prev + Math.random() * 15;
+        });
+      }, 1000);
+
+      return () => clearInterval(progressInterval);
+    } else {
+      setGenerationProgress(0);
+    }
+  }, [isGenerating]);
+
+  const fetchUserProfile = async () => {
+    if (!user?.id) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (error) throw error;
+      setProfile(data);
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      toast.error('Failed to load profile data');
+    }
+  };
+
+  const fetchMealPlans = async () => {
+    if (!user?.id) return;
+    
+    setIsLoading(true);
+    try {
+      console.log('Fetching meal plans for user:', user.id);
+      const { data, error } = await supabase
+        .from('weekly_meal_plans')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      console.log('Fetched meal plans:', data?.length || 0);
+      setMealPlans((data || []) as WeeklyMealPlan[]);
+    } catch (error) {
+      console.error('Error fetching meal plans:', error);
+      setMealPlans([]);
+      toast.error('Failed to load meal plans');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchDailyMeals = async () => {
+    if (!currentWeekPlan) return;
+    
+    try {
+      console.log('Fetching daily meals for plan:', currentWeekPlan.id);
+      const { data, error } = await supabase
+        .from('daily_meals')
+        .select('*')
+        .eq('weekly_plan_id', currentWeekPlan.id)
+        .order('day_number', { ascending: true })
+        .order('meal_type', { ascending: true });
+
+      if (error) throw error;
+      console.log('Fetched daily meals:', data?.length || 0);
+      setDailyMeals((data || []) as DailyMeal[]);
+    } catch (error) {
+      console.error('Error fetching daily meals:', error);
+      setDailyMeals([]);
+      toast.error('Failed to load daily meals');
+    }
+  };
+
+  const handleGenerateAIMealPlan = async (preferences: MealPlanPreferences) => {
+    if (!hasCredits) {
+      toast.error('No AI credits remaining. Please upgrade your plan or wait for credits to reset.');
       return;
     }
+
+    // Close modal and start inline generation
+    setShowAIModal(false);
     
-    console.log('🔄 Starting enhanced shuffle for plan:', mealPlanState.currentWeekPlan.weeklyPlan.id);
-    const success = await shuffleMeals(mealPlanState.currentWeekPlan.weeklyPlan.id);
-    
-    if (success) {
-      // Refetch the meal plan data to show updated distribution
-      setTimeout(() => {
-        mealPlanState.refetch();
-      }, 1000);
+    try {
+      const success = await generateMealPlan(preferences, { weekOffset: currentWeekOffset });
+      if (success) {
+        setGenerationProgress(100);
+        await fetchMealPlans(); // Refetch to get the new plan
+        toast.success('Meal plan generated successfully!');
+      }
+    } catch (error) {
+      console.error('Generation failed:', error);
+      toast.error('Failed to generate meal plan');
+    } finally {
+      setGenerationProgress(0);
     }
   };
 
-  // Enhanced week change handler that manages loading states properly
-  const handleWeekChange = async (offset: number) => {
-    console.log('📅 Week change initiated');
-    await mealPlanState.setCurrentWeekOffset(offset);
+  const handleShuffleMeals = async () => {
+    if (!currentWeekPlan) {
+      toast.error('No meal plan to shuffle');
+      return;
+    }
+
+    const success = await shuffleMeals(currentWeekPlan.id);
+    if (success) {
+      await fetchDailyMeals();
+      toast.success('Meals shuffled successfully!');
+    }
   };
 
-  // Determine what data to display
-  const displayData = mealPlanState.currentWeekPlan || lastLoadedDataRef.current;
+  const handleViewRecipe = async (meal: DailyMeal) => {
+    setSelectedMeal(meal);
+    setShowRecipeModal(true);
+  };
 
-  // Only show full error state if there's an error and no existing data
-  if (mealPlanState.error && !displayData) {
-    return <ErrorState error={mealPlanState.error} onRetry={mealPlanState.refetch} />;
-  }
+  const handleExchangeMeal = async (meal: DailyMeal) => {
+    setSelectedMeal(meal);
+    setShowExchangeModal(true);
+  };
 
-  // Only show full loading state on initial load (no existing data)
-  if (mealPlanState.isLoading && !displayData) {
-    return <LoadingState />;
-  }
+  const handleAddSnack = () => {
+    if (!currentWeekPlan) {
+      toast.error('Please generate a meal plan first to add snacks');
+      return;
+    }
+    setShowAddSnackModal(true);
+  };
+
+  const handleSendShoppingList = async () => {
+    if (!currentWeekPlan) {
+      toast.error('No meal plan available for shopping list');
+      return;
+    }
+
+    const weeklyPlanData = { weeklyPlan: currentWeekPlan, dailyMeals };
+    const success = await sendShoppingListEmail(weeklyPlanData);
+    if (success) {
+      toast.success('Shopping list sent to your email!');
+    }
+  };
+
+  const handleMealComplete = (mealId: string) => {
+    const newCompleted = new Set(completedMeals);
+    if (newCompleted.has(mealId)) {
+      newCompleted.delete(mealId);
+    } else {
+      newCompleted.add(mealId);
+    }
+    setCompletedMeals(newCompleted);
+    toast.success(newCompleted.has(mealId) ? 'Meal completed!' : 'Meal unmarked');
+  };
+
+  const handleDaySelect = (dayNumber: number) => {
+    setSelectedDayNumber(dayNumber);
+  };
+
+  const handleWeekOffsetChange = (offset: number) => {
+    console.log('Changing week offset from', currentWeekOffset, 'to', offset);
+    setCurrentWeekOffset(offset);
+  };
+
+  const handleShowAIModal = () => {
+    setShowAIModal(true);
+  };
+
+  const handleSnackAdded = () => {
+    fetchDailyMeals(); // Refresh meals after adding snack
+    setShowAddSnackModal(false);
+  };
+
+  const handleRecipeGenerated = () => {
+    // Refresh meal data if needed
+    fetchDailyMeals();
+  };
+
+  const handleMealExchanged = () => {
+    fetchDailyMeals(); // Refresh meals after exchange
+    setShowExchangeModal(false);
+  };
+
+  // Calculate remaining calories for snack
+  const selectedDayMeals = dailyMeals.filter(meal => meal.day_number === selectedDayNumber);
+  const currentDayCalories = selectedDayMeals.reduce((sum, meal) => sum + (meal.calories || 0), 0);
+  const targetDayCalories = profile?.daily_calories || 2000;
 
   return (
     <>
-      <div className="space-y-6">
-        {/* Header - Always visible */}
-        <MealPlanHeader 
-          onGenerateAI={() => mealPlanState.openAIDialog()}
-          onShuffle={handleShuffle}
-          onShowShoppingList={() => mealPlanState.openShoppingListDialog()}
-          onRegeneratePlan={() => mealPlanState.openAIDialog()}
-          isGenerating={mealPlanState.isGenerating}
-          isShuffling={isShuffling}
-          hasWeeklyPlan={!!displayData?.weeklyPlan}
+      <MealPlanLayout
+        isLoading={isLoading || isGenerating}
+        currentWeekPlan={currentWeekPlan}
+        dailyMeals={dailyMeals}
+        selectedDayNumber={selectedDayNumber}
+        currentWeekOffset={currentWeekOffset}
+        completedMeals={completedMeals}
+        onDaySelect={handleDaySelect}
+        onWeekOffsetChange={handleWeekOffsetChange}
+        onMealComplete={handleMealComplete}
+        onShowAIModal={handleShowAIModal}
+        onShuffleMeals={handleShuffleMeals}
+        onSendShoppingList={handleSendShoppingList}
+        onViewRecipe={handleViewRecipe}
+        onExchangeMeal={handleExchangeMeal}
+        onAddSnack={handleAddSnack}
+        isGenerating={isGenerating}
+        isShuffling={isShuffling}
+      />
+
+      {/* AI Generation Modal */}
+      <AIGenerationModal
+        isOpen={showAIModal}
+        onClose={() => setShowAIModal(false)}
+        onGenerate={handleGenerateAIMealPlan}
+        isGenerating={isGenerating}
+        progress={generationProgress}
+      />
+
+      {/* Add Snack Modal - Only render when we have a valid plan */}
+      {currentWeekPlan && (
+        <AddSnackDialog
+          isOpen={showAddSnackModal}
+          onClose={() => setShowAddSnackModal(false)}
+          selectedDay={selectedDayNumber}
+          weeklyPlanId={currentWeekPlan.id}
+          onSnackAdded={handleSnackAdded}
+          currentDayCalories={currentDayCalories}
+          targetDayCalories={targetDayCalories}
         />
-        
-        {/* Navigation Card - Always visible */}
-        <Card className="p-4 bg-white/90 backdrop-blur-sm border border-gray-200/50 shadow-sm">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-4">
-            <div className="flex items-center gap-4 w-full md:w-auto">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleWeekChange(mealPlanState.currentWeekOffset - 1)}
-                className="h-10 w-10 p-0 border-gray-300"
-                aria-label="Previous week"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </Button>
-              
-              <div className="text-center">
-                <h3 className="text-base font-semibold text-gray-900">
-                  {formatWeekRange(format(mealPlanState.weekStartDate, 'yyyy-MM-dd'))}
-                </h3>
-              </div>
-              
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleWeekChange(mealPlanState.currentWeekOffset + 1)}
-                className="h-10 w-10 p-0 border-gray-300"
-                aria-label="Next week"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </Button>
-            </div>
-            
-            <MealPlanViewToggle 
-              viewMode={viewMode}
-              onViewModeChange={setViewMode}
-            />
-          </div>
-          
-          {/* Days Navigation - Always visible */}
-          <div className="grid grid-cols-7 gap-1">
-            {[1, 2, 3, 4, 5, 6, 7].map((dayNumber) => {
-              const isSelected = mealPlanState.selectedDayNumber === dayNumber;
-              const dayName = getDayName(dayNumber);
-              
-              return (
-                <Button
-                  key={dayNumber}
-                  variant="ghost"
-                  className={`h-14 p-2 rounded-xl transition-all duration-200 ${
-                    isSelected 
-                      ? 'bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-lg scale-105 border-0' 
-                      : 'bg-gray-50/80 hover:bg-gray-100/80 text-gray-700 hover:text-gray-900 border border-gray-200/50'
-                  }`}
-                  onClick={() => mealPlanState.setSelectedDayNumber(dayNumber)}
-                >
-                  <div className="flex flex-col items-center justify-center gap-0.5">
-                    <span className={`text-xs font-medium ${isSelected ? 'text-white/90' : 'text-gray-500'}`}>
-                      {dayName.slice(0, 3)}
-                    </span>
-                    <span className={`text-sm font-semibold ${isSelected ? 'text-white' : 'text-gray-800'}`}>
-                      {dayName}
-                    </span>
-                  </div>
-                </Button>
-              );
-            })}
-          </div>
-        </Card>
-        
-        {/* Content Area with Loading Overlay - Only over meal content */}
-        <div className="relative">
-          {/* Main Content - Always rendered with last known data */}
-          <MealPlanContent
-            viewMode={viewMode}
-            currentWeekPlan={displayData}
-            selectedDayNumber={mealPlanState.selectedDayNumber}
-            dailyMeals={mealPlanState.dailyMeals}
-            totalCalories={mealPlanState.totalCalories}
-            totalProtein={mealPlanState.totalProtein}
-            targetDayCalories={mealPlanState.targetDayCalories}
-            weekStartDate={mealPlanState.weekStartDate}
-            currentWeekOffset={mealPlanState.currentWeekOffset}
-            isGenerating={mealPlanState.isGenerating}
-            onViewMeal={(meal) => mealPlanState.openRecipeDialog(meal)}
-            onExchangeMeal={(meal) => mealPlanState.openExchangeDialog(meal)}
-            onAddSnack={() => mealPlanState.openAddSnackDialog()}
-            onGenerateAI={() => mealPlanState.openAIDialog()}
-            setCurrentWeekOffset={handleWeekChange}
-            setSelectedDayNumber={mealPlanState.setSelectedDayNumber}
-          />
-          
-          {/* Loading Overlay - Only shows when loading and we have existing data */}
-          {mealPlanState.isLoading && displayData && (
-            <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg min-h-[400px]">
-              <div className="flex flex-col items-center gap-3 bg-white rounded-lg shadow-lg p-6 border">
-                <Loader2 className="w-8 h-8 animate-spin text-violet-600" />
-                <p className="text-sm text-gray-700 font-medium">Loading meals...</p>
-                <p className="text-xs text-gray-500">Please wait while we fetch your meal plan</p>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+      )}
 
-      {/* AI Loading Dialog - Step-by-step loading experience - Now using top-right position */}
-      <MealPlanAILoadingDialog 
-        isGenerating={mealPlanState.isGenerating}
-        onClose={() => mealPlanState.refetch()}
-        position="top-right"
+      {/* Recipe View Modal */}
+      <RecipeViewModal
+        isOpen={showRecipeModal}
+        onClose={() => setShowRecipeModal(false)}
+        meal={selectedMeal}
+        onRecipeGenerated={handleRecipeGenerated}
       />
 
-      {/* Modern Shopping List Drawer - Fixed to use the correct enhanced version */}
-      <ModernShoppingListDrawer
-        isOpen={mealPlanState.showShoppingListDialog}
-        onClose={() => mealPlanState.closeShoppingListDialog()}
-        weeklyPlan={mealPlanState.currentWeekPlan}
-        weekId={mealPlanState.currentWeekPlan?.weeklyPlan?.id}
-        onShoppingListUpdate={() => {
-          console.log('🛒 Shopping list updated');
-          mealPlanState.refetch();
-        }}
-      />
-
-      {/* AI Generation Dialog */}
-      <AIGenerationDialog
-        isOpen={mealPlanState.showAIDialog}
-        onClose={() => mealPlanState.closeAIDialog()}
-        preferences={mealPlanState.aiPreferences}
-        onPreferencesChange={mealPlanState.updateAIPreferences}
-        onGenerate={mealPlanState.handleGenerateAIPlan}
-        isGenerating={mealPlanState.isGenerating}
-        hasExistingPlan={!!displayData?.weeklyPlan}
-      />
-
-      {/* Enhanced Add Snack Dialog */}
-      <EnhancedAddSnackDialog
-        isOpen={mealPlanState.showAddSnackDialog}
-        onClose={() => mealPlanState.closeAddSnackDialog()}
-        selectedDay={mealPlanState.selectedDayNumber}
-        currentDayCalories={mealPlanState.totalCalories}
-        targetDayCalories={mealPlanState.targetDayCalories}
-        weeklyPlanId={mealPlanState.currentWeekPlan?.weeklyPlan?.id}
-        onSnackAdded={() => mealPlanState.refetch()}
-      />
-
-      {/* Enhanced Meal Exchange Dialog - Our latest implementation */}
-      <MealExchangeDialog
-        isOpen={mealPlanState.showExchangeDialog}
-        onClose={() => mealPlanState.closeExchangeDialog()}
-        meal={mealPlanState.selectedMeal}
-        onExchangeComplete={() => {
-          mealPlanState.refetch();
-          mealPlanState.closeExchangeDialog();
-        }}
-      />
-
-      {/* Enhanced Recipe Dialog */}
-      <EnhancedRecipeDialog
-        isOpen={mealPlanState.showRecipeDialog}
-        onClose={() => mealPlanState.closeRecipeDialog()}
-        meal={mealPlanState.selectedMeal}
-        onRecipeUpdated={() => mealPlanState.refetch()}
+      {/* Exchange Meal Modal */}
+      <ExchangeMealModal
+        isOpen={showExchangeModal}
+        onClose={() => setShowExchangeModal(false)}
+        meal={selectedMeal}
+        onMealExchanged={handleMealExchanged}
       />
     </>
   );
-};
-
+}; 
 export default MealPlanContainer;

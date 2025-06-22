@@ -1,13 +1,14 @@
+
 import { MessageCircle, Users, Calendar } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useUnreadMessages } from "@/hooks/useUnreadMessages";
+import { useUnreadMessages } from "@/shared/hooks/useUnreadMessages";
 
 interface CoachHeaderProps {
   totalClients: number;
 }
 
-export const CoachHeader = ({ totalClients }: CoachHeaderProps) => {
+const CoachHeader = ({ totalClients }: CoachHeaderProps) => {
   const { data: unreadCount = 0 } = useUnreadMessages();
 
   return (
@@ -83,3 +84,5 @@ export const CoachHeader = ({ totalClients }: CoachHeaderProps) => {
     </div>
   );
 };
+
+export default CoachHeader;

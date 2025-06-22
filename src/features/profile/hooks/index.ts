@@ -1,5 +1,6 @@
 
 // Profile feature hooks exports
-export { useProfileData } from './useProfileData';
-export { useProfile } from './useProfile';
-export { useProfileForm } from './useProfileForm';
+export { useProfileFormData } from './useProfileFormData';
+export { useProfileActions } from './useProfileActions';
+export { useProfileCompletion } from './useProfileCompletion';
+export { useProfileValidation } from './useProfileValidation';

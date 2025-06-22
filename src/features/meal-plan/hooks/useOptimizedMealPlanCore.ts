@@ -1,6 +1,6 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/features/auth/hooks/useAuth';
 import { getWeekStartDate } from '@/utils/mealPlanUtils';
 import { format } from 'date-fns';
 import { OptimizedMealPlanService } from '../services/optimizedMealPlanService';

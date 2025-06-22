@@ -1,8 +1,15 @@
+// Essential components that are actually used
+export { 
+  CompactMealCard,
+  DailyNutritionSummary,
+  MealPlanMotivationalContent
+} from './components';
 
-// Main meal plan feature exports
-export { default as MealPlanContainer } from './components/MealPlanContainer';
-export { default as MealPlanHeader } from './components/MealPlanHeader';
-export { MealPlanContent } from './components/MealPlanContent';
-export { MealPlanViewToggle } from './components/MealPlanViewToggle';
-export { default as DayOverview } from './components/DayOverview';
-export { default as MealCard } from './components/MealCard';
+// Export types
+export type * from './types';
+
+// Export hooks
+export * from './hooks';
+
+// Export services
+export * from './services';

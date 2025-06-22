@@ -1,16 +1,13 @@
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { getWeekStartDate, getCurrentSaturdayDay } from '@/utils/mealPlanUtils';
 
 export const useMealPlanNavigation = () => {
-  const [currentWeekOffset, setCurrentWeekOffsetInternal] = useState(0);
-  const [selectedDayNumber, setSelectedDayNumber] = useState(() => getCurrentSaturdayDay());
-  
-  const weekStartDate = useMemo(() => getWeekStartDate(currentWeekOffset), [currentWeekOffset]);
+  const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
+  const [selectedDayNumber, setSelectedDayNumber] = useState(getCurrentSaturdayDay());
 
-  const setCurrentWeekOffset = useCallback(async (newOffset: number) => {
-    console.log('📅 Changing week from', currentWeekOffset, 'to', newOffset);
-    setCurrentWeekOffsetInternal(newOffset);
+  const weekStartDate = useMemo(() => {
+    return getWeekStartDate(currentWeekOffset);
   }, [currentWeekOffset]);
 
   return {

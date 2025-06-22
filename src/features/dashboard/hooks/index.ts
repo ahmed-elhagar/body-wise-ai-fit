@@ -1,5 +1,4 @@
 
-// Dashboard hooks exports
-export { useDashboardData } from './useDashboardData';
-export { useQuickActions } from './useQuickActions';
-export { useRecentActivity } from './useRecentActivity';
+export { useDashboardStats } from './useDashboardStats';
+export { useWeightTracking } from './useWeightTracking';
+export { useGoals } from './useGoals';

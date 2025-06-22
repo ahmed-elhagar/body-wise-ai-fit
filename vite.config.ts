@@ -59,40 +59,89 @@ export default defineConfig(({ mode }) => ({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
+        manualChunks: (id) => {
           // Framework chunks
-          vendor: ['react', 'react-dom'],
+          if (id.includes('react') || id.includes('react-dom')) {
+            return 'vendor';
+          }
           
           // Router chunk
-          router: ['react-router-dom'],
+          if (id.includes('react-router-dom')) {
+            return 'router';
+          }
           
           // UI library chunks
-          ui: [
-            '@radix-ui/react-dialog', 
-            '@radix-ui/react-dropdown-menu', 
-            '@radix-ui/react-select',
-            '@radix-ui/react-toast',
-            '@radix-ui/react-tabs',
-            '@radix-ui/react-progress'
-          ],
+          if (id.includes('@radix-ui') || id.includes('lucide-react')) {
+            return 'ui';
+          }
           
           // Charts and visualization
-          charts: ['recharts'],
+          if (id.includes('recharts')) {
+            return 'charts';
+          }
           
           // Date utilities
-          dates: ['date-fns'],
+          if (id.includes('date-fns')) {
+            return 'dates';
+          }
           
           // Form handling
-          forms: ['react-hook-form', '@hookform/resolvers', 'zod'],
+          if (id.includes('react-hook-form') || id.includes('@hookform') || id.includes('zod')) {
+            return 'forms';
+          }
           
           // Backend services
-          supabase: ['@supabase/supabase-js'],
+          if (id.includes('@supabase/supabase-js')) {
+            return 'supabase';
+          }
           
           // Query management
-          query: ['@tanstack/react-query'],
+          if (id.includes('@tanstack/react-query')) {
+            return 'query';
+          }
+          
+          // Feature-based chunking for better performance
+          if (id.includes('src/features/admin')) {
+            return 'feature-admin';
+          }
+          
+          if (id.includes('src/features/food-tracker')) {
+            return 'feature-food-tracker';
+          }
+          
+          if (id.includes('src/features/meal-plan')) {
+            return 'feature-meal-plan';
+          }
+          
+          if (id.includes('src/features/exercise')) {
+            return 'feature-exercise';
+          }
+          
+          if (id.includes('src/features/dashboard')) {
+            return 'feature-dashboard';
+          }
+          
+          if (id.includes('src/features/profile')) {
+            return 'feature-profile';
+          }
+          
+          if (id.includes('src/features/coach')) {
+            return 'feature-coach';
+          }
+          
+          if (id.includes('src/features/chat')) {
+            return 'feature-chat';
+          }
           
           // Utilities
-          utils: ['clsx', 'class-variance-authority', 'tailwind-merge']
+          if (id.includes('clsx') || id.includes('class-variance-authority') || id.includes('tailwind-merge')) {
+            return 'utils';
+          }
+          
+          // Node modules
+          if (id.includes('node_modules')) {
+            return 'vendor';
+          }
         }
       }
     },

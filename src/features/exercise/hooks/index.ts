@@ -1,5 +1,11 @@
+// Exercise feature hooks exports - Clean Architecture
 
-// Exercise hooks exports
-export { useExercisePrograms } from './useExercisePrograms';
-export { useWorkoutGeneration } from './useWorkoutGeneration';
-export { useExerciseTracking } from './useExerciseTracking';
+// Core hooks
+export * from './core/useExerciseProgram';
+export * from './core/useWorkoutSession';
+
+// AI hooks
+export * from './ai';
+
+// Analytics hooks
+export * from './analytics';

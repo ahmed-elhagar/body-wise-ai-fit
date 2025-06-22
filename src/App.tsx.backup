@@ -1,0 +1,83 @@
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Suspense } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { LanguageProvider } from '@/contexts/LanguageContext';
+import { Toaster } from '@/components/ui/sonner';
+import LazyPages from '@/shared/components/LazyPages';
+import { ErrorBoundary } from '@/shared/components/ErrorBoundary';
+import SimpleLoadingIndicator from '@/components/ui/simple-loading-indicator';
+import PerformanceDashboard from '@/shared/components/PerformanceDashboard';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      retry: 1,
+    },
+  },
+});
+
+const SuspenseFallback = () => (
+  <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+    <SimpleLoadingIndicator
+      message="Loading Page"
+      description="Please wait while we load the page..."
+      size="lg"
+    />
+  </div>
+);
+
+function App() {
+  return (
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <LanguageProvider>
+          <AuthProvider>
+            <Router>
+              <div className="App">
+                <Suspense fallback={<SuspenseFallback />}>
+                  <Routes>
+                    {/* Public routes */}
+                    <Route path="/" element={<LazyPages.Index />} />
+                    <Route path="/landing" element={<LazyPages.Landing />} />
+                    <Route path="/auth" element={<LazyPages.Auth />} />
+                    <Route path="/signup" element={<LazyPages.UnifiedSignup />} />
+                    <Route path="/onboarding" element={<LazyPages.Onboarding />} />
+                    <Route path="/welcome" element={<LazyPages.Welcome />} />
+
+                    {/* Protected routes */}
+                    <Route path="/dashboard" element={<LazyPages.Dashboard />} />
+                    <Route path="/profile" element={<LazyPages.Profile />} />
+                    <Route path="/meal-plan" element={<LazyPages.MealPlan />} />
+                    <Route path="/exercise" element={<LazyPages.Exercise />} />
+                    <Route path="/food-tracker" element={<LazyPages.FoodTracker />} />
+                    <Route path="/calorie-checker" element={<LazyPages.CalorieChecker />} />
+                    <Route path="/weight-tracking" element={<LazyPages.WeightTracking />} />
+                    <Route path="/goals" element={<LazyPages.Goals />} />
+                    <Route path="/progress/:tab?" element={<LazyPages.Progress />} />
+                    <Route path="/settings" element={<LazyPages.Settings />} />
+                    <Route path="/notifications" element={<LazyPages.Notifications />} />
+                    <Route path="/chat" element={<LazyPages.Chat />} />
+                    <Route path="/pro" element={<LazyPages.Pro />} />
+
+                    {/* Admin & Coach routes */}
+                    <Route path="/admin" element={<LazyPages.Admin />} />
+                    <Route path="/coach" element={<LazyPages.Coach />} />
+
+                    {/* 404 route */}
+                    <Route path="*" element={<LazyPages.NotFound />} />
+                  </Routes>
+                </Suspense>
+                <Toaster />
+                <PerformanceDashboard />
+              </div>
+            </Router>
+          </AuthProvider>
+        </LanguageProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
+  );
+}
+
+export default App;

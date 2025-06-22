@@ -1,6 +1,6 @@
 
 import { Language } from '@/contexts/LanguageContext';
-import { useI18n } from '@/hooks/useI18n';
+import { useI18n } from '@/shared/hooks/useI18n';
 
 export const translateExerciseName = (exerciseName: string): string => {
   const { t } = useI18n();

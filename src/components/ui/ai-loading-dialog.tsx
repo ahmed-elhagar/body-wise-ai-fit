@@ -16,7 +16,7 @@ interface AILoadingDialogProps {
     label: string;
     status: 'pending' | 'active' | 'completed' | 'error';
   }>;
-  progress?: number; // 0-100
+  progress?: number; // brand-neutral-6brand-neutral-600brand-neutral-600-1brand-neutral-600brand-neutral-600
   allowClose?: boolean;
 }
 
@@ -37,13 +37,13 @@ const AILoadingDialog: React.FC<AILoadingDialogProps> = ({
       onOpenChange={allowClose ? onOpenChange : undefined}
     >
       <DialogContent 
-        className="sm:max-w-lg bg-white border-0 shadow-2xl"
+        className="sm:max-w-lg bg-white border-brand-neutral-600 shadow-2xl"
         hideClose={!allowClose}
       >
         <div className="space-y-6 p-2">
           {/* Header */}
           <div className="text-center">
-            <h2 className="text-xl font-bold text-fitness-neutral-800 mb-2">
+            <h2 className="text-xl font-bold text-fitness-neutral-8brand-neutral-600brand-neutral-600 mb-2">
               {title}
             </h2>
           </div>
@@ -61,13 +61,13 @@ const AILoadingDialog: React.FC<AILoadingDialogProps> = ({
           {/* Progress Bar */}
           {progress !== undefined && (
             <div className="space-y-2">
-              <div className="flex justify-between text-sm text-fitness-neutral-600">
+              <div className="flex justify-between text-sm text-fitness-neutral-6brand-neutral-600brand-neutral-600">
                 <span>Progress</span>
                 <span>{Math.round(progress)}%</span>
               </div>
-              <div className="w-full bg-fitness-neutral-200 rounded-full h-2">
+              <div className="w-full bg-fitness-neutral-2brand-neutral-600brand-neutral-600 rounded-full h-2">
                 <div 
-                  className="bg-gradient-to-r from-fitness-primary-500 to-fitness-accent-500 h-2 rounded-full transition-all duration-500"
+                  className="bg-gradient-to-r from-fitness-primary-5brand-neutral-600brand-neutral-600 to-fitness-accent-5brand-neutral-600brand-neutral-600 h-2 rounded-full transition-all duration-5brand-neutral-600brand-neutral-600"
                   style={{ width: `${progress}%` }}
                 />
               </div>
@@ -75,9 +75,9 @@ const AILoadingDialog: React.FC<AILoadingDialogProps> = ({
           )}
 
           {/* Steps */}
-          {steps && steps.length > 0 && (
+          {steps && steps.length > brand-neutral-600 && (
             <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-fitness-neutral-700">
+              <h3 className="text-sm font-semibold text-fitness-neutral-7brand-neutral-600brand-neutral-600">
                 Processing Steps
               </h3>
               <div className="space-y-2 max-h-32 overflow-y-auto">
@@ -85,19 +85,19 @@ const AILoadingDialog: React.FC<AILoadingDialogProps> = ({
                   <div 
                     key={step.id}
                     className={cn(
-                      "flex items-center gap-3 p-2 rounded-lg transition-all duration-200",
-                      step.status === 'active' && "bg-fitness-primary-50 border border-fitness-primary-200",
-                      step.status === 'completed' && "bg-success-50 border border-success-200",
-                      step.status === 'error' && "bg-error-50 border border-error-200",
-                      step.status === 'pending' && "bg-fitness-neutral-50"
+                      "flex items-center gap-3 p-2 rounded-lg transition-all duration-2brand-neutral-600brand-neutral-600",
+                      step.status === 'active' && "bg-fitness-primary-5brand-neutral-600 border border-fitness-primary-2brand-neutral-600brand-neutral-600",
+                      step.status === 'completed' && "bg-success-5brand-neutral-600 border border-success-2brand-neutral-600brand-neutral-600",
+                      step.status === 'error' && "bg-error-5brand-neutral-600 border border-error-2brand-neutral-600brand-neutral-600",
+                      step.status === 'pending' && "bg-fitness-neutral-5brand-neutral-600"
                     )}
                   >
                     <div className={cn(
-                      "w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0",
-                      step.status === 'pending' && "bg-fitness-neutral-200 text-fitness-neutral-500",
-                      step.status === 'active' && "bg-fitness-primary-500 text-white",
-                      step.status === 'completed' && "bg-success-500 text-white",
-                      step.status === 'error' && "bg-error-500 text-white"
+                      "w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-brand-neutral-600",
+                      step.status === 'pending' && "bg-fitness-neutral-2brand-neutral-600brand-neutral-600 text-fitness-neutral-5brand-neutral-600brand-neutral-600",
+                      step.status === 'active' && "bg-fitness-primary-5brand-neutral-600brand-neutral-600 text-white",
+                      step.status === 'completed' && "bg-success-5brand-neutral-600brand-neutral-600 text-white",
+                      step.status === 'error' && "bg-error-5brand-neutral-600brand-neutral-600 text-white"
                     )}>
                       {step.status === 'completed' ? '✓' : 
                        step.status === 'error' ? '✗' : 
@@ -106,10 +106,10 @@ const AILoadingDialog: React.FC<AILoadingDialogProps> = ({
                     </div>
                     <span className={cn(
                       "text-sm font-medium truncate",
-                      step.status === 'active' && "text-fitness-primary-700",
-                      step.status === 'completed' && "text-success-700",
-                      step.status === 'error' && "text-error-700",
-                      step.status === 'pending' && "text-fitness-neutral-600"
+                      step.status === 'active' && "text-fitness-primary-7brand-neutral-600brand-neutral-600",
+                      step.status === 'completed' && "text-success-7brand-neutral-600brand-neutral-600",
+                      step.status === 'error' && "text-error-7brand-neutral-600brand-neutral-600",
+                      step.status === 'pending' && "text-fitness-neutral-6brand-neutral-600brand-neutral-600"
                     )}>
                       {step.label}
                     </span>
@@ -121,7 +121,7 @@ const AILoadingDialog: React.FC<AILoadingDialogProps> = ({
 
           {/* Footer message */}
           <div className="text-center">
-            <p className="text-sm text-fitness-neutral-500">
+            <p className="text-sm text-fitness-neutral-5brand-neutral-600brand-neutral-600">
               {status === 'loading' && "Please wait while we process your request..."}
               {status === 'success' && "Operation completed successfully!"}
               {status === 'error' && "Something went wrong. Please try again."}

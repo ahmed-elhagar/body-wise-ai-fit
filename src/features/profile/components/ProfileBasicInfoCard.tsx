@@ -1,219 +1,106 @@
 
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { User, AlertCircle, Save } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { User, MapPin, Calendar, Ruler, Weight } from "lucide-react";
 
 interface ProfileBasicInfoCardProps {
-  formData: any;
-  updateFormData: (field: string, value: string) => void;
-  saveBasicInfo: () => Promise<boolean>;
-  isUpdating: boolean;
-  validationErrors: Record<string, string>;
+  profile?: any;
+  formData?: any;
+  updateFormData?: (field: string, value: any) => void;
+  saveBasicInfo?: () => Promise<boolean>;
+  isUpdating?: boolean;
+  validationErrors?: Record<string, string>;
+  onUpdate?: () => void;
 }
 
 const ProfileBasicInfoCard = ({ 
+  profile, 
   formData, 
   updateFormData, 
   saveBasicInfo, 
   isUpdating, 
-  validationErrors 
+  validationErrors,
+  onUpdate 
 }: ProfileBasicInfoCardProps) => {
-  const getInputError = (field: string) => validationErrors[field];
-  const getInputClassName = (field: string) => {
-    const hasError = getInputError(field);
-    return `mt-1 ${hasError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`;
-  };
-
-  const handleSave = async () => {
-    await saveBasicInfo();
-  };
+  // Use formData if available (edit mode), otherwise use profile (display mode)
+  const data = formData || profile;
+  
+  if (!data) {
+    return (
+      <Card className="shadow-sm hover:shadow-md transition-shadow">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <User className="w-5 h-5 text-blue-600" />
+            Basic Information
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-gray-500 text-center py-4">No profile data available</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
-    <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center">
-          <User className="w-5 h-5 text-fitness-primary mr-2" />
-          <h3 className="text-lg font-semibold text-gray-800">Basic Information</h3>
-        </div>
-        <Button 
-          onClick={handleSave}
-          disabled={isUpdating}
-          className="bg-fitness-primary-500 hover:bg-fitness-primary-600"
-        >
-          <Save className="w-4 h-4 mr-2" />
-          {isUpdating ? 'Saving...' : 'Save'}
-        </Button>
-      </div>
-      
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="first_name" className="text-sm font-medium">
-            First Name <span className="text-red-500">*</span>
-          </Label>
-          <Input
-            id="first_name"
-            value={formData.first_name || ''}
-            onChange={(e) => updateFormData("first_name", e.target.value)}
-            placeholder="Enter your first name"
-            className={getInputClassName('first_name')}
-          />
-          {getInputError('first_name') && (
-            <div className="flex items-center mt-1 text-sm text-red-600">
-              <AlertCircle className="w-4 h-4 mr-1" />
-              {getInputError('first_name')}
-            </div>
-          )}
+    <Card className="shadow-sm hover:shadow-md transition-shadow">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <User className="w-5 h-5 text-blue-600" />
+          Basic Information
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex items-center gap-6 p-4 bg-gray-50 rounded-lg">
+          <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
+            <span className="text-white font-bold text-lg">
+              {data.first_name ? data.first_name.charAt(0).toUpperCase() : 'U'}
+            </span>
+          </div>
+          <div>
+            <h3 className="font-semibold text-gray-800">
+              {data.first_name && data.last_name 
+                ? `${data.first_name} ${data.last_name}` 
+                : "Complete your profile"}
+            </h3>
+            <p className="text-sm text-gray-600 capitalize">
+              {data.gender || 'Gender not set'}
+            </p>
+          </div>
         </div>
 
-        <div>
-          <Label htmlFor="last_name" className="text-sm font-medium">
-            Last Name <span className="text-red-500">*</span>
-          </Label>
-          <Input
-            id="last_name"
-            value={formData.last_name || ''}
-            onChange={(e) => updateFormData("last_name", e.target.value)}
-            placeholder="Enter your last name"
-            className={getInputClassName('last_name')}
-          />
-          {getInputError('last_name') && (
-            <div className="flex items-center mt-1 text-sm text-red-600">
-              <AlertCircle className="w-4 h-4 mr-1" />
-              {getInputError('last_name')}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-gray-500" />
+            <div>
+              <p className="text-xs text-gray-500">Age</p>
+              <p className="font-medium">{data.age || '—'}</p>
             </div>
-          )}
-        </div>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <MapPin className="w-4 h-4 text-gray-500" />
+            <div>
+              <p className="text-xs text-gray-500">Nationality</p>
+              <p className="font-medium">{data.nationality || '—'}</p>
+            </div>
+          </div>
 
-        <div>
-          <Label htmlFor="age" className="text-sm font-medium">
-            Age <span className="text-red-500">*</span>
-          </Label>
-          <Input
-            id="age"
-            type="number"
-            min="13"
-            max="120"
-            value={formData.age || ''}
-            onChange={(e) => updateFormData("age", e.target.value)}
-            placeholder="Enter your age"
-            className={getInputClassName('age')}
-          />
-          {getInputError('age') && (
-            <div className="flex items-center mt-1 text-sm text-red-600">
-              <AlertCircle className="w-4 h-4 mr-1" />
-              {getInputError('age')}
+          <div className="flex items-center gap-2">
+            <Ruler className="w-4 h-4 text-gray-500" />
+            <div>
+              <p className="text-xs text-gray-500">Height</p>
+              <p className="font-medium">{data.height ? `${data.height} cm` : '—'}</p>
             </div>
-          )}
-        </div>
+          </div>
 
-        <div>
-          <Label htmlFor="gender" className="text-sm font-medium">
-            Gender <span className="text-red-500">*</span>
-          </Label>
-          <Select value={formData.gender || undefined} onValueChange={(value) => updateFormData("gender", value)}>
-            <SelectTrigger className={getInputClassName('gender')}>
-              <SelectValue placeholder="Select gender" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="male">Male</SelectItem>
-              <SelectItem value="female">Female</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
-            </SelectContent>
-          </Select>
-          {getInputError('gender') && (
-            <div className="flex items-center mt-1 text-sm text-red-600">
-              <AlertCircle className="w-4 h-4 mr-1" />
-              {getInputError('gender')}
+          <div className="flex items-center gap-2">
+            <Weight className="w-4 h-4 text-gray-500" />
+            <div>
+              <p className="text-xs text-gray-500">Weight</p>
+              <p className="font-medium">{data.weight ? `${data.weight} kg` : '—'}</p>
             </div>
-          )}
+          </div>
         </div>
-
-        <div>
-          <Label htmlFor="height" className="text-sm font-medium">
-            Height (cm) <span className="text-red-500">*</span>
-          </Label>
-          <Input
-            id="height"
-            type="number"
-            min="100"
-            max="250"
-            value={formData.height || ''}
-            onChange={(e) => updateFormData("height", e.target.value)}
-            placeholder="Enter your height"
-            className={getInputClassName('height')}
-          />
-          {getInputError('height') && (
-            <div className="flex items-center mt-1 text-sm text-red-600">
-              <AlertCircle className="w-4 h-4 mr-1" />
-              {getInputError('height')}
-            </div>
-          )}
-        </div>
-
-        <div>
-          <Label htmlFor="weight" className="text-sm font-medium">
-            Weight (kg) <span className="text-red-500">*</span>
-          </Label>
-          <Input
-            id="weight"
-            type="number"
-            min="30"
-            max="300"
-            value={formData.weight || ''}
-            onChange={(e) => updateFormData("weight", e.target.value)}
-            placeholder="Enter your weight"
-            className={getInputClassName('weight')}
-          />
-          {getInputError('weight') && (
-            <div className="flex items-center mt-1 text-sm text-red-600">
-              <AlertCircle className="w-4 h-4 mr-1" />
-              {getInputError('weight')}
-            </div>
-          )}
-        </div>
-
-        <div>
-          <Label htmlFor="nationality" className="text-sm font-medium">
-            Nationality <span className="text-red-500">*</span>
-          </Label>
-          <Input
-            id="nationality"
-            value={formData.nationality || ''}
-            onChange={(e) => updateFormData("nationality", e.target.value)}
-            placeholder="Your nationality"
-            className={getInputClassName('nationality')}
-          />
-          {getInputError('nationality') && (
-            <div className="flex items-center mt-1 text-sm text-red-600">
-              <AlertCircle className="w-4 h-4 mr-1" />
-              {getInputError('nationality')}
-            </div>
-          )}
-        </div>
-
-        <div>
-          <Label htmlFor="body_shape" className="text-sm font-medium">Body Shape</Label>
-          <Select value={formData.body_shape || undefined} onValueChange={(value) => updateFormData("body_shape", value)}>
-            <SelectTrigger className={getInputClassName('body_shape')}>
-              <SelectValue placeholder="Select body shape" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ectomorph">Ectomorph (Lean/Thin)</SelectItem>
-              <SelectItem value="mesomorph">Mesomorph (Athletic/Muscular)</SelectItem>
-              <SelectItem value="endomorph">Endomorph (Rounded/Soft)</SelectItem>
-            </SelectContent>
-          </Select>
-          {getInputError('body_shape') && (
-            <div className="flex items-center mt-1 text-sm text-red-600">
-              <AlertCircle className="w-4 h-4 mr-1" />
-              {getInputError('body_shape')}
-            </div>
-          )}
-        </div>
-      </div>
+      </CardContent>
     </Card>
   );
 };

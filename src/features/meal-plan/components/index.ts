@@ -1,38 +1,18 @@
-
-// Main meal plan components
-export { default as MealPlanContainer } from './MealPlanContainer';
-export { default as MealPlanHeader } from './MealPlanHeader';
-export { MealPlanContent } from './MealPlanContent';
-export { MealPlanViewToggle } from './MealPlanViewToggle';
-
-// Core meal plan components
-export { default as DayOverview } from './DayOverview';
-export { default as MealCard } from './MealCard';
-export { EnhancedMealCard } from './EnhancedMealCard';
-export { MealRow } from './MealRow';
-export { AddMealCard } from './AddMealCard';
+// Main container and layout components
+export { MealPlanContainer } from './MealPlanContainer';
+export { MealPlanLayout } from './MealPlanLayout';
+export { MealPlanHeader } from './MealPlanHeader';
 
 // View components
-export { WeeklyMealPlanView } from './WeeklyMealPlanView';
-export { CompactDailyProgress } from './CompactDailyProgress';
-export { EmptyWeekState } from './EmptyWeekState';
+export { MealPlanOverview } from './MealPlanOverview';
+export { DailyMealsView } from './DailyMealsView';
+export { ShoppingListView } from './ShoppingListView';
 
-// State components
-export { default as LoadingState } from './LoadingState';
-export { default as ErrorState } from './ErrorState';
+// Existing components (default exports)
+export { default as AIGenerationModal } from './AIGenerationModal';
+export { default as CompactMealCard } from './CompactMealCard';
+export { default as DailyNutritionSummary } from './DailyNutritionSummary';
+export { default as MealPlanMotivationalContent } from './loading/MealPlanMotivationalContent';
 
-// Navigation components
-export { DaySelector } from './DaySelector';
-export { WeekNavigation } from './WeekNavigation';
-
-// Dialog components
-export { EnhancedRecipeDialog } from './EnhancedRecipeDialog';
-export { MealPlanAILoadingDialog } from './dialogs/MealPlanAILoadingDialog';
-export { MealExchangeDialog } from './dialogs/MealExchangeDialog';
-export { default as AIGenerationDialog } from './dialogs/AIGenerationDialog';
-export { default as EnhancedAddSnackDialog } from './dialogs/EnhancedAddSnackDialog';
-
-// Add snack dialog components
-export { default as AddSnackHeader } from './dialogs/AddSnackHeader';
-export { default as CalorieProgressCard } from './dialogs/CalorieProgressCard';
-export { default as SnackFeatures } from './dialogs/SnackFeatures';
+// Loading components
+export { LoadingState } from './loading/LoadingState';

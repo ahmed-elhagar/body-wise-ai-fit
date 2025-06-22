@@ -1,13 +1,11 @@
 
-// Food Tracker feature exports
-export type * from './types';
-export * from './components';
+// Barrel file for the Food Tracker feature
+
+// Export hooks
 export * from './hooks';
-export * from './services';
-export * from './utils';
 
-// Main entry point for food tracker feature
-export { default as FoodTrackerPage } from './components/FoodTrackerContainer';
+// Export components
+export * from './components';
 
-// Rename the nutrition summary to avoid conflicts
-export type { FoodTrackerNutritionSummary as NutritionSummary } from './types';
+// Export types (if any, e.g. from ./types/index.ts)
+// export * from './types';

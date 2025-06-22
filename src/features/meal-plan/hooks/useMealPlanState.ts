@@ -1,23 +1,24 @@
-
 import { useState, useCallback, useMemo } from 'react';
 import { useMealPlanData } from './useMealPlanData';
 import { useMealPlanActions } from './useMealPlanActions';
-import { useMealPlanNavigation } from './useMealPlanNavigation';
-import { useMealPlanDialogs } from './useMealPlanDialogs';
-import { useCentralizedCredits } from '@/hooks/useCentralizedCredits';
+import { useCentralizedCredits } from '@/shared/hooks/useCentralizedCredits';
 import { useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/features/auth/hooks/useAuth';
+import { getWeekStartDate, getCurrentSaturdayDay } from '@/utils/mealPlanUtils';
+import { useMealPlanDialogs } from './useMealPlanDialogs';
+import { useMealPlanCalculations } from './useMealPlanCalculations';
+import type { DailyMeal, MealPlanFetchResult } from '@/features/meal-plan/types';
 
 export const useMealPlanState = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const { remaining: userCredits, isPro, hasCredits } = useCentralizedCredits();
   
-  // Use focused navigation hook
-  const navigation = useMealPlanNavigation();
+  // Navigation state
+  const [currentWeekOffset, setCurrentWeekOffsetInternal] = useState(0);
+  const [selectedDayNumber, setSelectedDayNumber] = useState(() => getCurrentSaturdayDay());
   
-  // Use focused dialogs hook
-  const dialogs = useMealPlanDialogs();
+  const weekStartDate = useMemo(() => getWeekStartDate(currentWeekOffset), [currentWeekOffset]);
 
   // Core meal plan data
   const {
@@ -25,11 +26,11 @@ export const useMealPlanState = () => {
     isLoading,
     error,
     refetch: originalRefetch,
-  } = useMealPlanData(navigation.currentWeekOffset);
+  } = useMealPlanData(currentWeekOffset);
 
   // Enhanced refetch that properly invalidates and refreshes data
   const refetch = useCallback(async () => {
-    console.log('🔄 Enhanced refetch - invalidating all meal plan queries for week offset:', navigation.currentWeekOffset);
+    console.log('🔄 Enhanced refetch - invalidating all meal plan queries for week offset:', currentWeekOffset);
     
     // Clear all meal plan related caches
     await queryClient.invalidateQueries({
@@ -60,68 +61,28 @@ export const useMealPlanState = () => {
     }
     
     return result;
-  }, [queryClient, navigation.currentWeekOffset, originalRefetch]);
+  }, [queryClient, currentWeekOffset, originalRefetch]);
 
-  // Enhanced calculations
-  const { dailyMeals, todaysMeals, totalCalories, totalProtein, targetDayCalories } = useMemo(() => {
-    // Calculate daily meals for selected day
-    const dailyMeals = currentWeekPlan?.dailyMeals?.filter(
-      meal => meal.day_number === navigation.selectedDayNumber
-    ) || null;
+  // Use the new hook for all nutritional calculations
+  const { dailyMeals, todaysMeals, totalCalories, totalProtein, targetDayCalories } =
+    useMealPlanCalculations(currentWeekPlan, selectedDayNumber);
 
-    // Calculate today's meals
-    const today = new Date();
-    const todayDayNumber = today.getDay() === 6 ? 1 : today.getDay() + 2;
-    const todaysMeals = currentWeekPlan?.dailyMeals?.filter(
-      meal => meal.day_number === todayDayNumber
-    ) || null;
+  // Use the dedicated hook for all dialog-related state and handlers
+  const dialogs = useMealPlanDialogs();
 
-    // Calculate total calories for selected day
-    const totalCalories = dailyMeals ? 
-      dailyMeals.reduce((total, meal) => total + (meal.calories || 0), 0) : null;
-
-    // Calculate total protein for selected day
-    const totalProtein = dailyMeals ? 
-      dailyMeals.reduce((total, meal) => total + (meal.protein || 0), 0) : null;
-
-    // Target calories
-    const targetDayCalories = 2000;
-
-    return {
-      dailyMeals,
-      todaysMeals,
-      totalCalories,
-      totalProtein,
-      targetDayCalories
-    };
-  }, [currentWeekPlan?.dailyMeals, navigation.selectedDayNumber]);
-
-  // AI preferences state
-  const [aiPreferences, setAiPreferences] = useState({
-    cuisine: "mixed",
-    maxPrepTime: "30",
-    includeSnacks: true,
-  });
-
-  // Actions with proper dialog handling
-  const { handle: handleGenerateAIPlan, isGenerating } = useMealPlanActions(
+  // Actions - AI preferences are now taken from the dialogs hook
+  const { handleGenerateAIPlan, isGenerating } = useMealPlanActions(
     currentWeekPlan,
-    navigation.currentWeekOffset,
-    aiPreferences,
+    currentWeekOffset,
+    dialogs.aiPreferences,
     refetch
   );
 
-  // Enhanced AI generation handler that closes dialog on success
-  const handleAIGeneration = useCallback(async () => {
-    const success = await handleGenerateAIPlan();
-    if (success) {
-      dialogs.closeAIDialog(); // Close dialog on success
-    }
-  }, [handleGenerateAIPlan, dialogs.closeAIDialog]);
-
-  const updateAIPreferences = useCallback((newPrefs: any) => {
-    setAiPreferences(prev => ({ ...prev, ...newPrefs }));
-  }, []);
+  // Enhanced week change handler
+  const setCurrentWeekOffset = useCallback(async (newOffset: number) => {
+    console.log('📅 Changing week from', currentWeekOffset, 'to', newOffset);
+    setCurrentWeekOffsetInternal(newOffset);
+  }, [currentWeekOffset]);
 
   return {
     // Data
@@ -132,28 +93,28 @@ export const useMealPlanState = () => {
     totalProtein,
     targetDayCalories,
     
-    // Navigation - spread from navigation hook
-    ...navigation,
+    // Navigation
+    currentWeekOffset,
+    setCurrentWeekOffset,
+    selectedDayNumber,
+    setSelectedDayNumber,
+    weekStartDate,
     
     // Loading states
     isLoading,
     error,
-    isGenerating,
     
     // Centralized credits
     userCredits,
     isPro,
     hasCredits,
     
-    // Dialog states - spread from dialogs hook
-    ...dialogs,
-    
-    // AI preferences
-    aiPreferences,
-    updateAIPreferences,
-    
     // Actions
     refetch,
-    handleGenerateAIPlan: handleAIGeneration, // Use enhanced handler
+    handleGenerateAIPlan,
+    isGenerating,
+    
+    // Spread all dialog states and handlers from the dedicated hook
+    ...dialogs,
   };
 };
