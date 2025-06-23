@@ -1,3 +1,4 @@
+
 // Food tracker feature components exports
 export { default as FoodTracker } from './FoodTracker';
 export { default as SimpleFoodTracker } from './SimpleFoodTracker';
@@ -9,6 +10,13 @@ export { default as MealCommentsDrawer } from './MealCommentsDrawer';
 export { default as SearchTab } from './SearchTab';
 export { default as TodayTab } from './TodayTab';
 export { default as ActionSection } from './ActionSection';
+
+// New enhanced components
+export { default as FoodTrackerDashboard } from './FoodTrackerDashboard';
+export { default as TodayMealsTab } from './TodayMealsTab';
+export { default as AddFoodModal } from './AddFoodModal';
+export { default as PhotoScanTab } from './PhotoScanTab';
+export { default as FoodHistoryTab } from './FoodHistoryTab';
 
 // Migrated components (Phase 1 - Food Tracking Migration)
 export { default as FoodDatabaseSearch } from './FoodDatabaseSearch';
@@ -29,3 +37,7 @@ export { default as TargetReachedState } from './add-snack/TargetReachedState';
 
 // Food photo analysis
 export { default as FoodAnalysisResults } from './food-photo-analysis/FoodAnalysisResults';
+
+// Enhanced search components
+export { default as FoodSearchTab } from './FoodSearchTab';
+export { default as FoodItemModal } from './FoodItemModal';

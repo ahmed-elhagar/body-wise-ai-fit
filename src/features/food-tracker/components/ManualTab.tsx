@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,7 +27,7 @@ const ManualTab = ({ onFoodAdded, onClose, preSelectedFood }: ManualTabProps) =>
   const [carbs, setCarbs] = useState("");
   const [fat, setFat] = useState("");
   const [quantity, setQuantity] = useState("100");
-  const [mealType, setMealType] = useState("snack");
+  const [mealType, setMealType] = useState<'breakfast' | 'lunch' | 'dinner' | 'snack'>('snack');
   const [notes, setNotes] = useState("");
 
   // Pre-fill form if we have preSelectedFood from AI analysis
@@ -41,6 +42,13 @@ const ManualTab = ({ onFoodAdded, onClose, preSelectedFood }: ManualTabProps) =>
       setNotes(preSelectedFood.quantity ? `AI detected: ${preSelectedFood.quantity}` : "Added from AI analysis");
     }
   }, [preSelectedFood]);
+
+  const handleMealTypeChange = (value: string) => {
+    // Ensure the value is one of the allowed meal types
+    if (['breakfast', 'lunch', 'dinner', 'snack'].includes(value)) {
+      setMealType(value as 'breakfast' | 'lunch' | 'dinner' | 'snack');
+    }
+  };
 
   const handleSubmit = async () => {
     if (!foodName.trim()) {
@@ -57,22 +65,26 @@ const ManualTab = ({ onFoodAdded, onClose, preSelectedFood }: ManualTabProps) =>
     // Calculate nutrition per actual quantity
     const multiplier = quantityNum / 100;
 
-    const foodConsumptionData = { 
-      food_item_id: crypto.randomUUID(), 
-      quantity_g: quantityNum,
-      calories_consumed: caloriesNum * multiplier,
-      protein_consumed: proteinNum * multiplier,
-      carbs_consumed: carbsNum * multiplier,
-      fat_consumed: fatNum * multiplier,
-      meal_type: mealType as 'breakfast' | 'lunch' | 'dinner' | 'snack',
-      consumed_at: new Date().toISOString(),
-      notes: notes || undefined,
-      source: (preSelectedFood ? 'ai_analysis' : 'manual') as 'manual' | 'ai_analysis' | 'barcode',
-    };
+    try {
+      const foodConsumptionData = { 
+        food_item_id: crypto.randomUUID(), 
+        quantity_g: quantityNum,
+        calories_consumed: caloriesNum * multiplier,
+        protein_consumed: proteinNum * multiplier,
+        carbs_consumed: carbsNum * multiplier,
+        fat_consumed: fatNum * multiplier,
+        meal_type: mealType,
+        consumed_at: new Date().toISOString(),
+        notes: notes || undefined,
+        source: (preSelectedFood ? 'ai_analysis' : 'manual') as 'manual' | 'ai_analysis' | 'barcode',
+      };
 
-    await addConsumption(foodConsumptionData);
-    onFoodAdded();
-    onClose();
+      await addConsumption(foodConsumptionData);
+      onFoodAdded();
+    } catch (error) {
+      console.error('Error adding food:', error);
+      toast.error('Failed to add food. Please try again.');
+    }
   };
 
   return (
@@ -168,7 +180,7 @@ const ManualTab = ({ onFoodAdded, onClose, preSelectedFood }: ManualTabProps) =>
           </div>
           <div>
             <Label htmlFor="mealType">{t('Meal Type')}</Label>
-            <Select value={mealType} onValueChange={setMealType}>
+            <Select value={mealType} onValueChange={handleMealTypeChange}>
               <SelectTrigger className="mt-1">
                 <SelectValue />
               </SelectTrigger>

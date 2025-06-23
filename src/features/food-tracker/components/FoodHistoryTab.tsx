@@ -1,16 +1,19 @@
 
 import React, { useState } from 'react';
-import { Calendar, Filter, Trash2, Clock } from 'lucide-react';
+import { Calendar, Filter, Trash2, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { format, startOfDay, endOfDay, subDays, isSameDay } from 'date-fns';
+import { format, startOfDay, endOfDay, subDays, isSameDay, addDays, startOfWeek, endOfWeek } from 'date-fns';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useFoodConsumption } from '../hooks/useFoodConsumption';
+import { cn } from '@/lib/utils';
 
 const FoodHistoryTab: React.FC = () => {
-  const [dateFilter, setDateFilter] = useState('all');
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [viewMode, setViewMode] = useState<'day' | 'week' | 'month'>('day');
   const [mealTypeFilter, setMealTypeFilter] = useState('all');
   
   const { 
@@ -20,46 +23,38 @@ const FoodHistoryTab: React.FC = () => {
     isDeletingConsumption 
   } = useFoodConsumption();
 
-  // Filter consumption history
+  // Filter consumption history based on selected date and view mode
   const filteredHistory = React.useMemo(() => {
     if (!consumptionHistory) return [];
 
     let filtered = [...consumptionHistory];
 
-    // Filter by date
-    if (dateFilter !== 'all') {
-      const now = new Date();
-      let startDate: Date;
+    // Filter by date range based on view mode
+    let startDate: Date;
+    let endDate: Date;
 
-      switch (dateFilter) {
-        case 'today':
-          startDate = startOfDay(now);
-          filtered = filtered.filter(item => 
-            new Date(item.consumed_at) >= startDate
-          );
-          break;
-        case 'yesterday':
-          startDate = startOfDay(subDays(now, 1));
-          const endDate = endOfDay(subDays(now, 1));
-          filtered = filtered.filter(item => {
-            const itemDate = new Date(item.consumed_at);
-            return itemDate >= startDate && itemDate <= endDate;
-          });
-          break;
-        case 'last7days':
-          startDate = startOfDay(subDays(now, 7));
-          filtered = filtered.filter(item => 
-            new Date(item.consumed_at) >= startDate
-          );
-          break;
-        case 'last30days':
-          startDate = startOfDay(subDays(now, 30));
-          filtered = filtered.filter(item => 
-            new Date(item.consumed_at) >= startDate
-          );
-          break;
-      }
+    switch (viewMode) {
+      case 'day':
+        startDate = startOfDay(selectedDate);
+        endDate = endOfDay(selectedDate);
+        break;
+      case 'week':
+        startDate = startOfWeek(selectedDate);
+        endDate = endOfWeek(selectedDate);
+        break;
+      case 'month':
+        startDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+        endDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0);
+        break;
+      default:
+        startDate = startOfDay(selectedDate);
+        endDate = endOfDay(selectedDate);
     }
+
+    filtered = filtered.filter(item => {
+      const itemDate = new Date(item.consumed_at);
+      return itemDate >= startDate && itemDate <= endDate;
+    });
 
     // Filter by meal type
     if (mealTypeFilter !== 'all') {
@@ -67,7 +62,7 @@ const FoodHistoryTab: React.FC = () => {
     }
 
     return filtered;
-  }, [consumptionHistory, dateFilter, mealTypeFilter]);
+  }, [consumptionHistory, selectedDate, viewMode, mealTypeFilter]);
 
   // Group by date
   const groupedHistory = React.useMemo(() => {
@@ -102,6 +97,20 @@ const FoodHistoryTab: React.FC = () => {
     }), { calories: 0, protein: 0, carbs: 0, fat: 0, count: 0 });
   };
 
+  const navigateDate = (direction: 'prev' | 'next') => {
+    if (viewMode === 'day') {
+      setSelectedDate(prev => direction === 'next' ? addDays(prev, 1) : addDays(prev, -1));
+    } else if (viewMode === 'week') {
+      setSelectedDate(prev => direction === 'next' ? addDays(prev, 7) : addDays(prev, -7));
+    } else {
+      setSelectedDate(prev => {
+        const newDate = new Date(prev);
+        newDate.setMonth(newDate.getMonth() + (direction === 'next' ? 1 : -1));
+        return newDate;
+      });
+    }
+  };
+
   if (isLoadingHistory) {
     return (
       <div className="space-y-4">
@@ -122,41 +131,36 @@ const FoodHistoryTab: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Filters */}
+      {/* Date Navigation and Filters */}
       <Card className="border border-gray-200">
         <CardHeader className="pb-4">
           <CardTitle className="text-lg font-semibold flex items-center gap-2">
-            <Filter className="h-5 w-5" />
-            Filters
+            <Calendar className="h-5 w-5" />
+            Food History
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-2 block">
-                Date Range
-              </label>
-              <Select value={dateFilter} onValueChange={setDateFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select date range" />
+          {/* View Mode Selector */}
+          <div className="flex items-center gap-4 mb-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">View:</span>
+              <Select value={viewMode} onValueChange={(value: 'day' | 'week' | 'month') => setViewMode(value)}>
+                <SelectTrigger className="w-32">
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Time</SelectItem>
-                  <SelectItem value="today">Today</SelectItem>
-                  <SelectItem value="yesterday">Yesterday</SelectItem>
-                  <SelectItem value="last7days">Last 7 Days</SelectItem>
-                  <SelectItem value="last30days">Last 30 Days</SelectItem>
+                  <SelectItem value="day">Day</SelectItem>
+                  <SelectItem value="week">Week</SelectItem>
+                  <SelectItem value="month">Month</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-2 block">
-                Meal Type
-              </label>
+
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">Meal Type:</span>
               <Select value={mealTypeFilter} onValueChange={setMealTypeFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select meal type" />
+                <SelectTrigger className="w-36">
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Meals</SelectItem>
@@ -168,6 +172,39 @@ const FoodHistoryTab: React.FC = () => {
               </Select>
             </div>
           </div>
+
+          {/* Date Navigation */}
+          <div className="flex items-center justify-between">
+            <Button variant="outline" size="sm" onClick={() => navigateDate('prev')}>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            
+            <div className="flex items-center gap-4">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className={cn("justify-start text-left font-normal")}>
+                    <Calendar className="mr-2 h-4 w-4" />
+                    {viewMode === 'day' && format(selectedDate, 'PPP')}
+                    {viewMode === 'week' && `Week of ${format(startOfWeek(selectedDate), 'MMM d')}`}
+                    {viewMode === 'month' && format(selectedDate, 'MMMM yyyy')}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(date) => date && setSelectedDate(date)}
+                    initialFocus
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <Button variant="outline" size="sm" onClick={() => navigateDate('next')}>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
@@ -178,10 +215,7 @@ const FoodHistoryTab: React.FC = () => {
             <Calendar className="h-16 w-16 text-gray-300 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-600 mb-2">No food history found</h3>
             <p className="text-gray-500">
-              {dateFilter !== 'all' || mealTypeFilter !== 'all' 
-                ? 'Try adjusting your filters'
-                : 'Start logging your meals to see your history here'
-              }
+              No meals logged for the selected {viewMode}
             </p>
           </CardContent>
         </Card>

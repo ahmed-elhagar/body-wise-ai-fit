@@ -1,10 +1,11 @@
 
 import React, { useState } from 'react';
-import { X, Search, Camera } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Search, Camera, Plus } from 'lucide-react';
 import FoodSearchTab from './FoodSearchTab';
+import ManualTab from './ManualTab';
+import PhotoScanTab from './PhotoScanTab';
 
 interface AddFoodModalProps {
   isOpen: boolean;
@@ -26,10 +27,10 @@ const AddFoodModal: React.FC<AddFoodModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-            Add Food
+            Add Food to Log
           </DialogTitle>
         </DialogHeader>
 
@@ -43,54 +44,32 @@ const AddFoodModal: React.FC<AddFoodModalProps> = ({
               Search
             </TabsTrigger>
             <TabsTrigger 
-              value="photo"
+              value="scan"
               className="data-[state=active]:bg-purple-600 data-[state=active]:text-white"
             >
               <Camera className="h-4 w-4 mr-2" />
-              Photo
+              Scan Photo
             </TabsTrigger>
             <TabsTrigger 
               value="manual"
               className="data-[state=active]:bg-purple-600 data-[state=active]:text-white"
             >
-              Manual
+              <Plus className="h-4 w-4 mr-2" />
+              Manual Entry
             </TabsTrigger>
           </TabsList>
 
-          <div className="mt-6 max-h-[60vh] overflow-y-auto">
-            <TabsContent value="search">
-              <FoodSearchTab onFoodAdded={handleFoodAdded} />
-            </TabsContent>
+          <TabsContent value="search" className="mt-6">
+            <FoodSearchTab onFoodAdded={handleFoodAdded} />
+          </TabsContent>
 
-            <TabsContent value="photo" className="text-center py-12">
-              <Camera className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-600 mb-2">Photo Analysis</h3>
-              <p className="text-gray-500 mb-6">
-                Take a photo of your food to automatically analyze its nutrition
-              </p>
-              <Button 
-                disabled
-                className="bg-gradient-to-r from-purple-600 to-pink-600"
-              >
-                Coming Soon
-              </Button>
-            </TabsContent>
+          <TabsContent value="scan" className="mt-6">
+            <PhotoScanTab onFoodAdded={handleFoodAdded} onClose={onClose} />
+          </TabsContent>
 
-            <TabsContent value="manual" className="text-center py-12">
-              <div className="text-gray-500">
-                <h3 className="text-lg font-semibold text-gray-600 mb-2">Manual Entry</h3>
-                <p className="mb-6">
-                  Manually enter nutrition information for custom foods
-                </p>
-                <Button 
-                  disabled
-                  className="bg-gradient-to-r from-purple-600 to-pink-600"
-                >
-                  Coming Soon
-                </Button>
-              </div>
-            </TabsContent>
-          </div>
+          <TabsContent value="manual" className="mt-6">
+            <ManualTab onFoodAdded={handleFoodAdded} onClose={onClose} />
+          </TabsContent>
         </Tabs>
       </DialogContent>
     </Dialog>

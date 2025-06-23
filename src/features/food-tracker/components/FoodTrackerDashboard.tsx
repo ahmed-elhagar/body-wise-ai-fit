@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useFoodConsumption } from '../hooks/useFoodConsumption';
 import { useProfile } from '@/features/profile/hooks/useProfile';
@@ -28,40 +27,60 @@ const FoodTrackerDashboard: React.FC = () => {
     refreshConsumption 
   } = useFoodConsumption();
 
-  // Calculate daily nutrition totals
+  // Calculate daily nutrition totals with error handling
   const nutritionTotals = React.useMemo(() => {
-    if (!todayConsumption || !Array.isArray(todayConsumption)) {
+    try {
+      if (!todayConsumption || !Array.isArray(todayConsumption)) {
+        return { calories: 0, protein: 0, carbs: 0, fat: 0 };
+      }
+
+      return todayConsumption.reduce((totals, item) => {
+        // Validate that item exists and has required properties
+        if (!item) return totals;
+        
+        return {
+          calories: totals.calories + (Number(item.calories_consumed) || 0),
+          protein: totals.protein + (Number(item.protein_consumed) || 0),
+          carbs: totals.carbs + (Number(item.carbs_consumed) || 0),
+          fat: totals.fat + (Number(item.fat_consumed) || 0)
+        };
+      }, { calories: 0, protein: 0, carbs: 0, fat: 0 });
+    } catch (error) {
+      console.error('Error calculating nutrition totals:', error);
       return { calories: 0, protein: 0, carbs: 0, fat: 0 };
     }
-
-    return todayConsumption.reduce((totals, item) => ({
-      calories: totals.calories + (item.calories_consumed || 0),
-      protein: totals.protein + (item.protein_consumed || 0),
-      carbs: totals.carbs + (item.carbs_consumed || 0),
-      fat: totals.fat + (item.fat_consumed || 0)
-    }), { calories: 0, protein: 0, carbs: 0, fat: 0 });
   }, [todayConsumption]);
 
   // Daily goals (should come from profile in future)
   const dailyGoals = {
-    calories: 2000,
-    protein: 150,
-    carbs: 250,
-    fat: 65
+    calories: profile?.daily_calorie_goal || 2000,
+    protein: profile?.daily_protein_goal || 150,
+    carbs: profile?.daily_carb_goal || 250,
+    fat: profile?.daily_fat_goal || 65
   };
 
-  // Calculate progress percentages
+  // Calculate progress percentages with bounds checking
   const progress = {
-    calories: Math.min((nutritionTotals.calories / dailyGoals.calories) * 100, 100),
-    protein: Math.min((nutritionTotals.protein / dailyGoals.protein) * 100, 100),
-    carbs: Math.min((nutritionTotals.carbs / dailyGoals.carbs) * 100, 100),
-    fat: Math.min((nutritionTotals.fat / dailyGoals.fat) * 100, 100)
+    calories: Math.min(Math.max((nutritionTotals.calories / dailyGoals.calories) * 100, 0), 100),
+    protein: Math.min(Math.max((nutritionTotals.protein / dailyGoals.protein) * 100, 0), 100),
+    carbs: Math.min(Math.max((nutritionTotals.carbs / dailyGoals.carbs) * 100, 0), 100),
+    fat: Math.min(Math.max((nutritionTotals.fat / dailyGoals.fat) * 100, 0), 100)
   };
 
   const handleFoodAdded = () => {
     setIsAddFoodOpen(false);
     refreshConsumption();
   };
+
+  // Error boundary for this component
+  useEffect(() => {
+    const handleError = (event: ErrorEvent) => {
+      console.error('Food Tracker Error:', event.error);
+    };
+
+    window.addEventListener('error', handleError);
+    return () => window.removeEventListener('error', handleError);
+  }, []);
 
   if (error) {
     return (
@@ -101,7 +120,7 @@ const FoodTrackerDashboard: React.FC = () => {
                   <p className="text-orange-100 text-sm font-medium">Calories</p>
                   <p className="text-3xl font-bold">{Math.round(nutritionTotals.calories)}</p>
                   <p className="text-orange-100 text-xs">
-                    {Math.round(dailyGoals.calories - nutritionTotals.calories)} remaining
+                    {Math.max(Math.round(dailyGoals.calories - nutritionTotals.calories), 0)} remaining
                   </p>
                 </div>
                 <Flame className="h-8 w-8 text-orange-200" />
