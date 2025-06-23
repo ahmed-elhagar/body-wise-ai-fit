@@ -158,7 +158,7 @@ export const ExercisePage: React.FC = () => {
     <div className="container mx-auto p-6 max-w-7xl space-y-6">
       
       {/* Stable Header - Never shows loading */}
-      <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl p-6 text-white">
+      <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl p-6 text-white">
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-4">
             <div>
@@ -166,14 +166,14 @@ export const ExercisePage: React.FC = () => {
                 <h1 className="text-3xl font-bold">Exercise Programs</h1>
                 {renderMemberBadge()}
               </div>
-              <p className="text-orange-100 text-lg">AI-powered personalized workouts</p>
+              <p className="text-purple-100 text-lg">AI-powered personalized workouts</p>
             </div>
           </div>
 
           <Button 
             onClick={handleGenerateProgram}
             disabled={isGenerating || (!isPro && creditsRemaining <= 0)}
-            className="bg-white text-orange-600 hover:bg-orange-50 border-0 shadow-md hover:shadow-lg font-medium transition-all duration-200"
+            className="bg-white text-purple-600 hover:bg-purple-50 border-0 shadow-md hover:shadow-lg font-medium transition-all duration-200"
           >
             {isGenerating ? (
               <>
@@ -253,10 +253,10 @@ export const ExercisePage: React.FC = () => {
       {isLoading ? (
         <LoadingState />
       ) : !hasProgram ? (
-        <Card className="bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200">
+        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
           <CardContent className="p-12 text-center">
-            <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Dumbbell className="w-10 h-10 text-orange-600" />
+            <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Dumbbell className="w-10 h-10 text-purple-600" />
             </div>
             <h3 className="text-2xl font-semibold text-gray-900 mb-3">
               No Exercise Program Found
@@ -268,7 +268,7 @@ export const ExercisePage: React.FC = () => {
               onClick={handleGenerateProgram}
               disabled={isGenerating || (!isPro && creditsRemaining <= 0)}
               size="lg"
-              className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white"
+              className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white"
             >
               {isGenerating ? (
                 <>
@@ -308,9 +308,9 @@ export const ExercisePage: React.FC = () => {
                       onClick={() => setSelectedDayNumber(dayNum)}
                       className={`w-full p-3 rounded-lg text-left transition-all ${
                         isSelected 
-                          ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md' 
+                          ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-md' 
                           : isToday
-                          ? 'bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100'
+                          ? 'bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100'
                           : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
                       }`}
                     >
@@ -341,7 +341,7 @@ export const ExercisePage: React.FC = () => {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2">
-                    <Target className="h-5 w-5 text-orange-600" />
+                    <Target className="h-5 w-5 text-purple-600" />
                     {getDayName(selectedDayNumber)}'s Workout
                   </CardTitle>
                   
@@ -389,7 +389,7 @@ export const ExercisePage: React.FC = () => {
                 ) : (
                   <>
                     {/* Progress */}
-                    <div className="mb-6 p-4 bg-gradient-to-r from-orange-50 to-amber-50 rounded-lg">
+                    <div className="mb-6 p-4 bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium text-gray-700">Daily Progress</span>
                         <span className="text-sm text-gray-600">
