@@ -1,5 +1,5 @@
 
 export { useFoodConsumption } from './useFoodConsumption';
-export type { FoodConsumptionLog, MealPlanItem } from './useFoodConsumption';
-export { useFoodTracking } from './useFoodTracking';
-export type { FoodConsumption } from './useFoodTracking';
+export type { FoodConsumptionEntry } from './useFoodConsumption';
+export { useFoodSearch } from './useFoodSearch';
+export type { FoodItem } from './useFoodSearch';

@@ -90,7 +90,7 @@ const FoodItemModal: React.FC<FoodItemModalProps> = ({
           {/* Meal Type */}
           <div className="space-y-2">
             <Label htmlFor="meal-type">Meal Type</Label>
-            <Select value={mealType} onValueChange={setMealType}>
+            <Select value={mealType} onValueChange={(value) => setMealType(value as 'breakfast' | 'lunch' | 'dinner' | 'snack')}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>

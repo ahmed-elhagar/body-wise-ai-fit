@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { supabase } from '@/integrations/supabase/client';
 import { useFoodSearch } from '../hooks/useFoodSearch';
 import { useFoodConsumption } from '../hooks/useFoodConsumption';
 import FoodItemModal from './FoodItemModal';
@@ -72,7 +73,8 @@ const FoodSearchTab: React.FC<FoodSearchTabProps> = ({ onFoodAdded }) => {
         fat_consumed: foodData.fat_per_100g * multiplier,
         meal_type: foodData.meal_type || 'snack',
         source: 'manual',
-        notes: foodData.notes
+        notes: foodData.notes,
+        consumed_at: new Date().toISOString()
       });
 
       setIsModalOpen(false);

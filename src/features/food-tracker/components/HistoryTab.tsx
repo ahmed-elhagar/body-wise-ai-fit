@@ -1,10 +1,11 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, ChevronLeft, ChevronRight, History, TrendingUp, Clock } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useFoodConsumption, FoodConsumptionLog } from "@/features/food-tracker/hooks";
+import { useFoodConsumption, FoodConsumptionEntry } from "../hooks/useFoodConsumption";
 import { format, startOfMonth, endOfMonth, addMonths, subMonths } from "date-fns";
 
 const HistoryTab = () => {
@@ -14,29 +15,35 @@ const HistoryTab = () => {
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
   
-  const { data: historyData, isLoading } = useFoodConsumption().useHistoryData(monthStart, monthEnd);
+  const { consumptionHistory, isLoadingHistory } = useFoodConsumption();
 
-  const groupedHistory = (historyData || []).reduce((acc, entry) => {
+  // Filter history data by current month
+  const filteredHistoryData = (consumptionHistory || []).filter((entry) => {
+    const entryDate = new Date(entry.consumed_at);
+    return entryDate >= monthStart && entryDate <= monthEnd;
+  });
+
+  const groupedHistory = filteredHistoryData.reduce((acc, entry) => {
     const date = format(new Date(entry.consumed_at), 'yyyy-MM-dd');
     if (!acc[date]) {
       acc[date] = [];
     }
     acc[date].push(entry);
     return acc;
-  }, {} as Record<string, FoodConsumptionLog[]>); 
+  }, {} as Record<string, FoodConsumptionEntry[]>); 
 
-  const groupedArray: { date: string; entries: FoodConsumptionLog[] }[] = Object.entries(groupedHistory)
+  const groupedArray: { date: string; entries: FoodConsumptionEntry[] }[] = Object.entries(groupedHistory)
     .map(([date, entries]) => ({ date, entries }))
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-  const monthlyStats = (historyData || []).reduce(
+  const monthlyStats = filteredHistoryData.reduce(
     (acc, entry) => ({
       totalCalories: acc.totalCalories + (entry.calories_consumed || 0),
       totalProtein: acc.totalProtein + (entry.protein_consumed || 0),
       totalEntries: acc.totalEntries + 1,
     }),
     { totalCalories: 0, totalProtein: 0, totalEntries: 0 }
-  ) || { totalCalories: 0, totalProtein: 0, totalEntries: 0 };
+  );
 
   const activeDays = Object.keys(groupedHistory).length;
   const avgDailyCalories = activeDays > 0 ? Math.round(monthlyStats.totalCalories / activeDays) : 0;
@@ -49,7 +56,7 @@ const HistoryTab = () => {
     setCurrentMonth(prev => addMonths(prev, 1));
   };
 
-  if (isLoading) {
+  if (isLoadingHistory) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="w-8 h-8 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
@@ -171,10 +178,10 @@ const HistoryTab = () => {
             <p className="text-sm text-gray-400 mt-2">
               Showing {groupedArray.length} days with food logs this month
             </p>
-            {historyData && historyData.length > 0 && (
+            {filteredHistoryData && filteredHistoryData.length > 0 && (
               <div className="mt-4">
                 <Badge variant="outline" className="text-green-600">
-                  {historyData.length} total entries
+                  {filteredHistoryData.length} total entries
                 </Badge>
               </div>
             )}

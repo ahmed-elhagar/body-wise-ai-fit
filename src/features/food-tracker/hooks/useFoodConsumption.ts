@@ -37,8 +37,8 @@ export const useFoodConsumption = () => {
   // Get today's consumption
   const { 
     data: todayConsumption, 
-    isLoading: isLoadingToday, 
-    error: todayError,
+    isLoading, 
+    error,
     refetch: refetchToday 
   } = useQuery({
     queryKey: ['food-consumption-today', user?.id],
@@ -89,7 +89,7 @@ export const useFoodConsumption = () => {
     },
     enabled: !!user?.id,
     staleTime: 1000 * 60 * 5, // 5 minutes
-    cacheTime: 1000 * 60 * 10, // 10 minutes
+    gcTime: 1000 * 60 * 10, // 10 minutes (replaced cacheTime)
   });
 
   // Get consumption history (last 30 days)
@@ -229,11 +229,15 @@ export const useFoodConsumption = () => {
     queryClient.invalidateQueries({ queryKey: ['food-consumption-history'] });
   };
 
+  const forceRefresh = () => {
+    refreshConsumption();
+  };
+
   return {
     // Today's data
     todayConsumption,
-    isLoading: isLoadingToday,
-    error: todayError,
+    isLoading,
+    error,
     
     // History data
     consumptionHistory,
@@ -248,5 +252,9 @@ export const useFoodConsumption = () => {
     
     // Utilities
     refreshConsumption,
+    forceRefresh,
+    
+    // Additional properties for compatibility
+    todayMealPlan: [], // Empty array for compatibility
   };
 };
