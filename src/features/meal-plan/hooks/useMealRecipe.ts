@@ -126,7 +126,7 @@ export const useMealRecipe = () => {
         
         // Complete the generation process
         if (creditResult.logId) {
-          await completeGeneration(creditResult.logId, true, data);
+          await completeGeneration(creditResult.logId);
         }
         
         toast.success('Detailed recipe generated successfully!');

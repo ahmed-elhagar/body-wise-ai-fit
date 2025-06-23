@@ -96,19 +96,8 @@ export const useCentralizedCredits = () => {
   });
 
   // Legacy API compatibility - maintains old function signature with all parameters
-  const checkAndUseCredit = async (
-    generationType: string, 
-    onSuccess?: (data: CheckAndUseCreditsResponse) => void, 
-    onError?: (error: Error) => void
-  ): Promise<CheckAndUseCreditsResponse> => {
-    try {
-      const result = await checkAndUseCredits.mutateAsync(generationType);
-      if (onSuccess) onSuccess(result);
-      return result;
-    } catch (error) {
-      if (onError) onError(error as Error);
-      throw error;
-    }
+  const checkAndUseCredit = async (generationType: string): Promise<CheckAndUseCreditsResponse> => {
+    return await checkAndUseCredits.mutateAsync(generationType);
   };
 
   const completeGeneration = async (logId: string): Promise<{ success: boolean }> => {

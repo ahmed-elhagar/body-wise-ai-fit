@@ -49,7 +49,7 @@ export const useMealExchange = () => {
         
         // Complete the generation process
         if (creditResult.logId) {
-          await completeGeneration(creditResult.logId, true, data);
+          await completeGeneration(creditResult.logId);
         }
         
         return true;
@@ -62,7 +62,7 @@ export const useMealExchange = () => {
       
       // Complete the generation with error
       if (creditResult.logId) {
-        await completeGeneration(creditResult.logId, false);
+        await completeGeneration(creditResult.logId);
       }
       
       return false;

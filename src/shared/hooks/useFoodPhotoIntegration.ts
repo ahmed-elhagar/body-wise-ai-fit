@@ -26,10 +26,7 @@ export const useFoodPhotoIntegration = () => {
       
       try {
         // Check credits first
-        const creditResult = await checkAndUseCredits('food-photo-analysis', {
-          image_size: imageFile.size,
-          image_type: imageFile.type
-        });
+        const creditResult = await checkAndUseCredits('food-photo-analysis');
 
         if (!creditResult.success) {
           throw new Error(creditResult.error || 'Insufficient credits');

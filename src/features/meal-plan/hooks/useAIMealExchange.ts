@@ -44,7 +44,7 @@ export const useAIMealExchange = () => {
         console.log('✅ Meal exchange completed successfully');
         
         if (creditResult.logId) {
-          await completeGeneration(creditResult.logId, true, data);
+          await completeGeneration(creditResult.logId);
         }
         
         toast.success('Meal exchanged successfully!');
@@ -57,7 +57,7 @@ export const useAIMealExchange = () => {
       toast.error('Failed to exchange meal');
       
       if (creditResult.logId) {
-        await completeGeneration(creditResult.logId, false);
+        await completeGeneration(creditResult.logId);
       }
       
       throw error;

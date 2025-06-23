@@ -89,7 +89,7 @@ const AddSnackDialog = ({
         
         // Complete the generation process
         if (creditResult.logId) {
-          await completeGeneration(creditResult.logId, true, data);
+          await completeGeneration(creditResult.logId);
         }
         
         toast.success('Snack added successfully!');
@@ -105,7 +105,7 @@ const AddSnackDialog = ({
       
       // Complete the generation with error
       if (creditResult.logId) {
-        await completeGeneration(creditResult.logId, false);
+        await completeGeneration(creditResult.logId);
       }
     } finally {
       setIsGenerating(false);

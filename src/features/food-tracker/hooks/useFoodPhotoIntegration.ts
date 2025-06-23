@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useCentralizedCredits } from '@/shared/hooks/useCentralizedCredits';
@@ -54,7 +53,7 @@ export const useFoodPhotoIntegration = () => {
         setAnalysisResult(data);
         
         if (creditResult.logId) {
-          await completeGeneration(creditResult.logId, true, data);
+          await completeGeneration(creditResult.logId);
         }
         
         toast.success('Food photo analyzed successfully!');
@@ -68,7 +67,7 @@ export const useFoodPhotoIntegration = () => {
       toast.error('Failed to analyze food photo');
       
       if (creditResult.logId) {
-        await completeGeneration(creditResult.logId, false);
+        await completeGeneration(creditResult.logId);
       }
       
       throw error;

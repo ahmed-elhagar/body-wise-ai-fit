@@ -44,7 +44,7 @@ export const useEnhancedMealRecipe = () => {
         console.log('✅ Enhanced recipe generated successfully');
         
         if (creditResult.logId) {
-          await completeGeneration(creditResult.logId, true, data);
+          await completeGeneration(creditResult.logId);
         }
         
         toast.success('Enhanced recipe generated successfully!');
@@ -57,7 +57,7 @@ export const useEnhancedMealRecipe = () => {
       toast.error('Failed to generate enhanced recipe');
       
       if (creditResult.logId) {
-        await completeGeneration(creditResult.logId, false);
+        await completeGeneration(creditResult.logId);
       }
       
       throw error;

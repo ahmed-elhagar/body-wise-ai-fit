@@ -26,9 +26,7 @@ export const useAIFoodAnalysis = () => {
       
       try {
         // Check credits first
-        const creditResult = await checkAndUseCredits('food-analysis', {
-          image_data: imageData
-        });
+        const creditResult = await checkAndUseCredits('food-analysis');
 
         if (!creditResult.success) {
           throw new Error(creditResult.error || 'Insufficient credits');
@@ -53,9 +51,7 @@ export const useAIFoodAnalysis = () => {
         return data;
       } catch (error) {
         // Log the error
-        const creditResult = await checkAndUseCredits('food-analysis', {
-          image_data: imageData
-        });
+        const creditResult = await checkAndUseCredits('food-analysis');
         
         if (creditResult.logId) {
           await supabase.rpc('complete_ai_generation', {
