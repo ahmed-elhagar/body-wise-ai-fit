@@ -31,12 +31,6 @@ interface ChatMessage {
   sender_type: "user" | "ai" | "coach" | "trainee";
 }
 
-interface SmartReplyMessage {
-  role: "user" | "assistant";
-  content: string;
-  timestamp?: number;
-}
-
 const AIChatInterface = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
@@ -94,17 +88,8 @@ const AIChatInterface = () => {
   const hasMessages = messages.length > 0;
   const lastAssistantMessage = messages.filter(m => m.role === 'assistant').pop()?.content || "";
 
-  // Convert messages for analytics - properly transform to match ChatMessage interface
-  const analyticsMessages: ChatMessage[] = messages.map(msg => ({
-    id: msg.id || Date.now().toString(),
-    role: msg.role as "user" | "assistant",
-    content: msg.content,
-    created_at: new Date().toISOString(),
-    sender_type: msg.role === 'assistant' ? 'ai' : 'user' as "user" | "ai" | "coach" | "trainee"
-  }));
-
-  // Convert messages for SmartReplySuggestions with proper format including required properties
-  const smartReplyMessages: ChatMessage[] = messages.map(msg => ({
+  // Convert messages for analytics and smart replies
+  const convertedMessages: ChatMessage[] = messages.map(msg => ({
     id: msg.id || Date.now().toString(),
     role: msg.role as "user" | "assistant",
     content: msg.content,
@@ -113,8 +98,7 @@ const AIChatInterface = () => {
   }));
 
   return (
-    <div className="h-full flex flex-col bg-gradient-to-b from-blue-50/30 to-white">
-      {/* Messages Area */}
+    <div className="h-full flex flex-col bg-gradient-to-b from-blue-50/30 to-purple-50/30">
       <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
         <ScrollArea className="flex-1 px-6 py-4" ref={scrollAreaRef}>
           {!hasMessages ? (
@@ -191,7 +175,7 @@ const AIChatInterface = () => {
               {/* Conversation Analytics */}
               {showAnalytics && (
                 <ConversationAnalytics 
-                  messages={analyticsMessages}
+                  messages={convertedMessages}
                   className="mb-6"
                 />
               )}
@@ -217,7 +201,7 @@ const AIChatInterface = () => {
           {/* Smart Reply Suggestions */}
           {hasMessages && lastAssistantMessage && (
             <SmartReplySuggestions
-              conversationHistory={smartReplyMessages}
+              conversationHistory={convertedMessages}
               onSelectReply={handleSmartReplySelect}
               className="mx-4 mt-4"
             />

@@ -15,3 +15,8 @@ export { default as ConnectionStatus } from './ConnectionStatus';
 
 // Chat Utility Components
 export { default as MessageActionsMenu } from './MessageActionsMenu';
+
+// AI Loading Components
+export { default as UnifiedAILoadingDialog } from './UnifiedAILoadingDialog';
+export { default as AIGenerationDialog } from './AIGenerationDialog';
+export { default as AILoadingSteps } from './AILoadingSteps';

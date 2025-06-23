@@ -40,7 +40,7 @@ const MessageActionsMenu: React.FC<MessageActionsMenuProps> = ({
           <MoreVertical className="w-3 h-3" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
+      <DropdownMenuContent align="end" className="w-48 bg-white border shadow-lg z-50">
         <DropdownMenuItem onClick={() => onReply(message)}>
           <Reply className="w-4 h-4 mr-2" />
           Reply
