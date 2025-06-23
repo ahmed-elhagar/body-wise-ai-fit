@@ -5,12 +5,12 @@ import { Badge } from "@/components/ui/badge";
 import { Trash2, Clock, Camera, MessageCircle } from "lucide-react";
 import { format } from "date-fns";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { FoodConsumptionLog, useFoodConsumption } from "@/features/food-tracker/hooks";
+import { FoodConsumptionEntry, useFoodConsumption } from "@/features/food-tracker/hooks";
 import { useMealComments } from "@/features/meal-plan/hooks/useMealComments";
 import MealCommentsDrawer from "./MealCommentsDrawer";
 
 interface FoodLogTimelineProps {
-  foodLogs: FoodConsumptionLog[];
+  foodLogs: FoodConsumptionEntry[];
   onRefetch: () => void;
 }
 
@@ -20,7 +20,7 @@ const FoodLogTimeline = ({ foodLogs, onRefetch }: FoodLogTimelineProps) => {
   const { getCommentCount } = useMealComments();
   
   const [commentCounts, setCommentCounts] = useState<Record<string, number>>({});
-  const [selectedMealForComments, setSelectedMealForComments] = useState<FoodConsumptionLog | null>(null);
+  const [selectedMealForComments, setSelectedMealForComments] = useState<FoodConsumptionEntry | null>(null);
 
   // Load comment counts for all food logs
   useEffect(() => {
@@ -44,7 +44,7 @@ const FoodLogTimeline = ({ foodLogs, onRefetch }: FoodLogTimelineProps) => {
     }
   };
 
-  const handleOpenComments = (log: FoodConsumptionLog) => {
+  const handleOpenComments = (log: FoodConsumptionEntry) => {
     setSelectedMealForComments(log);
   };
 
@@ -69,7 +69,7 @@ const FoodLogTimeline = ({ foodLogs, onRefetch }: FoodLogTimelineProps) => {
     }
     acc[mealType].push(log);
     return acc;
-  }, {} as Record<string, FoodConsumptionLog[]>);
+  }, {} as Record<string, FoodConsumptionEntry[]>);
 
   const mealOrder = ['breakfast', 'lunch', 'dinner', 'snack'];
 

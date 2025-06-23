@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { useFoodTracking } from '../hooks';
+import { useFoodConsumption } from '../hooks';
 import { toast } from 'sonner';
 
 interface SearchTabProps {
@@ -13,7 +13,7 @@ interface SearchTabProps {
 // NOTE: This is a placeholder implementation for SearchTab.
 const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const { addFoodConsumption, isAdding } = useFoodTracking();
+  const { addConsumption, isAddingConsumption } = useFoodConsumption();
 
   const handleAdd = async () => {
     // This is a dummy implementation.
@@ -28,16 +28,9 @@ const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
       meal_type: 'snack' as const,
       consumed_at: new Date().toISOString(),
       source: 'manual' as const,
-      food_item: {
-        name: searchTerm || "Dummy Food",
-        calories_per_100g: 150,
-        protein_per_100g: 10,
-        carbs_per_100g: 20,
-        fat_per_100g: 5,
-      },
     };
-    await addFoodConsumption(foodItem);
-    toast.success(`"${foodItem.food_item.name}" added.`);
+    await addConsumption(foodItem);
+    toast.success(`"${searchTerm}" added.`);
     onFoodAdded();
     onClose();
   };
@@ -50,8 +43,8 @@ const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
         onChange={(e) => setSearchTerm(e.target.value)}
       />
       <p className="text-sm text-center text-gray-500">Search functionality is a placeholder.</p>
-      <Button onClick={handleAdd} disabled={!searchTerm || isAdding} className="w-full">
-        {isAdding ? 'Adding...' : `Add "${searchTerm}"`}
+      <Button onClick={handleAdd} disabled={!searchTerm || isAddingConsumption} className="w-full">
+        {isAddingConsumption ? 'Adding...' : `Add "${searchTerm}"`}
       </Button>
     </div>
   );

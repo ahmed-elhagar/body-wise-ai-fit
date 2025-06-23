@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Plus } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useFoodTracking } from "@/features/food-tracker/hooks";
+import { useFoodConsumption } from "@/features/food-tracker/hooks";
 import { toast } from "sonner";
 
 interface ManualTabProps {
@@ -18,7 +17,7 @@ interface ManualTabProps {
 
 const ManualTab = ({ onFoodAdded, onClose, preSelectedFood }: ManualTabProps) => {
   const { t } = useLanguage();
-  const { addFoodConsumption, isAdding } = useFoodTracking();
+  const { addConsumption, isAddingConsumption } = useFoodConsumption();
 
   // Form state
   const [foodName, setFoodName] = useState("");
@@ -69,16 +68,9 @@ const ManualTab = ({ onFoodAdded, onClose, preSelectedFood }: ManualTabProps) =>
       consumed_at: new Date().toISOString(),
       notes: notes || undefined,
       source: (preSelectedFood ? 'ai_analysis' : 'manual') as 'manual' | 'ai_analysis' | 'barcode',
-      food_item: { 
-        name: foodName,
-        calories_per_100g: caloriesNum,
-        protein_per_100g: proteinNum,
-        carbs_per_100g: carbsNum,
-        fat_per_100g: fatNum,
-      }
     };
 
-    await addFoodConsumption(foodConsumptionData); // Ensure addFoodConsumption is awaited if it's async
+    await addConsumption(foodConsumptionData);
     onFoodAdded();
     onClose();
   };
@@ -238,11 +230,11 @@ const ManualTab = ({ onFoodAdded, onClose, preSelectedFood }: ManualTabProps) =>
 
         <Button
           onClick={handleSubmit}
-          disabled={isAdding || !foodName.trim()}
+          disabled={isAddingConsumption || !foodName.trim()}
           className="w-full bg-green-600 hover:bg-green-700 text-white"
         >
           <Plus className="w-4 h-4 mr-2" />
-          {isAdding ? t('Adding...') : t('Add to Log')}
+          {isAddingConsumption ? t('Adding...') : t('Add to Log')}
         </Button>
       </div>
     </div>
