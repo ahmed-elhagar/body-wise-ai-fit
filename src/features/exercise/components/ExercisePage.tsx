@@ -173,7 +173,7 @@ export const ExercisePage: React.FC = () => {
           <Button 
             onClick={handleGenerateProgram}
             disabled={isGenerating || (!isPro && creditsRemaining <= 0)}
-            className="bg-white text-orange-600 hover:bg-orange-50 border-0 shadow-md hover:shadow-lg font-medium"
+            className="bg-white text-orange-600 hover:bg-orange-50 border-0 shadow-md hover:shadow-lg font-medium transition-all duration-200"
           >
             {isGenerating ? (
               <>
@@ -268,7 +268,7 @@ export const ExercisePage: React.FC = () => {
               onClick={handleGenerateProgram}
               disabled={isGenerating || (!isPro && creditsRemaining <= 0)}
               size="lg"
-              className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
+              className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white"
             >
               {isGenerating ? (
                 <>

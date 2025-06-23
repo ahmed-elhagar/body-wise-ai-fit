@@ -95,27 +95,28 @@ export const useCentralizedCredits = () => {
     }
   });
 
-  const completeGeneration = useMutation({
-    mutationFn: async (params: {
-      logId: string;
-      responseData?: any;
-      errorMessage?: string;
-    }) => {
-      // This is a placeholder - implement if needed for logging
-      return { success: true };
+  // Legacy API compatibility - maintains old function signature
+  const checkAndUseCredit = async (generationType: string, onSuccess?: (data: CheckAndUseCreditsResponse) => void, onError?: (error: Error) => void): Promise<CheckAndUseCreditsResponse> => {
+    try {
+      const result = await checkAndUseCredits.mutateAsync(generationType);
+      if (onSuccess) onSuccess(result);
+      return result;
+    } catch (error) {
+      if (onError) onError(error as Error);
+      throw error;
     }
-  });
+  };
 
-  // Legacy API for backward compatibility
-  const checkAndUseCredit = async (generationType: string): Promise<CheckAndUseCreditsResponse> => {
-    return checkAndUseCredits.mutateAsync(generationType);
+  const completeGeneration = async (logId: string): Promise<{ success: boolean }> => {
+    // This is a placeholder - implement if needed for logging
+    return { success: true };
   };
 
   return {
     credits,
     isLoading,
     checkAndUseCredits: checkAndUseCredits.mutateAsync,
-    checkAndUseCredit, // Legacy API
-    completeGeneration: completeGeneration.mutateAsync
+    checkAndUseCredit, // Legacy API with backward compatibility
+    completeGeneration
   };
 };
