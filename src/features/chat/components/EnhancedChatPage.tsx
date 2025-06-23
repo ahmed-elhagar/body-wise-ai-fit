@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -82,9 +81,9 @@ const EnhancedChatPage = () => {
     setSelectedCoach(null);
   };
 
-  // Compact stats cards for the header
+  // More compact stats cards with better visual hierarchy
   const statsCards = (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
       <GradientStatsCard
         title={t('AI Assistant')}
         stats={[{
@@ -120,16 +119,18 @@ const EnhancedChatPage = () => {
     </div>
   );
 
-  // Header actions with accurate user tier
+  // Improved header with better user context display
   const headerActions = (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-2">
       {profile && (
-        <div className="flex items-center gap-3 text-sm text-gray-600">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span>{profile.first_name} {profile.last_name}</span>
+        <div className="flex items-center gap-2 text-sm">
+          <div className="flex items-center gap-1.5">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <span className="text-gray-700 font-medium">
+              {profile.first_name} {profile.last_name}
+            </span>
           </div>
-          <Badge variant="outline" className="text-xs">
+          <Badge variant="outline" className="text-xs px-2 py-0.5 bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
             {getUserTier()}
           </Badge>
         </div>
@@ -167,39 +168,39 @@ const EnhancedChatPage = () => {
         headerActions={headerActions}
         showStatsCards={true}
         statsCards={statsCards}
-        className="p-4"
+        className="p-3"
       >
         {/* Main Chat Content */}
-        <Card className="h-[700px] bg-white/90 backdrop-blur-sm shadow-2xl border-0 rounded-2xl overflow-hidden">
+        <Card className="h-[720px] bg-white/95 backdrop-blur-sm shadow-xl border-0 rounded-xl overflow-hidden">
           {activeTab === 'ai-assistant' ? (
             <AIChatInterface />
           ) : selectedCoach ? (
             <div className="h-full flex flex-col">
               {/* Coach Chat Header */}
-              <div className="p-4 bg-gradient-to-r from-purple-500 to-purple-600 text-white">
+              <div className="p-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white">
                 <div className="flex items-center gap-3">
                   <button
                     onClick={handleBackToList}
-                    className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                    className="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
                   >
-                    <ChevronLeft className="h-5 w-5" />
+                    <ChevronLeft className="h-4 w-4" />
                   </button>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-                      <Users className="h-5 w-5" />
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                      <Users className="h-4 w-4" />
                     </div>
                     <div>
-                      <h3 className="font-semibold">
+                      <h3 className="font-semibold text-sm">
                         {selectedCoach.coach_profile 
                           ? `${selectedCoach.coach_profile.first_name || ''} ${selectedCoach.coach_profile.last_name || ''}`.trim()
                           : 'Coach'
                         }
                       </h3>
-                      <p className="text-sm text-purple-100">{t('Personal Coach')}</p>
+                      <p className="text-xs text-purple-100">{t('Personal Coach')}</p>
                     </div>
                   </div>
                   {unreadMessagesByCoach[selectedCoach.coach_id] > 0 && (
-                    <Badge className="ml-auto bg-red-500 text-white">
+                    <Badge className="ml-auto bg-red-500 text-white text-xs">
                       {unreadMessagesByCoach[selectedCoach.coach_id]}
                     </Badge>
                   )}
@@ -221,15 +222,15 @@ const EnhancedChatPage = () => {
             </div>
           ) : (
             <div className="h-full flex items-center justify-center">
-              <div className="text-center space-y-4">
-                <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-3xl flex items-center justify-center mx-auto">
-                  <MessageSquare className="h-10 w-10 text-gray-400" />
+              <div className="text-center space-y-3">
+                <div className="w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center mx-auto">
+                  <MessageSquare className="h-8 w-8 text-gray-400" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1">
                     {t('Select a conversation')}
                   </h3>
-                  <p className="text-gray-600">
+                  <p className="text-sm text-gray-600">
                     {t('Choose an AI assistant or coach to start chatting')}
                   </p>
                 </div>
@@ -240,16 +241,16 @@ const EnhancedChatPage = () => {
 
         {/* Enhanced User Context Footer - More Compact */}
         {profile && (
-          <div className="mt-4 p-3 bg-white/50 rounded-xl border border-blue-100">
-            <div className="flex items-center justify-between text-sm text-gray-600">
-              <div className="flex items-center gap-4">
+          <div className="mt-3 p-2.5 bg-white/60 rounded-lg border border-blue-100">
+            <div className="flex items-center justify-between text-xs text-gray-600">
+              <div className="flex items-center gap-3">
                 <span>👤 {profile.first_name} {profile.last_name}</span>
                 {profile.fitness_goal && <span>🎯 {profile.fitness_goal}</span>}
                 {profile.activity_level && <span>💪 {profile.activity_level}</span>}
               </div>
               <div className="flex items-center gap-2">
                 <span>🔋 {profile.ai_generations_remaining} AI credits left</span>
-                <Badge variant="outline" className="text-xs">
+                <Badge variant="outline" className="text-xs px-1.5 py-0.5">
                   {getUserTier()}
                 </Badge>
               </div>
