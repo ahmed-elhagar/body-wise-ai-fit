@@ -138,25 +138,28 @@ Remember: You are ${userContext.name}'s personal AI fitness assistant with full 
       // Generate enhanced system prompt with user context
       const enhancedSystemPrompt = generateEnhancedSystemPrompt();
 
-      // Add system message and current user message
+      // Add system message and current user message to create full conversation
       const apiMessages = [
         { role: 'system', content: enhancedSystemPrompt },
         ...conversationHistory,
         { role: 'user', content: userMessage.trim() }
       ];
 
-      console.log('🤖 Enhanced AI Chat - Sending with user context:', { 
-        userMessage, 
+      console.log('🤖 Enhanced AI Chat - Sending request:', { 
+        userMessage: userMessage.trim(), 
         historyLength: conversationHistory.length,
         hasUserProfile: !!profile,
         userGoal: profile?.fitness_goal,
         userName: profile?.first_name
       });
 
+      // Use fitness-chat edge function with proper message structure
       const { data, error } = await supabase.functions.invoke('fitness-chat', {
         body: {
+          message: userMessage.trim(),
           messages: apiMessages,
           userProfile: profile,
+          chatHistory: conversationHistory,
           includeContext: includeUserContext
         }
       });

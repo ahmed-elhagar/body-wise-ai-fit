@@ -14,7 +14,7 @@ serve(async (req) => {
   }
 
   try {
-    const { message, userProfile, chatHistory } = await req.json();
+    const { message, messages, userProfile, chatHistory } = await req.json();
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     const anthropicApiKey = Deno.env.get('ANTHROPIC_API_KEY');
     const googleApiKey = Deno.env.get('GOOGLE_API_KEY');
@@ -23,8 +23,15 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
+    // Ensure we have a proper message to process
+    const userMessage = message || (messages && messages[messages.length - 1]?.content) || '';
+    
+    if (!userMessage.trim()) {
+      throw new Error('No message provided');
+    }
+
     console.log('Processing fitness chat request:', { 
-      message, 
+      message: userMessage, 
       userProfile: userProfile ? { 
         id: userProfile.id, 
         age: userProfile.age, 
@@ -64,10 +71,10 @@ Always format your responses with:
 - Encouraging and positive language`;
 
     // Build messages array with proper conversation history
-    const messages = [
+    const finalMessages = messages || [
       { role: 'system', content: systemMessage },
       ...(chatHistory || []),
-      { role: 'user', content: message }
+      { role: 'user', content: userMessage }
     ];
 
     console.log('🤖 Using multi-provider AI service for fitness chat...');
@@ -75,7 +82,7 @@ Always format your responses with:
     // Use the enhanced AI service with multiple providers
     const aiService = new AIService(openAIApiKey, anthropicApiKey, googleApiKey);
     const response = await aiService.generate('fitness_chat', {
-      messages: messages,
+      messages: finalMessages,
       temperature: 0.7,
       maxTokens: 1500,
     });
