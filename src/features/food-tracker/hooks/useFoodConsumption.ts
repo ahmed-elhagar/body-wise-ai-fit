@@ -17,6 +17,7 @@ export interface FoodConsumptionEntry {
   meal_type: 'breakfast' | 'lunch' | 'dinner' | 'snack';
   consumed_at: string;
   notes?: string;
+  meal_image_url?: string;
   source: 'manual' | 'ai_analysis' | 'barcode';
   food_item?: {
     id: string;
@@ -63,6 +64,7 @@ export const useFoodConsumption = () => {
           meal_type,
           consumed_at,
           notes,
+          meal_image_url,
           source,
           food_item:food_items (
             id,
@@ -89,7 +91,7 @@ export const useFoodConsumption = () => {
     },
     enabled: !!user?.id,
     staleTime: 1000 * 60 * 5, // 5 minutes
-    gcTime: 1000 * 60 * 10, // 10 minutes (replaced cacheTime)
+    gcTime: 1000 * 60 * 10, // 10 minutes
   });
 
   // Get consumption history (last 30 days)
@@ -119,6 +121,7 @@ export const useFoodConsumption = () => {
           meal_type,
           consumed_at,
           notes,
+          meal_image_url,
           source,
           food_item:food_items (
             id,
@@ -171,6 +174,7 @@ export const useFoodConsumption = () => {
           meal_type,
           consumed_at,
           notes,
+          meal_image_url,
           source,
           food_item:food_items (
             id,
