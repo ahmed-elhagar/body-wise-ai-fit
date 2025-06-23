@@ -22,7 +22,7 @@ const MessageActionsMenu: React.FC<MessageActionsMenuProps> = ({
 }) => {
   const handleCopy = async () => {
     try {
-      const messageText = message.message || message.content || '';
+      const messageText = message.message || '';
       await navigator.clipboard.writeText(messageText);
     } catch (error) {
       console.error('Failed to copy message:', error);

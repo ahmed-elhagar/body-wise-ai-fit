@@ -11,9 +11,10 @@ import {
   Settings,
   MessageSquare,
   Sparkles,
-  BarChart3
+  BarChart3,
+  User
 } from "lucide-react";
-import { useAIChat } from "@/features/ai/hooks/useAIChat";
+import { useEnhancedAIChat } from "@/features/ai/hooks/useEnhancedAIChat";
 import AIChatMessage from "./AIChatMessage";
 import ConversationStarters from "./ConversationStarters";
 import ChatInput from "./ChatInput";
@@ -45,9 +46,12 @@ const AIChatInterface = () => {
     regenerateLastMessage,
     clearConversation,
     cancelRequest,
-  } = useAIChat({
+    userProfile,
+    hasUserContext
+  } = useEnhancedAIChat({
     systemPrompt: "You are FitGenius AI, a knowledgeable and supportive fitness assistant. Provide helpful, accurate advice about fitness, nutrition, and health. Keep responses well-structured with clear paragraphs, bullet points when appropriate, and easy-to-read formatting. Always encourage users and remind them to consult healthcare professionals for medical concerns.",
     maxMessages: 100,
+    includeUserContext: true
   });
 
   // Auto-scroll to bottom when new messages arrive
@@ -108,12 +112,46 @@ const AIChatInterface = () => {
                   <Bot className="h-10 w-10 text-white" />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-3">
-                  Welcome to FitGenius AI
+                  {userProfile?.first_name 
+                    ? `Welcome back, ${userProfile.first_name}!` 
+                    : 'Welcome to FitGenius AI'
+                  }
                 </h3>
-                <p className="text-gray-600 text-base max-w-lg mx-auto mb-8 leading-relaxed">
-                  I'm here to help you with personalized fitness advice, nutrition guidance, 
-                  and wellness tips. What would you like to know today?
+                <p className="text-gray-600 text-base max-w-lg mx-auto mb-4 leading-relaxed">
+                  {hasUserContext 
+                    ? `I have access to your profile and can provide personalized fitness advice tailored to your ${userProfile?.fitness_goal || 'goals'}.` 
+                    : 'I\'m here to help you with personalized fitness advice, nutrition guidance, and wellness tips.'
+                  }
                 </p>
+                
+                {/* User Context Display */}
+                {hasUserContext && userProfile && (
+                  <div className="bg-white/60 backdrop-blur-sm rounded-xl p-4 mb-6 max-w-md mx-auto border border-blue-100">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                        <User className="h-4 w-4 text-white" />
+                      </div>
+                      <span className="font-medium text-gray-900">Your Profile Context</span>
+                    </div>
+                    <div className="text-sm text-gray-700 space-y-1">
+                      {userProfile.fitness_goal && (
+                        <div>🎯 Goal: {userProfile.fitness_goal}</div>
+                      )}
+                      {userProfile.activity_level && (
+                        <div>💪 Activity: {userProfile.activity_level}</div>
+                      )}
+                      {userProfile.age && userProfile.gender && (
+                        <div>👤 {userProfile.age}y, {userProfile.gender}</div>
+                      )}
+                      {userProfile.dietary_restrictions?.length > 0 && (
+                        <div>🥗 Dietary: {userProfile.dietary_restrictions.join(', ')}</div>
+                      )}
+                    </div>
+                    <Badge className="mt-2 bg-green-100 text-green-700 border-green-200">
+                      ✓ Personalized AI
+                    </Badge>
+                  </div>
+                )}
               </div>
               
               <ConversationStarters 
@@ -123,7 +161,7 @@ const AIChatInterface = () => {
             </div>
           ) : (
             <div className="max-w-4xl mx-auto w-full">
-              {/* Enhanced Chat Controls */}
+              {/* Enhanced Chat Controls with User Context */}
               <div className="flex items-center gap-2 justify-between mb-6 p-4 bg-white/80 rounded-xl border border-blue-100 backdrop-blur-sm">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
@@ -133,6 +171,11 @@ const AIChatInterface = () => {
                     <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-800">
                       {messages.length} messages
                     </Badge>
+                    {hasUserContext && (
+                      <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs">
+                        Personalized for {userProfile?.first_name || 'You'}
+                      </Badge>
+                    )}
                     {isLoading && (
                       <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 text-xs animate-pulse">
                         AI Responding...
@@ -212,7 +255,10 @@ const AIChatInterface = () => {
             disabled={false}
             isLoading={isLoading}
             onCancel={cancelRequest}
-            placeholder="Ask me anything about fitness, nutrition, or health..."
+            placeholder={hasUserContext 
+              ? `Ask me anything about fitness, nutrition, or health - I know your profile!` 
+              : "Ask me anything about fitness, nutrition, or health..."
+            }
             className="border-0"
             value={inputMessage}
             onChange={setInputMessage}

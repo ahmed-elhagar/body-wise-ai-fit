@@ -1,6 +1,7 @@
 
 // Main Chat Components
 export { default as ChatPage } from './ChatPage';
+export { default as EnhancedChatPage } from './EnhancedChatPage';
 export { default as FitnessChat } from './FitnessChat';
 export { default as AIChatInterface } from './AIChatInterface';
 export { default as MobileChatInterface } from './MobileChatInterface';
