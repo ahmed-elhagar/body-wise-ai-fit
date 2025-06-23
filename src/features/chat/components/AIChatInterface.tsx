@@ -1,6 +1,6 @@
 
 import { useState, useRef, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
@@ -8,9 +8,6 @@ import {
   Bot, 
   Trash2, 
   Download, 
-  Settings,
-  MessageSquare,
-  Sparkles,
   BarChart3,
   User
 } from "lucide-react";
@@ -33,7 +30,6 @@ interface ChatMessage {
 }
 
 const AIChatInterface = () => {
-  const [showSettings, setShowSettings] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [inputMessage, setInputMessage] = useState("");
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -161,7 +157,7 @@ const AIChatInterface = () => {
             </div>
           ) : (
             <div className="max-w-4xl mx-auto w-full">
-              {/* Enhanced Chat Controls with User Context */}
+              {/* Enhanced Chat Controls */}
               <div className="flex items-center gap-2 justify-between mb-6 p-4 bg-white/80 rounded-xl border border-blue-100 backdrop-blur-sm">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">

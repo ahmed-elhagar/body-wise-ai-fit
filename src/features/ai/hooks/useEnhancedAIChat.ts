@@ -159,9 +159,11 @@ Remember: You are ${userContext.name}'s personal AI fitness assistant with full 
           userProfile: profile,
           includeContext: includeUserContext
         },
+        signal: abortControllerRef.current.signal
       });
 
       if (error) {
+        console.error('Supabase function error:', error);
         throw new Error(error.message || 'Failed to get AI response');
       }
 
@@ -182,12 +184,12 @@ Remember: You are ${userContext.name}'s personal AI fitness assistant with full 
         setMessages(prev => prev.filter(msg => msg.id !== assistantMessageId));
       } else {
         // Update loading message with error
-        updateMessage(
-          assistantMessageId, 
-          'Sorry, I encountered an error. Please try again.', 
-          false
-        );
-        toast.error('Failed to get AI response. Please try again.');
+        const errorMessage = error.message?.includes('Edge Function returned') 
+          ? 'Sorry, I\'m experiencing some technical difficulties. Please try again in a moment.'
+          : 'Sorry, I encountered an error. Please try again.';
+          
+        updateMessage(assistantMessageId, errorMessage, false);
+        toast.error('AI response failed. Please try again.');
       }
     } finally {
       setIsLoading(false);
