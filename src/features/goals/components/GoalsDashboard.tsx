@@ -7,12 +7,17 @@ import { Plus, Target, Trophy, Sparkles } from "lucide-react";
 import { GoalCard } from './GoalCard';
 import { GoalsOverview } from './GoalsOverview';
 import { GoalCreationDialog } from './GoalCreationDialog';
+import { GoalEditDialog } from './GoalEditDialog';
+import { UpdateProgressDialog } from './UpdateProgressDialog';
 import { useGoals } from "@/features/dashboard/hooks/useGoals";
 import { Goal } from "../types";
 
 const GoalsDashboard = () => {
   const { goals, isLoading, deleteGoal } = useGoals();
   const [showCreationDialog, setShowCreationDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showProgressDialog, setShowProgressDialog] = useState(false);
+  const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null);
 
   // Convert database goals to our Goal type with proper type casting
   const convertedGoals: Goal[] = goals.map(goal => ({
@@ -43,9 +48,14 @@ const GoalsDashboard = () => {
     }
   };
 
-  const handleEditGoal = (goalId: string) => {
-    // TODO: Implement edit functionality
-    console.log('Edit goal:', goalId);
+  const handleEditGoal = (goal: Goal) => {
+    setSelectedGoal(goal);
+    setShowEditDialog(true);
+  };
+
+  const handleUpdateProgress = (goal: Goal) => {
+    setSelectedGoal(goal);
+    setShowProgressDialog(true);
   };
 
   if (isLoading) {
@@ -129,6 +139,7 @@ const GoalsDashboard = () => {
                   goal={goal}
                   onDelete={handleDeleteGoal}
                   onEdit={handleEditGoal}
+                  onUpdateProgress={handleUpdateProgress}
                 />
               ))}
             </div>
@@ -176,6 +187,7 @@ const GoalsDashboard = () => {
                   goal={goal}
                   onDelete={handleDeleteGoal}
                   onEdit={handleEditGoal}
+                  onUpdateProgress={handleUpdateProgress}
                 />
               ))}
             </div>
@@ -183,10 +195,22 @@ const GoalsDashboard = () => {
         </Card>
       )}
 
-      {/* Goal Creation Dialog */}
+      {/* Dialogs */}
       <GoalCreationDialog
         open={showCreationDialog}
         onOpenChange={setShowCreationDialog}
+      />
+      
+      <GoalEditDialog
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        goal={selectedGoal}
+      />
+      
+      <UpdateProgressDialog
+        open={showProgressDialog}
+        onOpenChange={setShowProgressDialog}
+        goal={selectedGoal}
       />
     </div>
   );

@@ -5,18 +5,20 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Target, Calendar, TrendingUp, MoreVertical, Edit, Trash2, CheckCircle } from "lucide-react";
+import { Target, Calendar, TrendingUp, MoreVertical, Edit, Trash2, CheckCircle, Play, Pause } from "lucide-react";
 import { format } from "date-fns";
 import { Goal } from "../types";
+import { useGoalMutations } from "../hooks/useGoalMutations";
 
 interface GoalCardProps {
   goal: Goal;
-  onEdit: (goalId: string) => void;
+  onEdit: (goal: Goal) => void;
   onDelete: (goalId: string) => void;
+  onUpdateProgress: (goal: Goal) => void;
 }
 
-export const GoalCard: React.FC<GoalCardProps> = ({ goal, onEdit, onDelete }) => {
-  const [isCompleting, setIsCompleting] = useState(false);
+export const GoalCard: React.FC<GoalCardProps> = ({ goal, onEdit, onDelete, onUpdateProgress }) => {
+  const { updateStatus, isUpdatingStatus } = useGoalMutations();
 
   const progress = goal.target_value ? (goal.current_value / goal.target_value) * 100 : 0;
   const clampedProgress = Math.min(Math.max(progress, 0), 100);
@@ -58,6 +60,13 @@ export const GoalCard: React.FC<GoalCardProps> = ({ goal, onEdit, onDelete }) =>
     ? Math.ceil((new Date(goal.target_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
     : null;
 
+  const handleStatusChange = async (newStatus: 'active' | 'completed' | 'paused') => {
+    await updateStatus({
+      goalId: goal.id,
+      status: newStatus
+    });
+  };
+
   return (
     <Card className="group hover:shadow-lg transition-all duration-300 border-0 bg-white/80 backdrop-blur-sm">
       <CardContent className="p-6">
@@ -87,19 +96,44 @@ export const GoalCard: React.FC<GoalCardProps> = ({ goal, onEdit, onDelete }) =>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => onEdit(goal.id)}>
+                <DropdownMenuItem onClick={() => onEdit(goal)}>
                   <Edit className="w-4 h-4 mr-2" />
                   Edit Goal
                 </DropdownMenuItem>
+                
                 {goal.status === 'active' && (
+                  <>
+                    <DropdownMenuItem onClick={() => onUpdateProgress(goal)}>
+                      <TrendingUp className="w-4 h-4 mr-2" />
+                      Update Progress
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => handleStatusChange('completed')}
+                      disabled={isUpdatingStatus}
+                    >
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Mark Complete
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => handleStatusChange('paused')}
+                      disabled={isUpdatingStatus}
+                    >
+                      <Pause className="w-4 h-4 mr-2" />
+                      Pause Goal
+                    </DropdownMenuItem>
+                  </>
+                )}
+                
+                {goal.status === 'paused' && (
                   <DropdownMenuItem 
-                    onClick={() => setIsCompleting(true)}
-                    disabled={isCompleting}
+                    onClick={() => handleStatusChange('active')}
+                    disabled={isUpdatingStatus}
                   >
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    Mark Complete
+                    <Play className="w-4 h-4 mr-2" />
+                    Resume Goal
                   </DropdownMenuItem>
                 )}
+                
                 <DropdownMenuItem 
                   onClick={() => onDelete(goal.id)}
                   className="text-red-600 focus:text-red-600"
@@ -157,7 +191,7 @@ export const GoalCard: React.FC<GoalCardProps> = ({ goal, onEdit, onDelete }) =>
             <Button 
               size="sm" 
               variant="outline"
-              onClick={() => onEdit(goal.id)}
+              onClick={() => onUpdateProgress(goal)}
               className="text-xs"
             >
               Update Progress
