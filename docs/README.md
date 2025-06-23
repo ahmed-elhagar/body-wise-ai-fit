@@ -1,3 +1,4 @@
+
 # 📚 FitFatta Documentation
 
 Welcome to the comprehensive documentation for FitFatta - an AI-powered fitness and nutrition platform built with modern web technologies.
@@ -9,7 +10,8 @@ FitFatta is a feature-rich web application that combines AI-powered meal plannin
 ### **🎯 Core Features**
 - **AI Meal Planning** - Personalized meal plans with cultural adaptations
 - **Exercise Programming** - Traditional and AI-powered workout plans  
-- **Food Tracking** - Manual entry and AI photo analysis
+- **Food Tracking** - Manual entry and AI photo analysis with calendar history
+- **Goals Management** - SMART goal setting with progress tracking
 - **Progress Monitoring** - Comprehensive analytics and visualizations
 - **Coach Dashboard** - Professional tools for trainers
 - **Admin Panel** - User and system management
@@ -30,7 +32,7 @@ FitFatta is a feature-rich web application that combines AI-powered meal plannin
 - [Feature-Based Design](./architecture/README.md) - Core architectural principles
 - [Component Guidelines](./guidelines/component-guidelines.md) - Development standards
 
-### **�� [Design System](./design-system/)**
+### **🎨 [Design System](./design-system/)**
 - [Brand Colors & Typography](./design-system/README.md) - Visual identity
 
 ### **🔧 [API Documentation](./api/)**
@@ -61,14 +63,22 @@ Each feature has comprehensive documentation including:
 - Performance tracking
 
 ### **📱 [Food Tracker](./features/food-tracker/)**
-- Manual food entry
-- AI photo analysis
-- Nutrition calculations
+- Manual food entry with meal type selection
+- AI photo analysis with credit system
+- Calendar-based history navigation
+- Enhanced meal logging with nutrition display
+
+### **🎯 [Goals](./features/goals/)**
+- SMART goal creation and management
+- Progress tracking with milestones
+- Goal categories and difficulty levels
+- Achievement system integration
 
 ### **📈 [Progress](./features/progress/)**
 - Weight tracking
 - Body measurements
 - Nutrition analytics
+- Goals progress visualization
 
 ### **👨‍💼 [Coach](./features/coach/)**
 - Trainee management
@@ -103,7 +113,8 @@ Each feature has comprehensive documentation including:
 - [x] Dashboard with personalization
 - [x] Meal planning with AI integration
 - [x] Exercise programming (traditional + AI)
-- [x] Food tracking with photo analysis
+- [x] Food tracking with photo analysis and calendar
+- [x] Enhanced goals management system
 - [x] Progress monitoring and analytics
 - [x] Coach dashboard and tools
 - [x] Admin panel and user management
@@ -122,5 +133,5 @@ Each feature has comprehensive documentation including:
 ---
 
 **Last Updated**: January 2025  
-**Version**: 2.0.0  
+**Version**: 2.1.0  
 **Status**: Production Ready ✅
