@@ -10,7 +10,7 @@ import TraineeCoachChat from "@/features/coach/components/TraineeCoachChat";
 import AIChatInterface from "./AIChatInterface";
 import { FeatureLayout, TabItem } from "@/shared/components/design-system/FeatureLayout";
 import { TabGroup } from "@/shared/components/design-system/TabButton";
-import { GradientStatsCard } from "@/shared/components/design-system/GradientStatsCard";
+import GradientStatsCard from "@/shared/components/design-system/GradientStatsCard";
 
 const EnhancedChatPage = () => {
   const { t } = useLanguage();
@@ -75,31 +75,35 @@ const EnhancedChatPage = () => {
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
       <GradientStatsCard
         title={t('AI Assistant')}
-        value="24/7"
-        subtitle={t('Always Available')}
-        icon={Bot}
-        gradient="from-blue-500 to-blue-600"
+        stats={[{
+          label: t('Always Available'),
+          value: "24/7",
+          color: 'blue' as const
+        }]}
       />
       <GradientStatsCard
         title={coaches.length.toString()}
-        value={t('Coaches')}
-        subtitle={t('Personal Trainers')}
-        icon={Users}
-        gradient="from-purple-500 to-purple-600"
+        stats={[{
+          label: t('Personal Trainers'),
+          value: t('Coaches'),
+          color: 'purple' as const
+        }]}
       />
       <GradientStatsCard
         title={totalUnreadMessages.toString()}
-        value={t('Unread')}
-        subtitle={t('New Messages')}
-        icon={MessageSquare}
-        gradient="from-green-500 to-green-600"
+        stats={[{
+          label: t('New Messages'),
+          value: t('Unread'),
+          color: 'green' as const
+        }]}
       />
       <GradientStatsCard
         title={(profile?.ai_generations_remaining || 0).toString()}
-        value={t('Credits')}
-        subtitle={t('AI Generations Left')}
-        icon={Sparkles}
-        gradient="from-orange-500 to-orange-600"
+        stats={[{
+          label: t('AI Generations Left'),
+          value: t('Credits'),
+          color: 'orange' as const
+        }]}
       />
     </div>
   );

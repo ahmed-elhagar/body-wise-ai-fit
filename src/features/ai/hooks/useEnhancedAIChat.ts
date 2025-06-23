@@ -158,8 +158,7 @@ Remember: You are ${userContext.name}'s personal AI fitness assistant with full 
           messages: apiMessages,
           userProfile: profile,
           includeContext: includeUserContext
-        },
-        signal: abortControllerRef.current.signal
+        }
       });
 
       if (error) {
