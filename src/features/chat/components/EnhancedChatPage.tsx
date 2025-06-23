@@ -6,6 +6,7 @@ import { MessageSquare, Users, Bot, Sparkles, ChevronLeft } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCoachSystem } from "@/features/coach/hooks/useCoachSystem";
 import { useOptimizedProfile } from "@/features/profile/hooks/useOptimizedProfile";
+import { useSubscription } from "@/shared/hooks/useSubscription";
 import TraineeCoachChat from "@/features/coach/components/TraineeCoachChat";
 import AIChatInterface from "./AIChatInterface";
 import { FeatureLayout, TabItem } from "@/shared/components/design-system/FeatureLayout";
@@ -25,12 +26,23 @@ const EnhancedChatPage = () => {
   } = useCoachSystem();
 
   const { profile, isLoading: profileLoading } = useOptimizedProfile();
+  const { subscription, isProMember, isLoading: subscriptionLoading } = useSubscription();
 
   useEffect(() => {
     console.log('Enhanced ChatPage - User Profile:', profile);
     console.log('Enhanced ChatPage - Coaches:', coaches);
-    console.log('Enhanced ChatPage - Unread messages:', totalUnreadMessages);
-  }, [profile, coaches, totalUnreadMessages]);
+    console.log('Enhanced ChatPage - Subscription:', subscription);
+    console.log('Enhanced ChatPage - Is Pro Member:', isProMember);
+  }, [profile, coaches, subscription, isProMember]);
+
+  // Determine user tier based on actual subscription data
+  const getUserTier = () => {
+    if (subscriptionLoading) return 'Loading...';
+    if (isProMember) return 'Pro Member';
+    if (profile?.role === 'admin') return 'Admin';
+    if (profile?.role === 'coach') return 'Coach';
+    return 'Free Plan';
+  };
 
   // Prepare tabs for the chat interface
   const chatTabs: TabItem[] = [
@@ -70,9 +82,9 @@ const EnhancedChatPage = () => {
     setSelectedCoach(null);
   };
 
-  // Stats cards for the header
+  // Compact stats cards for the header
   const statsCards = (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
       <GradientStatsCard
         title={t('AI Assistant')}
         stats={[{
@@ -108,7 +120,7 @@ const EnhancedChatPage = () => {
     </div>
   );
 
-  // Header actions
+  // Header actions with accurate user tier
   const headerActions = (
     <div className="flex items-center gap-3">
       {profile && (
@@ -118,14 +130,14 @@ const EnhancedChatPage = () => {
             <span>{profile.first_name} {profile.last_name}</span>
           </div>
           <Badge variant="outline" className="text-xs">
-            {profile.role === 'pro' ? 'Pro Member' : 'Free Plan'}
+            {getUserTier()}
           </Badge>
         </div>
       )}
     </div>
   );
 
-  if (isLoadingCoachInfo || profileLoading) {
+  if (isLoadingCoachInfo || profileLoading || subscriptionLoading) {
     return (
       <FeatureLayout
         title={t('Chat & Support')}
@@ -155,7 +167,7 @@ const EnhancedChatPage = () => {
         headerActions={headerActions}
         showStatsCards={true}
         statsCards={statsCards}
-        className="p-6"
+        className="p-4"
       >
         {/* Main Chat Content */}
         <Card className="h-[700px] bg-white/90 backdrop-blur-sm shadow-2xl border-0 rounded-2xl overflow-hidden">
@@ -226,9 +238,9 @@ const EnhancedChatPage = () => {
           )}
         </Card>
 
-        {/* Enhanced User Context Footer */}
+        {/* Enhanced User Context Footer - More Compact */}
         {profile && (
-          <div className="mt-6 p-4 bg-white/50 rounded-xl border border-blue-100">
+          <div className="mt-4 p-3 bg-white/50 rounded-xl border border-blue-100">
             <div className="flex items-center justify-between text-sm text-gray-600">
               <div className="flex items-center gap-4">
                 <span>👤 {profile.first_name} {profile.last_name}</span>
@@ -238,7 +250,7 @@ const EnhancedChatPage = () => {
               <div className="flex items-center gap-2">
                 <span>🔋 {profile.ai_generations_remaining} AI credits left</span>
                 <Badge variant="outline" className="text-xs">
-                  {profile.role === 'pro' ? 'Pro Member' : 'Free Plan'}
+                  {getUserTier()}
                 </Badge>
               </div>
             </div>

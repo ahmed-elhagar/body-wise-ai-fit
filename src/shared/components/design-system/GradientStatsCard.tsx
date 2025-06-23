@@ -49,29 +49,29 @@ const colorVariants = {
 const GradientStatsCard = ({ title, stats, className = '' }: GradientStatsCardProps) => {
   return (
     <Card className={`overflow-hidden ${className}`}>
-      <div className={`h-2 bg-gradient-to-r ${colorVariants[stats[0]?.color || 'blue'].gradient}`} />
-      <CardContent className="p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className={`h-1.5 bg-gradient-to-r ${colorVariants[stats[0]?.color || 'blue'].gradient}`} />
+      <CardContent className="p-3">
+        <h3 className="text-sm font-semibold text-gray-900 mb-2">{title}</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
           {stats.map((stat, index) => {
             const variant = colorVariants[stat.color];
             return (
-              <div key={index} className={`p-4 rounded-lg ${variant.bg}`}>
+              <div key={index} className={`p-2 rounded-lg ${variant.bg}`}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600 mb-1">{stat.label}</p>
-                    <p className={`text-2xl font-bold ${variant.text}`}>
+                    <p className="text-xs text-gray-600 mb-0.5">{stat.label}</p>
+                    <p className={`text-lg font-bold ${variant.text}`}>
                       {stat.value}
                     </p>
                   </div>
                   {stat.change && (
                     <div className={`flex items-center ${stat.change.isPositive ? 'text-green-600' : 'text-red-600'}`}>
                       {stat.change.isPositive ? (
-                        <TrendingUp className="h-4 w-4" />
+                        <TrendingUp className="h-3 w-3" />
                       ) : (
-                        <TrendingDown className="h-4 w-4" />
+                        <TrendingDown className="h-3 w-3" />
                       )}
-                      <span className="text-sm font-medium ml-1">
+                      <span className="text-xs font-medium ml-1">
                         {Math.abs(stat.change.value)}%
                       </span>
                     </div>
