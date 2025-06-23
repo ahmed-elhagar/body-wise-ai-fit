@@ -1,11 +1,5 @@
 
-// Barrel file for the Food Tracker feature
-
-// Export hooks
-export * from './hooks';
-
-// Export components
-export * from './components';
-
-// Export types (if any, e.g. from ./types/index.ts)
-// export * from './types';
+export { default as FoodTrackerDashboard } from './components/FoodTrackerDashboard';
+export { useFoodConsumption } from './hooks/useFoodConsumption';
+export { useFoodSearch } from './hooks/useFoodSearch';
+export * from './types';

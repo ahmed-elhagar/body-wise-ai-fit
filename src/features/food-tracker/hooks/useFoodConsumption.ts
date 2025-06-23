@@ -1,320 +1,252 @@
 
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/features/auth/hooks/useAuth'; // This global hook is fine
+import { useAuth } from '@/features/auth/hooks/useAuth';
 import { toast } from 'sonner';
-import { format, startOfDay, endOfDay, startOfWeek } from 'date-fns';
 
-export interface FoodConsumptionLog {
+export interface FoodConsumptionEntry {
   id: string;
   user_id: string;
   food_item_id: string;
   quantity_g: number;
-  meal_type: string;
   calories_consumed: number;
   protein_consumed: number;
   carbs_consumed: number;
   fat_consumed: number;
+  meal_type: 'breakfast' | 'lunch' | 'dinner' | 'snack';
   consumed_at: string;
-  meal_image_url?: string;
   notes?: string;
-  source: string;
-  ai_analysis_data?: any;
+  source: 'manual' | 'ai_analysis' | 'barcode';
   food_item?: {
     id: string;
     name: string;
     brand?: string;
+    calories_per_100g: number;
+    protein_per_100g: number;
+    carbs_per_100g: number;
+    fat_per_100g: number;
     category: string;
-    serving_description?: string;
   };
 }
 
-export interface MealPlanItem {
-  id: string;
-  name: string;
-  meal_type: string;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-  day_number: number;
-  source: 'meal_plan';
-  ingredients?: any[];
-  instructions?: any[];
-}
-
-export const useFoodConsumption = (date?: Date) => {
+export const useFoodConsumption = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const targetDate = date || new Date();
 
-  // Get today's consumption with enhanced reliability
-  const { data: todayConsumption, isLoading, refetch } = useQuery({
-    queryKey: ['food-consumption-today', user?.id, format(targetDate, 'yyyy-MM-dd')],
-    queryFn: async () => {
-      if (!user?.id) {
-        console.log('❌ No user ID for food consumption query');
-        return [];
-      }
-
-      const dayStart = startOfDay(targetDate);
-      const dayEnd = endOfDay(targetDate);
-
-      console.log('🔍 Fetching food consumption for:', {
-        userId: user.id.substring(0, 8) + '...',
-        targetDate: format(targetDate, 'yyyy-MM-dd'),
-        dayStart: dayStart.toISOString(),
-        dayEnd: dayEnd.toISOString()
-      });
-
-      try {
-        const { data, error } = await supabase
-          .from('food_consumption_log')
-          .select(`
-            *,
-            food_item:food_items(
-              id,
-              name,
-              brand,
-              category,
-              serving_description
-            )
-          `)
-          .eq('user_id', user.id)
-          .gte('consumed_at', dayStart.toISOString())
-          .lte('consumed_at', dayEnd.toISOString())
-          .order('consumed_at', { ascending: false });
-
-        if (error) {
-          console.error('❌ Error fetching food consumption:', error);
-          throw error;
-        }
-
-        console.log('✅ Food consumption data fetched:', {
-          count: data?.length || 0,
-          hasData: !!data,
-          firstItemDetails: data?.[0] ? {
-            id: data[0].id,
-            foodName: data[0].food_item?.name,
-            consumedAt: data[0].consumed_at,
-            hasFoodItem: !!data[0].food_item
-          } : null
-        });
-
-        return data as FoodConsumptionLog[];
-      } catch (error) {
-        console.error('❌ Food consumption query failed:', error);
-        throw error;
-      }
-    },
-    enabled: !!user?.id,
-    staleTime: 10000,
-    gcTime: 300000,
-    refetchOnMount: true,
-    refetchOnWindowFocus: false,
-    retry: 2,
-  });
-
-  // Get today's meal plan data
-  const { data: todayMealPlan, isLoading: isMealPlanLoading } = useQuery({
-    queryKey: ['today-meal-plan', user?.id, format(targetDate, 'yyyy-MM-dd')],
+  // Get today's consumption
+  const { 
+    data: todayConsumption, 
+    isLoading: isLoadingToday, 
+    error: todayError,
+    refetch: refetchToday 
+  } = useQuery({
+    queryKey: ['food-consumption-today', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
 
-      // Calculate current week start (Saturday)
-      const currentWeekStart = startOfWeek(targetDate, { weekStartsOn: 6 });
-      const weekStartDateStr = format(currentWeekStart, 'yyyy-MM-dd');
-      
-      // Calculate day number (Saturday = 1, Sunday = 2, etc.)
-      const dayOfWeek = targetDate.getDay();
-      const dayNumber = dayOfWeek === 6 ? 1 : dayOfWeek + 2;
+      const today = new Date().toISOString().split('T')[0];
+      const startDate = `${today}T00:00:00.000Z`;
+      const endDate = `${today}T23:59:59.999Z`;
 
-      console.log('🍽️ Fetching meal plan for:', {
-        weekStartDate: weekStartDateStr,
-        dayNumber,
-        targetDate: format(targetDate, 'yyyy-MM-dd')
-      });
+      const { data, error } = await supabase
+        .from('food_consumption_log')
+        .select(`
+          id,
+          user_id,
+          food_item_id,
+          quantity_g,
+          calories_consumed,
+          protein_consumed,
+          carbs_consumed,
+          fat_consumed,
+          meal_type,
+          consumed_at,
+          notes,
+          source,
+          food_item:food_items (
+            id,
+            name,
+            brand,
+            calories_per_100g,
+            protein_per_100g,
+            carbs_per_100g,
+            fat_per_100g,
+            category
+          )
+        `)
+        .eq('user_id', user.id)
+        .gte('consumed_at', startDate)
+        .lte('consumed_at', endDate)
+        .order('consumed_at', { ascending: false });
 
-      try {
-        // First get the weekly plan
-        const { data: weeklyPlan, error: weeklyError } = await supabase
-          .from('weekly_meal_plans')
-          .select('id')
-          .eq('user_id', user.id)
-          .eq('week_start_date', weekStartDateStr)
-          .maybeSingle();
-
-        if (weeklyError) {
-          console.error('❌ Error fetching weekly plan:', weeklyError);
-          return [];
-        }
-
-        if (!weeklyPlan) {
-          console.log('ℹ️ No meal plan found for this week');
-          return [];
-        }
-
-        // Get today's meals from the plan
-        const { data: dailyMeals, error: mealsError } = await supabase
-          .from('daily_meals')
-          .select('*')
-          .eq('weekly_plan_id', weeklyPlan.id)
-          .eq('day_number', dayNumber);
-
-        if (mealsError) {
-          console.error('❌ Error fetching daily meals:', mealsError);
-          return [];
-        }
-
-        console.log('✅ Meal plan data fetched:', {
-          mealsCount: dailyMeals?.length || 0,
-          weeklyPlanId: weeklyPlan.id
-        });
-
-        return (dailyMeals || []).map(meal => ({
-          ...meal,
-          source: 'meal_plan'
-        })) as MealPlanItem[];
-      } catch (error) {
-        console.error('❌ Meal plan query failed:', error);
-        return [];
+      if (error) {
+        console.error('Error fetching today consumption:', error);
+        throw error;
       }
+
+      return data as FoodConsumptionEntry[];
     },
     enabled: !!user?.id,
-    staleTime: 30000,
-    refetchOnMount: true,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    cacheTime: 1000 * 60 * 10, // 10 minutes
   });
 
-  // Get consumption history for a date range
-  const getConsumptionHistory = (startDate: Date, endDate: Date) => {
-    return useQuery({
-      queryKey: ['food-consumption-history', user?.id, format(startDate, 'yyyy-MM-dd'), format(endDate, 'yyyy-MM-dd')],
-      queryFn: async () => {
-        if (!user?.id) return [];
+  // Get consumption history (last 30 days)
+  const { 
+    data: consumptionHistory, 
+    isLoading: isLoadingHistory,
+    error: historyError 
+  } = useQuery({
+    queryKey: ['food-consumption-history', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
 
-        const { data, error } = await supabase
-          .from('food_consumption_log')
-          .select(`
-            *,
-            food_item:food_items(
-              id,
-              name,
-              brand,
-              category,
-              serving_description
-            )
-          `)
-          .eq('user_id', user.id)
-          .gte('consumed_at', startDate.toISOString())
-          .lte('consumed_at', endDate.toISOString())
-          .order('consumed_at', { ascending: false });
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-        if (error) {
-          console.error('Error fetching food consumption history:', error);
-          throw error;
-        }
+      const { data, error } = await supabase
+        .from('food_consumption_log')
+        .select(`
+          id,
+          user_id,
+          food_item_id,
+          quantity_g,
+          calories_consumed,
+          protein_consumed,
+          carbs_consumed,
+          fat_consumed,
+          meal_type,
+          consumed_at,
+          notes,
+          source,
+          food_item:food_items (
+            id,
+            name,
+            brand,
+            calories_per_100g,
+            protein_per_100g,
+            carbs_per_100g,
+            fat_per_100g,
+            category
+          )
+        `)
+        .eq('user_id', user.id)
+        .gte('consumed_at', thirtyDaysAgo.toISOString())
+        .order('consumed_at', { ascending: false })
+        .limit(100);
 
-        return data as FoodConsumptionLog[];
-      },
-      enabled: !!user?.id,
-    });
-  };
+      if (error) {
+        console.error('Error fetching consumption history:', error);
+        throw error;
+      }
 
-  // Get historical data for calendar/heatmap
-  const useHistoryData = (startDate: Date, endDate: Date) => {
-    return useQuery({
-      queryKey: ['food-consumption-history', user?.id, format(startDate, 'yyyy-MM-dd'), format(endDate, 'yyyy-MM-dd')],
-      queryFn: async () => {
-        if (!user?.id) return [];
+      return data as FoodConsumptionEntry[];
+    },
+    enabled: !!user?.id,
+    staleTime: 1000 * 60 * 10, // 10 minutes
+  });
 
-        const { data, error } = await supabase
-          .from('food_consumption_log')
-          .select(`
-            *,
-            food_item:food_items(
-              id,
-              name,
-              brand,
-              category,
-              serving_description
-            )
-          `)
-          .eq('user_id', user.id)
-          .gte('consumed_at', startDate.toISOString())
-          .lte('consumed_at', endDate.toISOString())
-          .order('consumed_at', { ascending: false });
+  // Add new food consumption
+  const addConsumptionMutation = useMutation({
+    mutationFn: async (newEntry: Omit<FoodConsumptionEntry, 'id' | 'user_id' | 'food_item'>) => {
+      if (!user?.id) throw new Error('User not authenticated');
 
-        if (error) {
-          console.error('Error fetching food consumption history:', error);
-          throw error;
-        }
+      const { data, error } = await supabase
+        .from('food_consumption_log')
+        .insert({
+          user_id: user.id,
+          ...newEntry,
+          consumed_at: newEntry.consumed_at || new Date().toISOString()
+        })
+        .select(`
+          id,
+          user_id,
+          food_item_id,
+          quantity_g,
+          calories_consumed,
+          protein_consumed,
+          carbs_consumed,
+          fat_consumed,
+          meal_type,
+          consumed_at,
+          notes,
+          source,
+          food_item:food_items (
+            id,
+            name,
+            brand,
+            calories_per_100g,
+            protein_per_100g,
+            carbs_per_100g,
+            fat_per_100g,
+            category
+          )
+        `)
+        .single();
 
-        return data as FoodConsumptionLog[];
-      },
-      enabled: !!user?.id,
-    });
-  };
+      if (error) {
+        console.error('Error adding food consumption:', error);
+        throw error;
+      }
 
-  // Delete food log entry
+      return data as FoodConsumptionEntry;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['food-consumption-today'] });
+      queryClient.invalidateQueries({ queryKey: ['food-consumption-history'] });
+      toast.success('Food logged successfully!');
+    },
+    onError: (error) => {
+      console.error('Failed to add food consumption:', error);
+      toast.error('Failed to log food');
+    }
+  });
+
+  // Delete consumption entry
   const deleteConsumptionMutation = useMutation({
-    mutationFn: async (logId: string) => {
+    mutationFn: async (entryId: string) => {
       const { error } = await supabase
         .from('food_consumption_log')
         .delete()
-        .eq('id', logId);
+        .eq('id', entryId);
 
-      if (error) {
-        console.error('Error deleting food log:', error);
-        throw error;
-      }
+      if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['food-consumption'] });
-      toast.success('Food log entry deleted');
+      queryClient.invalidateQueries({ queryKey: ['food-consumption-today'] });
+      queryClient.invalidateQueries({ queryKey: ['food-consumption-history'] });
+      toast.success('Food entry deleted');
     },
     onError: (error) => {
-      console.error('Error deleting food log:', error);
-      toast.error('Failed to delete food log entry');
-    },
+      console.error('Failed to delete food consumption:', error);
+      toast.error('Failed to delete food entry');
+    }
   });
 
-  // Enhanced force refresh function
-  const forceRefresh = async () => {
-    console.log('🔄 Force refreshing food consumption and meal plan data...');
-    
-    try {
-      // Clear specific queries with broader pattern matching
-      await queryClient.invalidateQueries({ 
-        predicate: (query) => {
-          const queryKey = query.queryKey;
-          return queryKey.includes('food-consumption') || queryKey.includes('today-meal-plan');
-        }
-      });
-      
-      // Force refetch the current query
-      const result = await refetch();
-      
-      console.log('✅ Force refresh completed:', {
-        success: !!result.data,
-        dataCount: result.data?.length || 0
-      });
-      
-      return result;
-    } catch (error) {
-      console.error('❌ Error during force refresh:', error);
-      throw error;
-    }
+  const refreshConsumption = () => {
+    refetchToday();
+    queryClient.invalidateQueries({ queryKey: ['food-consumption-history'] });
   };
 
   return {
+    // Today's data
     todayConsumption,
-    todayMealPlan,
-    isLoading: isLoading || isMealPlanLoading,
-    refetch,
-    forceRefresh,
-    getConsumptionHistory,
-    useHistoryData,
+    isLoading: isLoadingToday,
+    error: todayError,
+    
+    // History data
+    consumptionHistory,
+    isLoadingHistory,
+    historyError,
+    
+    // Mutations
+    addConsumption: addConsumptionMutation.mutate,
+    isAddingConsumption: addConsumptionMutation.isPending,
     deleteConsumption: deleteConsumptionMutation.mutate,
     isDeletingConsumption: deleteConsumptionMutation.isPending,
+    
+    // Utilities
+    refreshConsumption,
   };
 };
