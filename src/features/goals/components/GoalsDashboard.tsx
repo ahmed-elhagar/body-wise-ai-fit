@@ -14,10 +14,24 @@ const GoalsDashboard = () => {
   const { goals, isLoading, deleteGoal } = useGoals();
   const [showCreationDialog, setShowCreationDialog] = useState(false);
 
-  // Convert database goals to our Goal type
+  // Convert database goals to our Goal type with proper type casting
   const convertedGoals: Goal[] = goals.map(goal => ({
     ...goal,
-    milestones: Array.isArray(goal.milestones) ? goal.milestones : []
+    status: (goal.status as 'active' | 'completed' | 'paused') || 'active',
+    difficulty: (goal.difficulty as 'easy' | 'medium' | 'hard') || 'medium',
+    priority: (goal.priority as 'low' | 'medium' | 'high') || 'medium',
+    milestones: Array.isArray(goal.milestones) ? goal.milestones.map((m: any) => ({
+      id: m.id || crypto.randomUUID(),
+      title: m.title || '',
+      target_value: m.target_value || 0,
+      completed: m.completed || false,
+      completed_at: m.completed_at || undefined
+    })) : [],
+    target_value: goal.target_value || 0,
+    current_value: goal.current_value || 0,
+    description: goal.description || '',
+    notes: goal.notes || '',
+    tags: goal.tags || []
   }));
 
   const activeGoals = convertedGoals.filter(goal => goal.status === 'active');
