@@ -51,12 +51,12 @@ const FoodTrackerDashboard: React.FC = () => {
     }
   }, [todayConsumption]);
 
-  // Daily goals (should come from profile in future)
+  // Daily goals with fallback values
   const dailyGoals = {
-    calories: profile?.daily_calorie_goal || 2000,
-    protein: profile?.daily_protein_goal || 150,
-    carbs: profile?.daily_carb_goal || 250,
-    fat: profile?.daily_fat_goal || 65
+    calories: 2000, // Default fallback
+    protein: 150,   // Default fallback  
+    carbs: 250,     // Default fallback
+    fat: 65         // Default fallback
   };
 
   // Calculate progress percentages with bounds checking
@@ -84,7 +84,7 @@ const FoodTrackerDashboard: React.FC = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 p-6">
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 p-4 sm:p-6">
         <Card className="max-w-md mx-auto mt-20">
           <CardContent className="text-center py-8">
             <p className="text-red-600 mb-4">Error loading food tracker data</p>
@@ -97,13 +97,13 @@ const FoodTrackerDashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50">
-      <div className="container mx-auto p-6 space-y-8">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         {/* Header Section */}
         <div className="text-center space-y-4">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+          <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
             Food Tracker
           </h1>
-          <p className="text-gray-600 text-lg">
+          <p className="text-gray-600 text-base sm:text-lg">
             Track your nutrition and reach your health goals
           </p>
           <p className="text-sm text-gray-500">
@@ -112,18 +112,18 @@ const FoodTrackerDashboard: React.FC = () => {
         </div>
 
         {/* Nutrition Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           <Card className="bg-gradient-to-br from-orange-500 to-red-500 text-white border-0 shadow-lg">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-orange-100 text-sm font-medium">Calories</p>
-                  <p className="text-3xl font-bold">{Math.round(nutritionTotals.calories)}</p>
+                  <p className="text-2xl sm:text-3xl font-bold">{Math.round(nutritionTotals.calories)}</p>
                   <p className="text-orange-100 text-xs">
                     {Math.max(Math.round(dailyGoals.calories - nutritionTotals.calories), 0)} remaining
                   </p>
                 </div>
-                <Flame className="h-8 w-8 text-orange-200" />
+                <Flame className="h-6 w-6 sm:h-8 sm:w-8 text-orange-200" />
               </div>
               <Progress 
                 value={progress.calories} 
@@ -133,16 +133,16 @@ const FoodTrackerDashboard: React.FC = () => {
           </Card>
 
           <Card className="bg-gradient-to-br from-blue-500 to-purple-500 text-white border-0 shadow-lg">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-blue-100 text-sm font-medium">Protein</p>
-                  <p className="text-3xl font-bold">{Math.round(nutritionTotals.protein)}g</p>
+                  <p className="text-2xl sm:text-3xl font-bold">{Math.round(nutritionTotals.protein)}g</p>
                   <p className="text-blue-100 text-xs">
                     {Math.round(progress.protein)}% of goal
                   </p>
                 </div>
-                <Target className="h-8 w-8 text-blue-200" />
+                <Target className="h-6 w-6 sm:h-8 sm:w-8 text-blue-200" />
               </div>
               <Progress 
                 value={progress.protein} 
@@ -152,16 +152,16 @@ const FoodTrackerDashboard: React.FC = () => {
           </Card>
 
           <Card className="bg-gradient-to-br from-green-500 to-emerald-500 text-white border-0 shadow-lg">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-green-100 text-sm font-medium">Carbs</p>
-                  <p className="text-3xl font-bold">{Math.round(nutritionTotals.carbs)}g</p>
+                  <p className="text-2xl sm:text-3xl font-bold">{Math.round(nutritionTotals.carbs)}g</p>
                   <p className="text-green-100 text-xs">
                     {Math.round(progress.carbs)}% of goal
                   </p>
                 </div>
-                <div className="h-8 w-8 bg-green-200/20 rounded-full flex items-center justify-center">
+                <div className="h-6 w-6 sm:h-8 sm:w-8 bg-green-200/20 rounded-full flex items-center justify-center">
                   <span className="text-green-200 text-sm font-bold">C</span>
                 </div>
               </div>
@@ -173,16 +173,16 @@ const FoodTrackerDashboard: React.FC = () => {
           </Card>
 
           <Card className="bg-gradient-to-br from-yellow-500 to-orange-500 text-white border-0 shadow-lg">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-yellow-100 text-sm font-medium">Fat</p>
-                  <p className="text-3xl font-bold">{Math.round(nutritionTotals.fat)}g</p>
+                  <p className="text-2xl sm:text-3xl font-bold">{Math.round(nutritionTotals.fat)}g</p>
                   <p className="text-yellow-100 text-xs">
                     {Math.round(progress.fat)}% of goal
                   </p>
                 </div>
-                <div className="h-8 w-8 bg-yellow-200/20 rounded-full flex items-center justify-center">
+                <div className="h-6 w-6 sm:h-8 sm:w-8 bg-yellow-200/20 rounded-full flex items-center justify-center">
                   <span className="text-yellow-200 text-sm font-bold">F</span>
                 </div>
               </div>
@@ -195,15 +195,15 @@ const FoodTrackerDashboard: React.FC = () => {
         </div>
 
         {/* Main Content Tabs */}
-        <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm">
+        <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm">
           <CardHeader className="pb-4">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-2xl font-bold text-gray-800">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <CardTitle className="text-xl sm:text-2xl font-bold text-gray-800">
                 Daily Nutrition
               </CardTitle>
               <Button
                 onClick={() => setIsAddFoodOpen(true)}
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Add Food
@@ -211,29 +211,32 @@ const FoodTrackerDashboard: React.FC = () => {
             </div>
           </CardHeader>
           
-          <CardContent>
+          <CardContent className="px-4 sm:px-6">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-3 bg-gray-100">
                 <TabsTrigger 
                   value="today" 
-                  className="data-[state=active]:bg-purple-600 data-[state=active]:text-white"
+                  className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-sm"
                 >
-                  <Utensils className="h-4 w-4 mr-2" />
-                  Today
+                  <Utensils className="h-4 w-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Today</span>
+                  <span className="sm:hidden">Today</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="search"
-                  className="data-[state=active]:bg-purple-600 data-[state=active]:text-white"
+                  className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-sm"
                 >
-                  <Search className="h-4 w-4 mr-2" />
-                  Search
+                  <Search className="h-4 w-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Search</span>
+                  <span className="sm:hidden">Search</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="history"
-                  className="data-[state=active]:bg-purple-600 data-[state=active]:text-white"
+                  className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-sm"
                 >
-                  <History className="h-4 w-4 mr-2" />
-                  History
+                  <History className="h-4 w-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">History</span>
+                  <span className="sm:hidden">History</span>
                 </TabsTrigger>
               </TabsList>
 
