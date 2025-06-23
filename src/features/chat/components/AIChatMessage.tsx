@@ -1,291 +1,240 @@
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Bot, User, Copy, Check, ThumbsUp, ThumbsDown, RefreshCw } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useLanguage } from "@/contexts/LanguageContext";
+import React, { useState } from 'react';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { 
+  Bot, 
+  User, 
+  Copy, 
+  ThumbsUp, 
+  ThumbsDown, 
+  RefreshCw,
+  MoreVertical
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
+
+interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: Date;
+  isLoading?: boolean;
+}
 
 interface AIChatMessageProps {
-  message: {
-    id: string;
-    content: string;
-    role: 'user' | 'assistant';
-    timestamp: Date;
-    isLoading?: boolean;
-  };
+  message: ChatMessage;
   onRegenerate?: () => void;
   onFeedback?: (messageId: string, feedback: 'positive' | 'negative') => void;
 }
 
-const AIChatMessage = ({ message, onRegenerate, onFeedback }: AIChatMessageProps) => {
-  const [copied, setCopied] = useState(false);
+const AIChatMessage: React.FC<AIChatMessageProps> = ({
+  message,
+  onRegenerate,
+  onFeedback
+}) => {
   const [feedback, setFeedback] = useState<'positive' | 'negative' | null>(null);
-  const { isRTL } = useLanguage();
+  const isUser = message.role === 'user';
+  const isLoading = message.isLoading;
 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(message.content);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (error) {
-      console.error('Failed to copy message:', error);
+      toast.success('Message copied to clipboard');
+    } catch (err) {
+      toast.error('Failed to copy message');
     }
   };
 
   const handleFeedback = (type: 'positive' | 'negative') => {
     setFeedback(type);
     onFeedback?.(message.id, type);
+    toast.success(`Feedback sent: ${type === 'positive' ? 'Helpful' : 'Not helpful'}`);
   };
 
-  const formatText = (text: string) => {
-    // Handle bold text **text** or __text__
-    text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    text = text.replace(/__(.*?)__/g, '<strong>$1</strong>');
-    
-    // Handle italic text *text* or _text_
-    text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
-    text = text.replace(/_(.*?)_/g, '<em>$1</em>');
-    
-    // Handle inline code `code`
-    text = text.replace(/`(.*?)`/g, '<code class="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono">$1</code>');
-    
-    return text;
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
-  const formatAIResponse = (content: string) => {
-    // Split content into paragraphs
-    const paragraphs = content.split('\n\n').filter(p => p.trim());
+  // Format message content with better structure
+  const formatContent = (content: string) => {
+    // Split by double newlines for paragraphs
+    const paragraphs = content.split('\n\n');
     
     return paragraphs.map((paragraph, index) => {
-      const trimmedParagraph = paragraph.trim();
-      
-      // Check if it's a list
-      if (trimmedParagraph.includes('•') || trimmedParagraph.includes('-') || /^\d+\./.test(trimmedParagraph)) {
-        const lines = trimmedParagraph.split('\n');
+      // Check if it's a header (starts with ##)
+      if (paragraph.startsWith('##')) {
+        const headerText = paragraph.replace(/^##\s*/, '');
         return (
-          <div key={index} className="mb-4">
-            {lines.map((line, lineIndex) => {
-              const trimmedLine = line.trim();
-              if (!trimmedLine) return null;
-              
-              return (
-                <div key={lineIndex} className={cn(
-                  "mb-2 flex items-start gap-2",
-                  isRTL ? "text-right" : "text-left"
-                )}>
-                  {trimmedLine.startsWith('•') || trimmedLine.startsWith('-') ? (
-                    <>
-                      <span className="text-blue-600 mt-1 flex-shrink-0">•</span>
-                      <span 
-                        className="flex-1"
-                        dangerouslySetInnerHTML={{ 
-                          __html: formatText(trimmedLine.replace(/^[•\-]\s*/, '')) 
-                        }} 
-                      />
-                    </>
-                  ) : /^\d+\./.test(trimmedLine) ? (
-                    <>
-                      <span className="text-blue-600 font-semibold flex-shrink-0">
-                        {trimmedLine.match(/^\d+\./)?.[0]}
-                      </span>
-                      <span 
-                        className="flex-1"
-                        dangerouslySetInnerHTML={{ 
-                          __html: formatText(trimmedLine.replace(/^\d+\.\s*/, '')) 
-                        }} 
-                      />
-                    </>
-                  ) : (
-                    <span 
-                      className="flex-1"
-                      dangerouslySetInnerHTML={{ __html: formatText(trimmedLine) }} 
-                    />
-                  )}
-                </div>
-              );
-            })}
-          </div>
+          <h3 key={index} className="text-lg font-semibold text-gray-900 mt-4 mb-2 first:mt-0">
+            {headerText}
+          </h3>
         );
       }
       
-      // Check if it's a heading (starts with # or **text**)
-      if (trimmedParagraph.startsWith('#') || (trimmedParagraph.startsWith('**') && trimmedParagraph.endsWith('**'))) {
-        const headingText = trimmedParagraph.replace(/^#+\s*/, '').replace(/\*\*/g, '');
+      // Check if it's a list (contains bullet points or numbers)
+      if (paragraph.includes('\n-') || paragraph.includes('\n•') || /^\d+\./.test(paragraph)) {
+        const items = paragraph.split('\n').filter(line => line.trim());
         return (
-          <h3 
-            key={index} 
-            className={cn(
-              "font-semibold text-gray-900 mb-3 text-base",
-              isRTL ? "text-right" : "text-left"
-            )}
-          >
-            {headingText}
-          </h3>
+          <div key={index} className="mb-3">
+            {items.map((item, itemIndex) => {
+              if (item.startsWith('-') || item.startsWith('•')) {
+                return (
+                  <div key={itemIndex} className="flex items-start gap-2 mb-1">
+                    <span className="text-blue-500 mt-1">•</span>
+                    <span>{item.replace(/^[-•]\s*/, '')}</span>
+                  </div>
+                );
+              } else if (/^\d+\./.test(item)) {
+                return (
+                  <div key={itemIndex} className="flex items-start gap-2 mb-1">
+                    <span className="text-blue-500 font-medium">{item.match(/^\d+/)?.[0]}.</span>
+                    <span>{item.replace(/^\d+\.\s*/, '')}</span>
+                  </div>
+                );
+              } else {
+                return <p key={itemIndex} className="mb-2">{item}</p>;
+              }
+            })}
+          </div>
         );
       }
       
       // Regular paragraph
       return (
-        <p 
-          key={index} 
-          className={cn(
-            "mb-3 leading-relaxed",
-            isRTL ? "text-right" : "text-left"
-          )}
-          dangerouslySetInnerHTML={{ __html: formatText(trimmedParagraph) }}
-        />
+        <p key={index} className="mb-3 last:mb-0 leading-relaxed">
+          {paragraph}
+        </p>
       );
     });
   };
 
-  const isUser = message.role === 'user';
-  const isAssistant = message.role === 'assistant';
-
   return (
     <div className={cn(
-      "group flex gap-4 mb-6 max-w-none",
-      isUser ? "justify-end" : "justify-start",
-      isRTL && "flex-row-reverse"
+      "flex gap-4 mb-6",
+      isUser ? "justify-end" : "justify-start"
     )}>
-      {/* Avatar for assistant */}
-      {isAssistant && (
-        <Avatar className="h-10 w-10 flex-shrink-0 ring-2 ring-green-100">
-          <AvatarFallback className="bg-gradient-to-br from-green-500 to-emerald-600 text-white">
-            <Bot className="h-5 w-5" />
+      {/* Avatar */}
+      {!isUser && (
+        <Avatar className="w-8 h-8 flex-shrink-0">
+          <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-sm">
+            <Bot className="h-4 w-4" />
           </AvatarFallback>
         </Avatar>
       )}
-      
+
+      {/* Message Content */}
       <div className={cn(
-        "flex-1 max-w-[80%]",
-        isUser && "max-w-[70%]"
+        "max-w-[80%] space-y-2",
+        isUser ? "items-end" : "items-start"
       )}>
-        <div className={cn(
-          "rounded-2xl px-4 py-3 text-sm relative shadow-sm border",
-          isUser
-            ? "bg-blue-600 text-white ml-auto rounded-br-md"
-            : "bg-white text-gray-900 border-gray-200 rounded-bl-md",
-          message.isLoading && "animate-pulse",
-          isUser && isRTL && "mr-auto ml-0 rounded-bl-md rounded-br-2xl",
-          isAssistant && isRTL && "rounded-br-md rounded-bl-2xl"
+        {/* Message Bubble */}
+        <Card className={cn(
+          "relative transition-all duration-200",
+          isUser 
+            ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white border-0 shadow-lg" 
+            : "bg-white border border-gray-200 shadow-sm hover:shadow-md",
+          isLoading && "animate-pulse"
         )}>
-          {message.isLoading ? (
-            <div className="flex items-center gap-3">
-              <div className="flex gap-1">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-              </div>
-              <span className="text-gray-500">AI is thinking...</span>
-            </div>
-          ) : (
-            <div className={cn(
-              "break-words",
-              isUser ? "text-white" : "text-gray-900",
-              isRTL ? "text-right" : "text-left"
-            )}>
-              {isAssistant ? (
-                <div className="prose prose-sm max-w-none">
-                  {formatAIResponse(message.content)}
+          <div className={cn(
+            "p-4",
+            isUser ? "text-white" : "text-gray-900"
+          )}>
+            {isLoading ? (
+              <div className="flex items-center gap-2">
+                <div className="flex gap-1">
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                 </div>
-              ) : (
-                <div 
-                  className={cn(isRTL ? "text-right" : "text-left")}
-                  dangerouslySetInnerHTML={{ __html: formatText(message.content) }}
-                />
-              )}
-            </div>
-          )}
-          
-          <div className={cn(
-            "text-xs mt-2 opacity-70",
-            isUser ? "text-blue-100" : "text-gray-500",
-            isRTL ? "text-right" : "text-left"
-          )}>
-            {message.timestamp.toLocaleTimeString([], { 
-              hour: '2-digit', 
-              minute: '2-digit' 
-            })}
-          </div>
-        </div>
-        
-        {/* Action buttons for assistant messages */}
-        {isAssistant && !message.isLoading && (
-          <div className={cn(
-            "flex items-center gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity",
-            isRTL && "flex-row-reverse"
-          )}>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleCopy}
-              className="h-7 px-2 text-xs hover:bg-gray-100"
-            >
-              {copied ? (
-                <>
-                  <Check className="h-3 w-3 mr-1" />
-                  Copied
-                </>
-              ) : (
-                <>
-                  <Copy className="h-3 w-3 mr-1" />
-                  Copy
-                </>
-              )}
-            </Button>
-            
-            {onRegenerate && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onRegenerate}
-                className="h-7 px-2 text-xs hover:bg-gray-100"
-              >
-                <RefreshCw className="h-3 w-3 mr-1" />
-                Regenerate
-              </Button>
+                <span className="text-sm text-gray-500">AI is thinking...</span>
+              </div>
+            ) : (
+              <div className="prose prose-sm max-w-none">
+                {isUser ? (
+                  <p className="whitespace-pre-wrap">{message.content}</p>
+                ) : (
+                  <div className="space-y-2">
+                    {formatContent(message.content)}
+                  </div>
+                )}
+              </div>
             )}
+          </div>
+        </Card>
+
+        {/* Message Actions */}
+        {!isLoading && (
+          <div className={cn(
+            "flex items-center gap-2 text-xs",
+            isUser ? "justify-end" : "justify-start"
+          )}>
+            <span className="text-gray-500">
+              {formatTime(message.timestamp)}
+            </span>
             
-            {onFeedback && (
-              <div className={cn(
-                "flex gap-1 ml-2",
-                isRTL && "mr-2 ml-0"
-              )}>
+            {!isUser && (
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCopy}
+                  className="h-6 w-6 p-0 text-gray-400 hover:text-gray-600"
+                >
+                  <Copy className="h-3 w-3" />
+                </Button>
+                
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => handleFeedback('positive')}
                   className={cn(
-                    "h-7 w-7 p-0 hover:bg-green-100",
-                    feedback === 'positive' && "bg-green-100 text-green-600"
+                    "h-6 w-6 p-0",
+                    feedback === 'positive' 
+                      ? "text-green-600 bg-green-50" 
+                      : "text-gray-400 hover:text-green-600"
                   )}
                 >
                   <ThumbsUp className="h-3 w-3" />
                 </Button>
+                
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => handleFeedback('negative')}
                   className={cn(
-                    "h-7 w-7 p-0 hover:bg-red-100",
-                    feedback === 'negative' && "bg-red-100 text-red-600"
+                    "h-6 w-6 p-0",
+                    feedback === 'negative' 
+                      ? "text-red-600 bg-red-50" 
+                      : "text-gray-400 hover:text-red-600"
                   )}
                 >
                   <ThumbsDown className="h-3 w-3" />
                 </Button>
+                
+                {onRegenerate && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={onRegenerate}
+                    className="h-6 w-6 p-0 text-gray-400 hover:text-blue-600"
+                  >
+                    <RefreshCw className="h-3 w-3" />
+                  </Button>
+                )}
               </div>
             )}
           </div>
         )}
       </div>
 
-      {/* Avatar for user */}
+      {/* User Avatar */}
       {isUser && (
-        <Avatar className="h-10 w-10 flex-shrink-0 ring-2 ring-blue-100">
-          <AvatarFallback className="bg-blue-600 text-white">
-            <User className="h-5 w-5" />
+        <Avatar className="w-8 h-8 flex-shrink-0">
+          <AvatarFallback className="bg-gradient-to-br from-gray-500 to-gray-600 text-white text-sm">
+            <User className="h-4 w-4" />
           </AvatarFallback>
         </Avatar>
       )}

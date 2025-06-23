@@ -1,14 +1,15 @@
 
 import React from 'react';
-import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { MoreVertical, Reply, Edit, Trash2 } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { MoreVertical, Reply, Edit, Trash, Copy } from 'lucide-react';
+import type { ChatMessage } from '@/shared/hooks/useCoachChat';
 
 interface MessageActionsMenuProps {
-  message: any;
+  message: ChatMessage;
   isOwnMessage: boolean;
-  onReply: (message: any) => void;
-  onEdit: (message: any) => void;
+  onReply: (message: ChatMessage) => void;
+  onEdit: (message: ChatMessage) => void;
   onDelete: (messageId: string) => void;
 }
 
@@ -19,26 +20,49 @@ const MessageActionsMenu: React.FC<MessageActionsMenuProps> = ({
   onEdit,
   onDelete
 }) => {
+  const handleCopy = async () => {
+    try {
+      const messageText = message.message || message.content || '';
+      await navigator.clipboard.writeText(messageText);
+    } catch (error) {
+      console.error('Failed to copy message:', error);
+    }
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100">
-          <MoreVertical className="h-3 w-3" />
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+        >
+          <MoreVertical className="w-3 h-3" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="w-48">
         <DropdownMenuItem onClick={() => onReply(message)}>
-          <Reply className="h-3 w-3 mr-2" />
+          <Reply className="w-4 h-4 mr-2" />
           Reply
         </DropdownMenuItem>
+        
+        <DropdownMenuItem onClick={handleCopy}>
+          <Copy className="w-4 h-4 mr-2" />
+          Copy
+        </DropdownMenuItem>
+        
         {isOwnMessage && (
           <>
             <DropdownMenuItem onClick={() => onEdit(message)}>
-              <Edit className="h-3 w-3 mr-2" />
+              <Edit className="w-4 h-4 mr-2" />
               Edit
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onDelete(message.id)} className="text-red-600">
-              <Trash2 className="h-3 w-3 mr-2" />
+            
+            <DropdownMenuItem 
+              onClick={() => onDelete(message.id)}
+              className="text-red-600 focus:text-red-600"
+            >
+              <Trash className="w-4 h-4 mr-2" />
               Delete
             </DropdownMenuItem>
           </>

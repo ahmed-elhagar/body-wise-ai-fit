@@ -1,9 +1,10 @@
 
-import { useState, useRef, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Send, Square, Mic, MicOff } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useState, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Card } from "@/components/ui/card";
+import { Send, Loader2, Square, Mic, Image, Paperclip } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
@@ -24,47 +25,32 @@ const ChatInput = ({
   placeholder = "Type your message...",
   className,
   value: controlledValue,
-  onChange: onControlledChange
+  onChange
 }: ChatInputProps) => {
-  const [internalValue, setInternalValue] = useState('');
-  const [isListening, setIsListening] = useState(false);
+  const [message, setMessage] = useState(controlledValue || "");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const recognitionRef = useRef<any>(null);
 
-  // Use controlled or internal value
-  const value = controlledValue !== undefined ? controlledValue : internalValue;
-  const setValue = onControlledChange || setInternalValue;
+  const isControlled = controlledValue !== undefined;
+  const currentValue = isControlled ? controlledValue : message;
 
-  // Initialize speech recognition
-  useEffect(() => {
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
-      recognitionRef.current = new SpeechRecognition();
-      recognitionRef.current.continuous = false;
-      recognitionRef.current.interimResults = false;
-      recognitionRef.current.lang = 'en-US';
-
-      recognitionRef.current.onresult = (event: any) => {
-        const transcript = event.results[0][0].transcript;
-        setValue(value + ' ' + transcript);
-        setIsListening(false);
-      };
-
-      recognitionRef.current.onerror = () => {
-        setIsListening(false);
-      };
-
-      recognitionRef.current.onend = () => {
-        setIsListening(false);
-      };
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newValue = e.target.value;
+    if (isControlled && onChange) {
+      onChange(newValue);
+    } else {
+      setMessage(newValue);
     }
-  }, [value, setValue]);
+  };
 
   const handleSend = () => {
-    if (!value.trim() || disabled || isLoading) return;
+    const messageToSend = currentValue.trim();
+    if (!messageToSend || disabled || isLoading) return;
+
+    onSendMessage(messageToSend);
     
-    onSendMessage(value.trim());
-    setValue('');
+    if (!isControlled) {
+      setMessage("");
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -74,113 +60,122 @@ const ChatInput = ({
     }
   };
 
-  const handleVoiceInput = () => {
-    if (!recognitionRef.current) return;
-
-    if (isListening) {
-      recognitionRef.current.stop();
-      setIsListening(false);
-    } else {
-      recognitionRef.current.start();
-      setIsListening(true);
-    }
-  };
-
   const adjustTextareaHeight = () => {
     const textarea = textareaRef.current;
     if (textarea) {
       textarea.style.height = 'auto';
-      textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+      textarea.style.height = `${Math.min(textarea.scrollHeight, 120)}px`;
     }
   };
 
-  useEffect(() => {
+  React.useEffect(() => {
     adjustTextareaHeight();
-  }, [value]);
+  }, [currentValue]);
 
   return (
-    <div className={cn("p-4 bg-white border-t border-gray-200", className)}>
-      <div className="flex items-end gap-3 max-w-4xl mx-auto">
-        <div className="flex-1 relative">
-          <Textarea
-            ref={textareaRef}
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder={placeholder}
-            disabled={disabled}
-            className={cn(
-              "min-h-[52px] max-h-[120px] resize-none border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-xl pr-12 transition-all duration-200",
-              isListening && "ring-2 ring-red-300 border-red-300"
-            )}
-            rows={1}
-          />
-          
-          {/* Voice Input Button */}
-          {recognitionRef.current && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={handleVoiceInput}
-              disabled={disabled}
-              className={cn(
-                "absolute right-2 top-2 h-8 w-8 p-0 hover:bg-gray-100 transition-colors",
-                isListening && "text-red-600 bg-red-50 hover:bg-red-100"
-              )}
-            >
-              {isListening ? (
-                <MicOff className="h-4 w-4" />
-              ) : (
-                <Mic className="h-4 w-4" />
-              )}
-            </Button>
-          )}
-          
-          {/* Character counter for long messages */}
-          {value.length > 200 && (
-            <div className="absolute -top-6 right-2 text-xs text-gray-500">
-              {value.length}/1000
+    <Card className={cn("border-0 shadow-none bg-transparent", className)}>
+      <div className="p-4 space-y-3">
+        {/* Enhanced Input Area */}
+        <div className="relative">
+          <div className="flex gap-3 items-end">
+            {/* Attachment Button */}
+            <div className="flex gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-10 w-10 p-0 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl"
+                disabled={disabled || isLoading}
+              >
+                <Paperclip className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-10 w-10 p-0 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-xl"
+                disabled={disabled || isLoading}
+              >
+                <Image className="h-4 w-4" />
+              </Button>
             </div>
-          )}
-        </div>
-        
-        {/* Send/Cancel Button */}
-        <Button
-          onClick={isLoading ? onCancel : handleSend}
-          disabled={(!value.trim() && !isLoading) || disabled}
-          size="lg"
-          className={cn(
-            "h-[52px] px-6 transition-all duration-200 transform hover:scale-105",
-            isLoading 
-              ? "bg-red-600 hover:bg-red-700 text-white" 
-              : "bg-blue-600 hover:bg-blue-700 text-white"
-          )}
-        >
-          {isLoading ? (
-            <>
-              <Square className="h-4 w-4 mr-2" />
-              Cancel
-            </>
-          ) : (
-            <>
-              <Send className="h-4 w-4 mr-2" />
-              Send
-            </>
-          )}
-        </Button>
-      </div>
-      
-      {/* Voice Input Indicator */}
-      {isListening && (
-        <div className="flex items-center justify-center mt-2 text-sm text-red-600">
-          <div className="animate-pulse flex items-center gap-2">
-            <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-            <span>Listening...</span>
+
+            {/* Enhanced Textarea */}
+            <div className="flex-1 relative">
+              <Textarea
+                ref={textareaRef}
+                value={currentValue}
+                onChange={handleInputChange}
+                onKeyPress={handleKeyPress}
+                placeholder={placeholder}
+                disabled={disabled || isLoading}
+                className="min-h-[50px] max-h-[120px] resize-none border-2 border-gray-200 focus:border-blue-400 rounded-2xl px-4 py-3 pr-12 text-base bg-white/90 backdrop-blur-sm transition-all duration-200 focus:ring-0 focus:ring-offset-0"
+                rows={1}
+              />
+              
+              {/* Character Counter */}
+              <div className="absolute bottom-2 right-12 text-xs text-gray-400">
+                {currentValue.length}/2000
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-2">
+              {/* Voice Input Button */}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-10 w-10 p-0 text-gray-500 hover:text-purple-600 hover:bg-purple-50 rounded-xl"
+                disabled={disabled || isLoading}
+              >
+                <Mic className="h-4 w-4" />
+              </Button>
+
+              {/* Send/Cancel Button */}
+              {isLoading ? (
+                <Button
+                  onClick={onCancel}
+                  variant="outline"
+                  size="sm"
+                  className="h-10 px-4 bg-red-50 border-red-200 text-red-600 hover:bg-red-100 rounded-xl"
+                >
+                  <Square className="h-4 w-4 mr-2" />
+                  Stop
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleSend}
+                  disabled={!currentValue.trim() || disabled}
+                  size="sm"
+                  className={cn(
+                    "h-10 px-4 rounded-xl transition-all duration-200",
+                    currentValue.trim()
+                      ? "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105"
+                      : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                  )}
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
+                </Button>
+              )}
+            </div>
           </div>
         </div>
-      )}
-    </div>
+
+        {/* Enhanced Helper Text */}
+        <div className="flex items-center justify-between text-xs text-gray-500 px-2">
+          <span className="flex items-center gap-2">
+            <span>{placeholder.includes('fitness') ? '🏋️' : '💬'}</span>
+            Press <kbd className="bg-gray-100 px-1.5 py-0.5 rounded font-mono">Enter</kbd> to send, 
+            <kbd className="bg-gray-100 px-1.5 py-0.5 rounded font-mono">Shift + Enter</kbd> for new line
+          </span>
+          {isLoading && (
+            <span className="text-blue-600 animate-pulse">AI is thinking...</span>
+          )}
+        </div>
+      </div>
+    </Card>
   );
 };
 
